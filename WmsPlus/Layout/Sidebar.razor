@@ -1,0 +1,390 @@
+@inject IJSRuntime JS
+@using WmsPlus.Models
+
+<div class="sidebar-component">
+    @foreach (var menu in _allMenus)
+    {
+        <SidebarItem 
+            Menu="@menu" 
+            OnToggle="ToggleMenu" 
+            ExpandedKeys="expandedMenus"
+            OnSecondLevelClick="HandleSecondLevelClick"
+            ActiveSecondLevelKey="@activeSecondLevelKey"
+            IsCollapsed="@IsCollapsed"
+        />
+    }
+</div>
+
+@code {
+    // ★ 二级菜单状态
+    private string? activeSecondLevelKey = null;
+
+    [Parameter]
+    public EventCallback<SubMenuItem> OnSecondLevelMenuClick { get; set; }
+
+    // ★ 侧边栏收缩状态
+    [Parameter]
+    public bool IsCollapsed { get; set; } = false;
+
+    private async Task HandleSecondLevelClick(SubMenuItem menuItem)
+    {
+        activeSecondLevelKey = menuItem.Title;
+        StateHasChanged();
+        
+        await OnSecondLevelMenuClick.InvokeAsync(menuItem);
+    }
+    private HashSet<string> expandedMenus = new HashSet<string>();
+    private const string StorageKey = "wms_sidebar_expanded";
+
+    private List<MenuGroup> _allMenus = new()
+    {
+        new() {
+            Key = "warehouse",
+            Icon = "warehouse",
+            Title = "仓储管理",
+            Children = new() {
+                // 入库管理 - 3列
+                new() {
+                    Icon = "inbound",
+                    Title = "入库管理",
+                    Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "入库通知单" },
+                        new() { Title = "批量产生入库通知单" },
+                        new() { Title = "入库单" },
+                        new() { Title = "变更管理", IsCategoryHeader = true },
+                        new() { Title = "入库通知变更单" },
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "收货单报表" },
+                        new() { Title = "入库通知单报表" },
+                        new() { Title = "入库单报表" }
+                    }
+                },
+                // 出库管理 - 4列
+                new() {
+                    Icon = "outbound",
+                    Title = "出库管理",
+                    Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "出库通知单" },
+                        new() { Title = "批量产生出库通知单" },
+                        new() { Title = "出库通知单派工" },
+                        new() { Title = "出库退回通知单" },
+                        new() { Title = "波次单" },
+                        new() { Title = "波次拣货任务单" },
+                        new() { Title = "直接拣货任务单" },
+                        new() { Title = "拣货单" },
+                        new() { Title = "二次分拣单" },
+                        new() { Title = "拣货退回单" },
+                        new() { Title = "出库单" },
+                        new() { Title = "变更管理", IsCategoryHeader = true },
+                        new() { Title = "出库通知变更单" },
+                        new() { Title = "出库任务分配", IsCategoryHeader = true },
+                        new() { Title = "出库任务分配作业" },
+                        new() { Title = "依来源单配货" },
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "出库通知单报表" },
+                        new() { Title = "出库退回通知单报表" },
+                        new() { Title = "波次单报表" },
+                        new() { Title = "波次拣货任务单报表" },
+                        new() { Title = "直接拣货任务单报表" },
+                        new() { Title = "拣货单报表" },
+                        new() { Title = "二次分拣单报表" },
+                        new() { Title = "拣货退回报表" },
+                        new() { Title = "出库单报表" }
+                    }
+                },
+                // 库存管理 - 6列
+                new() {
+                    Icon = "inventory",
+                    Title = "库存管理",
+                    Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "储位上架单" },
+                        new() { Title = "储位调整单" },
+                        new() { Title = "储位下架单" },
+                        new() { Title = "调拨通知单" },
+                        new() { Title = "库存调整单" },
+                        new() { Title = "变更管理", IsCategoryHeader = true },
+                        new() { Title = "调拨通知变更单" },
+                        new() { Title = "盘点管理", IsCategoryHeader = true },
+                        new() { Title = "初盘任务单" },
+                        new() { Title = "初盘单" },
+                        new() { Title = "盘点单" },
+                        new() { Title = "盘亏单" },
+                        new() { Title = "单据确认作业" },
+                        new() { Title = "单据报表", IsCategoryHeader = true },
+                        new() { Title = "储位上架单报表" },
+                        new() { Title = "储位下架单报表" },
+                        new() { Title = "储位调整单报表" },
+                        new() { Title = "调拨通知单报表" },
+                        new() { Title = "库存调整单报表" },
+                        new() { Title = "库存报表", IsCategoryHeader = true },
+                        new() { Title = "每月仓库库存表" },
+                        new() { Title = "每月储位库存表" },
+                        new() { Title = "仓库库存表" },
+                        new() { Title = "储位库存表" },
+                        new() { Title = "货品/批号库存锁定表" },
+                        new() { Title = "存货明细帐" }
+                    }
+                },
+                // 品质检验
+                new() {
+                    Icon = "quality",
+                    Title = "品质检验",
+                    Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "库存货品检验到期查询" },
+                        new() { Title = "请检任务单" },
+                        new() { Title = "检验单" },
+                        new() { Title = "验收退回单" },
+                        new() { Title = "检验报表", IsCategoryHeader = true },
+                        new() { Title = "请检任务单明细表" },
+                        new() { Title = "检验单明细表" },
+                        new() { Title = "验收退回单明细表" },
+                        new() { Title = "收货检验时效分析表" },
+                        new() { Title = "车间入库检验时效分析表" },
+                        new() { Title = "库存检验时效分析表" },
+                        new() { Title = "其他设定", IsCategoryHeader = true },
+                        new() { Title = "不合格原因设定" }
+                    }
+                },
+                // 打印管理
+                new() {
+                    Icon = "print",
+                    Title = "打印管理",
+                    Children = new() {
+                        new() { Title = "编码规则", IsCategoryHeader = true },
+                        new() { Title = "货品条码编码规则设定" },
+                        new() { Title = "储条列号编码规则设定" },
+                        new() { Title = "序列号编码规则设定" },
+                        new() { Title = "箱条列号编码规则设定" },
+                        new() { Title = "物流容器编码规则设定" },
+                        new() { Title = "批号编码规则设定" },
+                        new() { Title = "包装编码规则设定" },
+                        new() { Title = "入库条码料规则设定" },
+                        new() { Title = "打印设定", IsCategoryHeader = true },
+                        new() { Title = "打印网点列表查询" },
+                        new() { Title = "依来源单打印/查询/套版" },
+                        new() { Title = "货品条码", IsCategoryHeader = true },
+                        new() { Title = "货品条码标签打印/查询" },
+                        new() { Title = "依来源单打印/查询条码" },
+                        new() { Title = "箱条码", IsCategoryHeader = true },
+                        new() { Title = "储条码标签打印/查询" },
+                        new() { Title = "依来源单打印/查询条码" },
+                        new() { Title = "序列号", IsCategoryHeader = true },
+                        new() { Title = "序列号标签打印/查询" },
+                        new() { Title = "依来源单打印/查询序列号" },
+                        new() { Title = "物流容器", IsCategoryHeader = true },
+                        new() { Title = "物流容器条码标签打印/查询" },
+                        new() { Title = "物流容器类型设定" },
+                        new() { Title = "物流容器变动历史查询" },
+                        new() { Title = "包装管理", IsCategoryHeader = true },
+                        new() { Title = "出库包装单" }
+                    }
+                },
+                // 基础资料
+                new() {
+                    Icon = "basic",
+                    Title = "基础资料",
+                    Children = new() {
+                        new() { Title = "货品资料", IsCategoryHeader = true },
+                        new() { Title = "货品代号设定" },
+                        new() { Title = "中类代号设定" },
+                        new() { Title = "储存性质设定" },
+                        new() { Title = "货品属性信息设定" },
+                        new() { Title = "货品特征码段设定" },
+                        new() { Title = "仓库资料", IsCategoryHeader = true },
+                        new() { Title = "仓库代号设定" },
+                        new() { Title = "储位明细" },
+                        new() { Title = "依储类设定货品储位" },
+                        new() { Title = "依储存性设定货品储位" },
+                        new() { Title = "依仓库启用到货确认" },
+                        new() { Title = "系统策略", IsCategoryHeader = true },
+                        new() { Title = "波次策略" },
+                        new() { Title = "拣货策略" },
+                        new() { Title = "下架策略" },
+                        new() { Title = "不能参与配位的批号设置" },
+                        new() { Title = "其他资料", IsCategoryHeader = true },
+                        new() { Title = "部门设定" },
+                        new() { Title = "单据类别设定" },
+                        new() { Title = "查盘/与原因设定" },
+                        new() { Title = "即时消息通知设定" },
+                        new() { Title = "行业代号设定" },
+                        new() { Title = "叉车车号管理" },
+                        new() { Title = "数据导入", IsCategoryHeader = true },
+                        new() { Title = "导入期初库存" }
+                    }
+                }
+            }
+        },
+        new() {
+            Key = "system",
+            Icon = "system",
+            Title = "系统管理",
+            Children = new() {
+                new() {
+                    Icon = "settings",
+                    Title = "系统设定",
+                    Children = new() {
+                        new() { Title = "系统设定", IsCategoryHeader = true },
+                        new() { Title = "系统设定" },
+                        new() { Title = "环境设定" },
+                        new() { Title = "注册信息" },
+                        new() { Title = "系统注册" },
+                        new() { Title = "获取ERP单据资料", IsCategoryHeader = true },
+                        new() { Title = "启用SUNLIKE单据资料设置" },
+                        new() { Title = "获取金蝶单据资料设置" },
+                        new() { Title = "AI-WMS PLUS设定", IsCategoryHeader = true },
+                        new() { Title = "超交管制设定" },
+                        new() { Title = "关帐作业" },
+                        new() { Title = "资料替换" },
+                        new() { Title = "修改批号有效期限作业" },
+                        new() { Title = "权限设定", IsCategoryHeader = true },
+                        new() { Title = "用户设定" },
+                        new() { Title = "类别权限设定" },
+                        new() { Title = "类别成员设定" },
+                        new() { Title = "单据属性设定" }
+                    }
+                },
+                new() {
+                    Icon = "custom",
+                    Title = "自定义设定",
+                    Children = new() {
+                        new() { Title = "自定义", IsCategoryHeader = true },
+                        new() { Title = "套版编辑" },
+                        new() { Title = "自定义报表" },
+                        new() { Title = "仿真布局设备设定" },
+                        new() { Title = "可视化仓库仿真布局设定" },
+                        new() { Title = "可视化仓储" },
+                        new() { Title = "可视化仓储", IsCategoryHeader = true },
+                        new() { Title = "标准仓储布局图-2" },
+                        new() { Title = "标准仓储布局图-1" }
+                    }
+                },
+                new() {
+                    Icon = "service",
+                    Title = "系统服务",
+                    Children = new() {
+                        new() { Title = "服务日志", IsCategoryHeader = true },
+                        new() { Title = "服务日志查询表" },
+                        new() { Title = "服务异常查询表" }
+                    }
+                },
+                new() {
+                    Icon = "download",
+                    Title = "下载中心",
+                    Children = new() {
+                        new() { Title = "打印工具", IsCategoryHeader = true },
+                        new() { Title = "WMS打印助手下载" },
+                        new() { Title = "PDA", IsCategoryHeader = true },
+                        new() { Title = "安装二维码" }
+                    }
+                }
+            }
+        },
+        new() {
+            Key = "external",
+            Icon = "external",
+            Title = "外部接口",
+            Children = new() {
+                new() {
+                    Icon = "automation",
+                    Title = "自动化仓库管理",
+                    Children = new() {
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "API接口异常表" }
+                    }
+                },
+                new() {
+                    Icon = "thirdparty",
+                    Title = "第三方接口",
+                    Children = new() {
+                        new() { Title = "设备管理", IsCategoryHeader = true },
+                        new() { Title = "系统设备管理" },
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "API接口异常表" },
+                        new() { Title = "第三方调用明细表" },
+                        new() { Title = "第三方调用历史表" },
+                        new() { Title = "推送第三方明细表" },
+                        new() { Title = "推送第三方历史表" }
+                    }
+                }
+            }
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExpandedState();
+    }
+
+    private async Task LoadExpandedState()
+    {
+        try
+        {
+            var savedState = await JS.InvokeAsync<string>("localStorage.getItem", StorageKey);
+            if (!string.IsNullOrEmpty(savedState))
+            {
+                var keys = System.Text.Json.JsonSerializer.Deserialize<List<string>>(savedState);
+                if (keys != null)
+                {
+                    expandedMenus = new HashSet<string>(keys);
+                }
+            }
+            else
+            {
+                expandedMenus = new HashSet<string> { "warehouse", "system", "external" };
+            }
+        }
+        catch
+        {
+            expandedMenus = new HashSet<string> { "warehouse", "system", "external" };
+        }
+    }
+
+    private async Task SaveExpandedState()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(expandedMenus.ToList());
+            await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task ToggleMenu(string key)
+    {
+        if (expandedMenus.Contains(key))
+            expandedMenus.Remove(key);
+        else
+            expandedMenus.Add(key);
+
+        await SaveExpandedState();
+    }
+
+    public static string GetSvgIcon(string iconType)
+    {
+        return iconType switch
+        {
+            "warehouse" => "<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2'><path d='M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z'/><polyline points='9,22 9,12 15,12 15,22'/></svg>",
+            "system" => "<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z'/></svg>",
+            "external" => "<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2'><path d='M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71'/><path d='M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71'/></svg>",
+            "inbound" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><polyline points='16,16 12,12 8,16'/><line x1='12' y1='12' x2='12' y2='21'/><path d='M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3'/></svg>",
+            "outbound" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><polyline points='8,8 12,12 16,8'/><line x1='12' y1='12' x2='12' y2='3'/><path d='M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3'/><polyline points='16,16 12,12 8,16' transform='rotate(180 12 12)'/></svg>",
+            "inventory" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><rect x='2' y='7' width='20' height='14' rx='2' ry='2'/><path d='M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16'/></svg>",
+            "quality" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M22 11.08V12a10 10 0 11-5.93-9.14'/><polyline points='22,4 12,14.01 9,11.01'/></svg>",
+            "print" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><polyline points='6,9 6,2 18,2 18,9'/><path d='M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2'/><rect x='6' y='14' width='12' height='8'/></svg>",
+            "basic" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><line x1='8' y1='6' x2='21' y2='6'/><line x1='8' y1='12' x2='21' y2='12'/><line x1='8' y1='18' x2='21' y2='18'/><line x1='3' y1='6' x2='3.01' y2='6'/><line x1='3' y1='12' x2='3.01' y2='12'/><line x1='3' y1='18' x2='3.01' y2='18'/></svg>",
+            "settings" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z'/></svg>",
+            "custom" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2' ry='2'/><line x1='9' y1='3' x2='9' y2='21'/></svg>",
+            "service" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M17.5 19H9a7 7 0 110-14h8.5'/><polyline points='17,11 21,15 17,19'/><circle cx='12' cy='12' r='3'/></svg>",
+            "download" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='7,10 12,15 17,10'/><line x1='12' y1='15' x2='12' y2='3'/></svg>",
+            "automation" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><rect x='3' y='11' width='18' height='10' rx='2'/><circle cx='12' cy='5' r='2'/><path d='M12 7v4'/><line x1='8' y1='16' x2='8' y2='16.01'/><line x1='16' y1='16' x2='16' y2='16.01'/></svg>",
+            "thirdparty" => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><path d='M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2'/><circle cx='8.5' cy='7' r='4'/><line x1='20' y1='8' x2='20' y2='14'/><line x1='23' y1='11' x2='17' y2='11'/></svg>",
+            _ => "<svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='2'><circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='16'/><line x1='8' y1='12' x2='16' y2='12'/></svg>"
+        };
+    }
+}

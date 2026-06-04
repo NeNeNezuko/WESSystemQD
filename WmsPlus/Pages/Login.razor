@@ -1,0 +1,186 @@
+@page "/login"
+@layout LoginLayout
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+
+<div class="login-page">
+    <!-- 背景图片 -->
+    <div class="login-bg"></div>
+    <div class="login-bg-overlay"></div>
+
+    <!-- 左上角Logo -->
+    <div class="login-logo">
+        <svg viewBox="0 0 40 40" width="36" height="36" fill="#FFFFFF">
+            <rect x="4" y="4" width="32" height="32" rx="4" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="12" y="12" width="16" height="16" rx="2" fill="#FFFFFF" opacity="0.9"/>
+            <line x1="12" y1="20" x2="4" y2="20" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="28" y1="20" x2="36" y2="20" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="20" y1="12" x2="20" y2="4" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="20" y1="28" x2="20" y2="36" stroke="#FFFFFF" stroke-width="2"/>
+            <circle cx="20" cy="20" r="4" fill="#0A224D"/>
+        </svg>
+        <div class="login-logo-text">
+            <span class="logo-title">AI-WMS PLUS</span>
+            <span class="logo-subtitle">智能仓储、高效互联</span>
+        </div>
+    </div>
+
+    <!-- 右上角语言选择器 -->
+    <div class="login-lang-selector">
+        <button class="lang-btn">
+            简体中文
+            <svg viewBox="0 0 12 12" width="10" height="10"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+    </div>
+
+    <!-- 中央左侧标语 -->
+    <div class="login-slogan">
+        <h1 class="slogan-main">协助企业实现互联网化、智慧化</h1>
+        <p class="slogan-sub">智能仓储管理专家</p>
+    </div>
+
+    <!-- 右侧登录卡片 -->
+    <div class="login-card-wrapper">
+        <div class="login-card">
+            <!-- 账套选择 -->
+            <div class="account-select">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#666" stroke-width="1.5">
+                    <rect x="1" y="4" width="14" height="10" rx="1"/>
+                    <rect x="4" y="2" width="8" height="3" rx="1"/>
+                </svg>
+                <span>GZ01-天津渤海化学试剂测试账套</span>
+                <svg viewBox="0 0 12 12" width="12" height="12"><path d="M3 4.5l3 3 3-3" fill="none" stroke="#999" stroke-width="1.5"/></svg>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="error-msg">@errorMessage</div>
+            }
+
+            <!-- 用户名输入框 -->
+            <div class="input-group">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#999" stroke-width="1.5">
+                    <circle cx="8" cy="5" r="3.5"/><path d="M1.5 15c0-3.5 3-6.5 6.5-6.5s6.5 3 6.5 6.5"/>
+                </svg>
+                <input type="text" placeholder="用户名" @bind="username" @onkeyup="HandleKeyPress" />
+            </div>
+
+            <!-- 密码输入框 -->
+            <div class="input-group">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#999" stroke-width="1.5">
+                    <rect x="2.5" y="7" width="11" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/><circle cx="8" cy="11" r="1"/>
+                </svg>
+                <input type="password" placeholder="密码" @bind="password" @onkeyup="HandleKeyPress" />
+                <button type="button" class="pwd-toggle" title="显示/隐藏密码">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#999" stroke-width="1.5">
+                        <path d="M1 8s3-4.5 7-4.5S15 8 15 8s-3 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="2"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 记住我（密码框下方右对齐） -->
+            <div class="login-footer">
+                <label class="remember-me">
+                    <input type="checkbox" @bind="rememberMe" />
+                    <span>记住我</span>
+                </label>
+            </div>
+
+            <!-- 登录按钮（全宽，底部） -->
+            <button class="login-btn @(isLoading ? "loading" : "")" @onclick="HandleLogin" disabled="@isLoading">
+                登录
+            </button>
+        </div>
+    </div>
+
+    <!-- 左下角二维码 -->
+    <div class="login-qrcode">
+        <svg viewBox="0 0 24 24" width="56" height="56" fill="#fff">
+            <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/>
+            <rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>
+        </svg>
+        <span>扫描二维码下载APP</span>
+    </div>
+
+    <!-- 底部版权 -->
+    <div class="login-copyright">©2026 广东天宸智能科技有限公司</div>
+</div>
+
+@code {
+    private string username = "";
+    private string password = "";
+    private bool rememberMe = false;
+    private bool isLoading = false;
+    private string errorMessage = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await AuthService.InitializeAsync();
+                if (AuthService.IsAuthenticated)
+                {
+                    NavigationManager.NavigateTo("/dashboard");
+                    return;
+                }
+                await LoadSavedCredentials();
+            }
+            catch { }
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadSavedCredentials()
+    {
+        try
+        {
+            var (savedUsername, savedRemember) = await AuthService.GetRememberMeAsync();
+            if (savedRemember && !string.IsNullOrEmpty(savedUsername))
+            {
+                username = savedUsername;
+                rememberMe = true;
+            }
+        }
+        catch { }
+    }
+
+    private async Task HandleLogin()
+    {
+        if (isLoading) return;
+        errorMessage = "";
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            errorMessage = "请输入用户名";
+            return;
+        }
+        isLoading = true;
+        try
+        {
+            var result = await AuthService.LoginAsync(username, password);
+            if (result.Success)
+            {
+                await AuthService.SetRememberMe(username, rememberMe);
+                NavigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = result.Message ?? "登录失败，请重试";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"登录失败: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await HandleLogin();
+    }
+}

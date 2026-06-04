@@ -1,0 +1,788 @@
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+
+<div class="dashboard-layout">
+    <!-- 左侧边栏 -->
+    <div class="dashboard-sider @(isSidebarCollapsed ? "collapsed" : "")" @onclick:stopPropagation>
+        <div class="sider-logo">
+            @if (!isSidebarCollapsed)
+            {
+                <svg viewBox="0 0 126 24" width="126" height="24">
+                    <text x="0" y="18" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">AI-WMS PLUS</text>
+                </svg>
+            }
+            else
+            {
+                <svg viewBox="0 0 24 24" width="28" height="28">
+                    <rect x="2" y="4" width="20" height="16" rx="3" fill="#FFFFFF"/>
+                    <text x="12" y="17" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1a3a5c">AI</text>
+                </svg>
+            }
+        </div>
+        <div class="sider-menu">
+            <Sidebar OnSecondLevelMenuClick="HandleSecondLevelMenuClick" IsCollapsed="@isSidebarCollapsed" />
+        </div>
+    </div>
+
+    <!-- 右侧内容区 -->
+    <div class="dashboard-content-area" @onclick="HandleContentAreaClick">
+        <!-- 顶部导航 -->
+        <div class="dashboard-header">
+            <div class="header-collapse-btn" @onclick="ToggleSidebarCollapse">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </div>
+            <span class="header-title">天津渤海化学试剂测试账套</span>
+            <div class="header-search" @onfocusin="HandleSearchFocus" @onfocusout="async () => { await Task.Delay(200); showSearchResults = false; StateHasChanged(); }">
+                <input type="text" placeholder="菜单搜索..." class="header-search-input"
+                       @bind="searchKeyword" @bind:event="oninput" @onkeyup="HandleSearchInput" />
+                @if (showSearchResults && searchResults.Count > 0)
+                {
+                    <div class="search-dropdown">
+                        <div class="search-results-header">共 @searchResults.Count 个匹配项</div>
+                        @foreach (var result in searchResults.Take(10))
+                        {
+                            <div class="search-result-item" @onclick="() => HandleSearchResultClick(result)">
+                                <span class="result-path">@result.SecondLevelTitle › </span>
+                                <span class="result-title">@result.ThirdLevelTitle</span>
+                            </div>
+                        }
+                        @if (searchResults.Count > 10)
+                        {
+                            <div class="search-more">...还有 @(searchResults.Count - 10) 个结果</div>
+                        }
+                    </div>
+                }
+                else if (showSearchResults && !string.IsNullOrEmpty(searchKeyword) && searchResults.Count == 0)
+                {
+                    <div class="search-dropdown">
+                        <div class="search-empty">未找到匹配的菜单项</div>
+                    </div>
+                }
+            </div>
+            <div class="header-spacer"></div>
+            <div class="header-actions">
+                <div class="header-refresh">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#666666" stroke-width="2">
+                        <path d="M1 4v6h6M23 20v-6h-6"/>
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                </div>
+                <div class="header-user" @onclick="ToggleUserMenu" @onclick:stopPropagation>
+                    <div class="header-avatar">@(AuthService.CurrentUser?.Name?.Substring(0,1)?.ToUpper() ?? "A")</div>
+                    <span class="header-username">@(AuthService.CurrentUser?.Name ?? "ADMIN")</span>
+                    <span style="font-size: 10px; color: #999;">▼</span>
+                    
+                    @if (showUserMenu)
+                    {
+                        <div class="user-dropdown-menu">
+                            <div class="dropdown-item" @onclick="HandleChangePassword">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666">
+                                    <rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="#666" stroke-width="1.5"/>
+                                    <path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#666" stroke-width="1.5"/>
+                                    <circle cx="8" cy="10.5" r="1" fill="#666"/>
+                                </svg>
+                                <span>修改密码</span>
+                            </div>
+                            <div class="dropdown-item dropdown-divider"></div>
+                            <div class="dropdown-item logout" @onclick="HandleLogout">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#ff4d4f">
+                                    <path d="M10 12v-1h3v-2h-3V8l-4 4 4 4v-2z" fill="#ff4d4f"/>
+                                    <rect x="2" y="3" width="9" height="10" rx="1" fill="none" stroke="#ff4d4f" stroke-width="1.5"/>
+                                </svg>
+                                <span style="color:#ff4d4f;">退出登录</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ★ 三级菜单面板 -->
+        @if (showMegaMenu && selectedSecondLevelMenu != null)
+        {
+            <MegaMenuPanel 
+                MenuData="@selectedSecondLevelMenu" 
+                IsVisible="true"
+                OnItemClick="HandleMegaMenuItemClick"
+            />
+        }
+
+        <!-- 标签页栏 -->
+        <div class="dashboard-tags">
+            @foreach (var tab in tabs)
+            {
+                <div class="tag-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchTab(tab.Id)">
+                    <span>@tab.Title</span>
+                    @if (tab.Id != "dashboard")
+                    {
+                        <span class="tag-close" @onclick:stopPropagation @onclick="() => CloseTab(tab.Id)">×</span>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="dashboard-main">
+            <CascadingValue Value="OpenTab" Name="OpenTabCallback">
+            <CascadingValue Value="NotifyFavoriteChanged" Name="OnFavoriteChanged">
+            <CascadingValue Value="_favoriteVersion" Name="FavoriteVersion">
+            <!-- 工作台（始终存在） -->
+            @if (activeTabId == "dashboard")
+            {
+                @Body
+            }
+            <!-- 已打开的标签页（保持组件实例不被销毁） -->
+            @if (tabs.Any(t => t.Id == "inbound-notice") && activeTabId == "inbound-notice")
+            {
+                <InboundNotice />
+            }
+            @if (tabs.Any(t => t.Id == "inbound-order") && activeTabId == "inbound-order")
+            {
+                <InboundOrder />
+            }
+            @if (tabs.Any(t => t.Id == "inbound-notice-change") && activeTabId == "inbound-notice-change")
+            {
+                <InboundNoticeChange />
+            }
+            </CascadingValue>
+            </CascadingValue>
+            </CascadingValue>
+        </div>
+    </div>
+
+    <!-- 搜索结果提示（未开发页面自动消失提示） -->
+    @if (_showToast)
+    {
+        <div class="search-toast">
+            <span class="search-toast-text">@_toastMessage</span>
+        </div>
+    }
+
+    @if (showChangePasswordModal)
+    {
+        <div class="modal-overlay" @onclick="() => showChangePasswordModal = false">
+            <div class="modal-content" @onclick:stopPropagation>
+                <div class="modal-header">
+                    <h3>修改密码</h3>
+                    <span class="modal-close" @onclick="() => showChangePasswordModal = false">×</span>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(changePasswordMessage))
+                    {
+                        <div class="alert-message @(changePasswordMessage.Contains("成功") ? "success" : "error")">
+                            @changePasswordMessage
+                        </div>
+                    }
+                    <div class="form-group">
+                        <label>原密码</label>
+                        <input type="password" @bind="oldPassword" placeholder="请输入原密码" />
+                    </div>
+                    <div class="form-group">
+                        <label>新密码</label>
+                        <input type="password" @bind="newPassword" placeholder="请输入新密码" />
+                    </div>
+                    <div class="form-group">
+                        <label>确认新密码</label>
+                        <input type="password" @bind="confirmPassword" placeholder="请再次输入新密码" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => showChangePasswordModal = false">取消</button>
+                    <button class="btn btn-primary" @onclick="HandleSubmitChangePassword">确定</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    @using WmsPlus.Models
+    @inject AuthService AuthService
+    @inject NavigationManager NavigationManager
+    
+    // ★ 三级菜单状态管理
+    private bool showMegaMenu = false;
+    private SubMenuItem? selectedSecondLevelMenu = null;
+
+    // ★ 侧边栏收缩状态
+    private bool isSidebarCollapsed = false;
+    
+    // ★ 用户菜单状态
+    private bool showUserMenu = false;
+    private bool showChangePasswordModal = false;
+    private string oldPassword = "";
+    private string newPassword = "";
+    private string confirmPassword = "";
+    private string changePasswordMessage = "";
+
+    // ★ 搜索结果提示（未开发页面）
+    private string _toastMessage = "";
+    private bool _showToast = false;
+
+    // ★ 标签页管理系统
+    public class TabItem
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+        public bool IsActive { get; set; } = false;
+        public bool IsClosable { get; set; } = true;
+    }
+
+    private List<TabItem> tabs = new();
+    private string activeTabId = "dashboard";
+
+    // ★ 初始化标签页
+    protected override void OnInitialized()
+    {
+        tabs.Add(new TabItem 
+        { 
+            Id = "dashboard", 
+            Title = "工作台", 
+            IsActive = true, 
+            IsClosable = false 
+        });
+    }
+
+    // ★ 收藏状态版本号（每次收藏变化+1，Dashboard检测到变化后重新加载）
+    private int _favoriteVersion = 0;
+
+    // ★ 通知收藏状态已变更（子组件调用此方法触发Dashboard刷新）
+    private void NotifyFavoriteChanged()
+    {
+        _favoriteVersion++;
+        StateHasChanged();
+    }
+
+    // ★ 打开新标签页
+    private void OpenTab(string tabId, string title)
+    {
+        var existingTab = tabs.FirstOrDefault(t => t.Id == tabId);
+        
+        if (existingTab == null)
+        {
+            tabs.Add(new TabItem 
+            { 
+                Id = tabId, 
+                Title = title, 
+                IsActive = true,
+                IsClosable = true
+            });
+        }
+        
+        SwitchTab(tabId);
+    }
+
+    // ★ 切换标签页
+    private void SwitchTab(string tabId)
+    {
+        foreach (var tab in tabs)
+        {
+            tab.IsActive = (tab.Id == tabId);
+        }
+        activeTabId = tabId;
+        StateHasChanged();
+    }
+
+    // ★ 关闭标签页
+    private void CloseTab(string tabId)
+    {
+        var tabIndex = tabs.FindIndex(t => t.Id == tabId);
+        if (tabIndex < 0) return;
+
+        tabs.RemoveAt(tabIndex);
+
+        if (activeTabId == tabId && tabs.Count > 0)
+        {
+            int newIndex = Math.Min(tabIndex, tabs.Count - 1);
+            SwitchTab(tabs[newIndex].Id);
+        }
+
+        StateHasChanged();
+    }
+
+    // ★ 切换侧边栏收缩/展开
+    private void ToggleSidebarCollapse()
+    {
+        isSidebarCollapsed = !isSidebarCollapsed;
+        StateHasChanged();
+    }
+
+    // ★ 用户菜单功能
+    private void ToggleUserMenu()
+    {
+        showUserMenu = !showUserMenu;
+        if (showUserMenu)
+        {
+            CloseMegaMenu();
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleLogout()
+    {
+        AuthService.Logout();
+        NavigationManager.NavigateTo("/login", true);
+    }
+
+    private void HandleChangePassword()
+    {
+        showChangePasswordModal = true;
+        oldPassword = "";
+        newPassword = "";
+        confirmPassword = "";
+        changePasswordMessage = "";
+        showUserMenu = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmitChangePassword()
+    {
+        changePasswordMessage = "";
+
+        if (string.IsNullOrEmpty(newPassword))
+        {
+            changePasswordMessage = "新密码不能为空";
+            return;
+        }
+
+        if (newPassword != confirmPassword)
+        {
+            changePasswordMessage = "两次输入的密码不一致";
+            return;
+        }
+
+        var result = await AuthService.ChangePasswordAsync(
+            AuthService.CurrentUser?.Name ?? "",
+            oldPassword,
+            newPassword
+        );
+
+        if (result.Success)
+        {
+            changePasswordMessage = "密码修改成功";
+            await Task.Delay(1500);
+            showChangePasswordModal = false;
+        }
+        else
+        {
+            changePasswordMessage = result.Message ?? "修改失败";
+        }
+        
+        StateHasChanged();
+    }
+
+    // ★ 搜索功能状态
+    private string searchKeyword = "";
+    private bool showSearchResults = false;
+    private List<SearchResult> searchResults = new();
+
+    public class SearchResult
+    {
+        public string FirstLevelTitle { get; set; } = "";
+        public string SecondLevelTitle { get; set; } = "";
+        public string ThirdLevelTitle { get; set; } = "";
+        public SubMenuItem? ParentMenuItem { get; set; }
+    }
+
+    // ★ 处理二级菜单点击（显示/隐藏三级菜单）
+    private async Task HandleSecondLevelMenuClick(SubMenuItem menuItem)
+    {
+        if (menuItem.Children.Count > 0)
+        {
+            // 切换逻辑：如果点击同一个菜单项，则关闭
+            if (showMegaMenu && selectedSecondLevelMenu?.Title == menuItem.Title)
+            {
+                await CloseMegaMenu();
+            }
+            else
+            {
+                selectedSecondLevelMenu = menuItem;
+                showMegaMenu = true;
+                
+                await Task.Delay(50);
+                StateHasChanged();
+            }
+        }
+    }
+
+    // ★ 处理三级菜单项点击
+    private async Task HandleMegaMenuItemClick(string itemTitle)
+    {
+        Console.WriteLine($"[DashboardLayout] 三级菜单点击: {itemTitle}");
+
+        if (itemTitle == "入库通知单")
+        {
+            OpenTab("inbound-notice", "入库通知单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "入库单")
+        {
+            OpenTab("inbound-order", "入库单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "入库通知变更单")
+        {
+            OpenTab("inbound-notice-change", "入库通知变更单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        await CloseMegaMenu();
+    }
+
+    // ★ 点击内容区其他区域关闭三级菜单
+    private async Task HandleContentAreaClick()
+    {
+        if (showMegaMenu)
+        {
+            await CloseMegaMenu();
+        }
+    }
+
+    // ★ 关闭三级菜单
+    private async Task CloseMegaMenu()
+    {
+        showMegaMenu = false;
+        await Task.Delay(300); // 等待退场动画完成
+        selectedSecondLevelMenu = null;
+        StateHasChanged();
+    }
+
+    // ★ 搜索功能 - 获取所有菜单项（用于搜索）
+    private List<SearchResult> GetAllMenuItems()
+    {
+        var results = new List<SearchResult>();
+        
+        var allMenus = new List<MenuGroup>
+        {
+            new() {
+                Key = "warehouse",
+                Icon = "warehouse",
+                Title = "仓储管理",
+                Children = new() {
+                    new() { Icon = "inbound", Title = "入库管理", Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "入库通知单" },
+                        new() { Title = "批量产生入库通知单" },
+                        new() { Title = "入库单" },
+                        new() { Title = "变更管理", IsCategoryHeader = true },
+                        new() { Title = "入库通知变更单" },
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "收货单报表" },
+                        new() { Title = "入库通知单报表" },
+                        new() { Title = "入库单报表" }
+                    }},
+                    new() { Icon = "outbound", Title = "出库管理", Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "出库通知单" },
+                        new() { Title = "批量产生出库通知单" },
+                        new() { Title = "出库通知单派工" },
+                        new() { Title = "出库退回通知单" },
+                        new() { Title = "波次单" },
+                        new() { Title = "波次拣货任务单" },
+                        new() { Title = "直接拣货任务单" },
+                        new() { Title = "拣货单" },
+                        new() { Title = "二次分拣单" },
+                        new() { Title = "拣货退回单" },
+                        new() { Title = "出库单" },
+                        new() { Title = "变更管理", IsCategoryHeader = true },
+                        new() { Title = "出库通知变更单" },
+                        new() { Title = "出库任务分配", IsCategoryHeader = true },
+                        new() { Title = "出库任务分配作业" },
+                        new() { Title = "依来源单配货" },
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "出库通知单报表" },
+                        new() { Title = "储位上架单报表" },
+                        new() { Title = "储位下架单报表" },
+                        new() { Title = "储位调整单报表" },
+                        new() { Title = "调拨通知单报表" },
+                        new() { Title = "库存调整单报表" },
+                        new() { Title = "波次单报表" },
+                        new() { Title = "波次拣货任务单报表" },
+                        new() { Title = "直接拣货任务单报表" },
+                        new() { Title = "拣货单报表" },
+                        new() { Title = "二次分拣单报表" },
+                        new() { Title = "拣货退回报表" },
+                        new() { Title = "出库单报表" }
+                    }},
+                    new() { Icon = "inventory", Title = "库存管理", Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "储位上架单" },
+                        new() { Title = "储位调整单" },
+                        new() { Title = "储位下架单" },
+                        new() { Title = "调拨通知单" },
+                        new() { Title = "库存调整单" },
+                        new() { Title = "变更管理", IsCategoryHeader = true },
+                        new() { Title = "调拨通知变更单" },
+                        new() { Title = "盘点管理", IsCategoryHeader = true },
+                        new() { Title = "初盘任务单" },
+                        new() { Title = "初盘单" },
+                        new() { Title = "盘点单" },
+                        new() { Title = "盘亏单" },
+                        new() { Title = "单据确认作业" },
+                        new() { Title = "单据报表", IsCategoryHeader = true },
+                        new() { Title = "储位上架单报表" },
+                        new() { Title = "储位下架单报表" },
+                        new() { Title = "储位调整单报表" },
+                        new() { Title = "调拨通知单报表" },
+                        new() { Title = "库存调整单报表" },
+                        new() { Title = "库存报表", IsCategoryHeader = true },
+                        new() { Title = "每月仓库库存表" },
+                        new() { Title = "每月储位库存表" },
+                        new() { Title = "仓库库存表" },
+                        new() { Title = "储位库存表" },
+                        new() { Title = "货品/批号库存锁定表" },
+                        new() { Title = "存货明细帐" }
+                    }},
+                    new() { Icon = "quality", Title = "品质检验", Children = new() {
+                        new() { Title = "单据管理", IsCategoryHeader = true },
+                        new() { Title = "库存货品检验到期查询" },
+                        new() { Title = "请检任务单" },
+                        new() { Title = "检验单" },
+                        new() { Title = "验收退回单" },
+                        new() { Title = "检验报表", IsCategoryHeader = true },
+                        new() { Title = "请检任务单明细表" },
+                        new() { Title = "检验单明细表" },
+                        new() { Title = "验收退回单明细表" },
+                        new() { Title = "收货检验时效分析表" },
+                        new() { Title = "车间入库检验时效分析表" },
+                        new() { Title = "库存检验时效分析表" },
+                        new() { Title = "其他设定", IsCategoryHeader = true },
+                        new() { Title = "不合格原因设定" }
+                    }},
+                    new() { Icon = "print", Title = "打印管理", Children = new() {
+                        new() { Title = "编码规则", IsCategoryHeader = true },
+                        new() { Title = "货品条码编码规则设定" },
+                        new() { Title = "储条列号编码规则设定" },
+                        new() { Title = "序列号编码规则设定" },
+                        new() { Title = "箱条列号编码规则设定" },
+                        new() { Title = "物流容器编码规则设定" },
+                        new() { Title = "批号编码规则设定" },
+                        new() { Title = "包装编码规则设定" },
+                        new() { Title = "入库条码料规则设定" },
+                        new() { Title = "打印设定", IsCategoryHeader = true },
+                        new() { Title = "打印网点列表查询" },
+                        new() { Title = "依来源单打印/查询/套版" },
+                        new() { Title = "货品条码", IsCategoryHeader = true },
+                        new() { Title = "货品条码标签打印/查询" },
+                        new() { Title = "依来源单打印/查询条码" },
+                        new() { Title = "箱条码", IsCategoryHeader = true },
+                        new() { Title = "储条码标签打印/查询" },
+                        new() { Title = "依来源单打印/查询条码" },
+                        new() { Title = "序列号", IsCategoryHeader = true },
+                        new() { Title = "序列号标签打印/查询" },
+                        new() { Title = "依来源单打印/查询序列号" },
+                        new() { Title = "物流容器", IsCategoryHeader = true },
+                        new() { Title = "物流容器条码标签打印/查询" },
+                        new() { Title = "物流容器类型设定" },
+                        new() { Title = "物流容器变动历史查询" },
+                        new() { Title = "包装管理", IsCategoryHeader = true },
+                        new() { Title = "出库包装单" }
+                    }},
+                    new() { Icon = "basic", Title = "基础资料", Children = new() {
+                        new() { Title = "货品资料", IsCategoryHeader = true },
+                        new() { Title = "货品代号设定" },
+                        new() { Title = "中类代号设定" },
+                        new() { Title = "储存性质设定" },
+                        new() { Title = "货品属性信息设定" },
+                        new() { Title = "货品特征码段设定" },
+                        new() { Title = "仓库资料", IsCategoryHeader = true },
+                        new() { Title = "仓库代号设定" },
+                        new() { Title = "储位明细" },
+                        new() { Title = "依储类设定货品储位" },
+                        new() { Title = "依储存性设定货品储位" },
+                        new() { Title = "依仓库启用到货确认" },
+                        new() { Title = "系统策略", IsCategoryHeader = true },
+                        new() { Title = "波次策略" },
+                        new() { Title = "拣货策略" },
+                        new() { Title = "下架策略" },
+                        new() { Title = "不能参与配位的批号设置" },
+                        new() { Title = "其他资料", IsCategoryHeader = true },
+                        new() { Title = "部门设定" },
+                        new() { Title = "单据类别设定" },
+                        new() { Title = "查盘/与原因设定" },
+                        new() { Title = "即时消息通知设定" },
+                        new() { Title = "行业代号设定" },
+                        new() { Title = "叉车车号管理" },
+                        new() { Title = "数据导入", IsCategoryHeader = true },
+                        new() { Title = "导入期初库存" }
+                    }}
+                }
+            },
+            new() {
+                Key = "system",
+                Icon = "system",
+                Title = "系统管理",
+                Children = new() {
+                    new() { Icon = "settings", Title = "系统设定", Children = new() {
+                        new() { Title = "系统设定", IsCategoryHeader = true },
+                        new() { Title = "系统设定" },
+                        new() { Title = "环境设定" },
+                        new() { Title = "注册信息" },
+                        new() { Title = "系统注册" },
+                        new() { Title = "获取ERP单据资料", IsCategoryHeader = true },
+                        new() { Title = "启用SUNLIKE单据资料设置" },
+                        new() { Title = "获取金蝶单据资料设置" },
+                        new() { Title = "AI-WMS PLUS设定", IsCategoryHeader = true },
+                        new() { Title = "超交管制设定" },
+                        new() { Title = "关帐作业" },
+                        new() { Title = "资料替换" },
+                        new() { Title = "修改批号有效期限作业" },
+                        new() { Title = "权限设定", IsCategoryHeader = true },
+                        new() { Title = "用户设定" },
+                        new() { Title = "类别权限设定" },
+                        new() { Title = "类别成员设定" },
+                        new() { Title = "单据属性设定" }
+                    }},
+                    new() { Icon = "custom", Title = "自定义设定", Children = new() {
+                        new() { Title = "自定义", IsCategoryHeader = true },
+                        new() { Title = "套版编辑" },
+                        new() { Title = "自定义报表" },
+                        new() { Title = "仿真布局设备设定" },
+                        new() { Title = "可视化仓库仿真布局设定" },
+                        new() { Title = "可视化仓储" },
+                        new() { Title = "可视化仓储", IsCategoryHeader = true },
+                        new() { Title = "标准仓储布局图-2" },
+                        new() { Title = "标准仓储布局图-1" }
+                    }},
+                    new() { Icon = "service", Title = "系统服务", Children = new() {
+                        new() { Title = "服务日志", IsCategoryHeader = true },
+                        new() { Title = "服务日志查询表" },
+                        new() { Title = "服务异常查询表" }
+                    }},
+                    new() { Icon = "download", Title = "下载中心", Children = new() {
+                        new() { Title = "打印工具", IsCategoryHeader = true },
+                        new() { Title = "WMS打印助手下载" },
+                        new() { Title = "PDA", IsCategoryHeader = true },
+                        new() { Title = "安装二维码" }
+                    }}
+                }
+            },
+            new() {
+                Key = "external",
+                Icon = "external",
+                Title = "外部接口",
+                Children = new() {
+                    new() { Icon = "automation", Title = "自动化仓库管理", Children = new() {
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "API接口异常表" }
+                    }},
+                    new() { Icon = "thirdparty", Title = "第三方接口", Children = new() {
+                        new() { Title = "设备管理", IsCategoryHeader = true },
+                        new() { Title = "系统设备管理" },
+                        new() { Title = "报表管理", IsCategoryHeader = true },
+                        new() { Title = "API接口异常表" },
+                        new() { Title = "第三方调用明细表" },
+                        new() { Title = "第三方调用历史表" },
+                        new() { Title = "推送第三方明细表" },
+                        new() { Title = "推送第三方历史表" }
+                    }}
+                }
+            }
+        };
+
+        foreach (var group in allMenus)
+        {
+            foreach (var secondLevel in group.Children)
+            {
+                if (secondLevel.Children != null && secondLevel.Children.Count > 0)
+                {
+                    foreach (var thirdLevel in secondLevel.Children)
+                    {
+                        if (!thirdLevel.IsCategoryHeader)
+                        {
+                            results.Add(new SearchResult
+                            {
+                                FirstLevelTitle = group.Title,
+                                SecondLevelTitle = secondLevel.Title,
+                                ThirdLevelTitle = thirdLevel.Title,
+                                ParentMenuItem = secondLevel
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return results;
+    }
+
+    // ★ 搜索输入处理
+    private async Task HandleSearchInput(KeyboardEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(searchKeyword))
+        {
+            searchResults.Clear();
+            showSearchResults = false;
+            return;
+        }
+
+        var allItems = GetAllMenuItems();
+        searchResults = allItems
+            .Where(r => r.ThirdLevelTitle.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                       r.SecondLevelTitle.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                       r.FirstLevelTitle.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        showSearchResults = true;
+        StateHasChanged();
+    }
+
+    // ★ 搜索框获得焦点
+    private void HandleSearchFocus()
+    {
+        if (!string.IsNullOrWhiteSpace(searchKeyword))
+        {
+            showSearchResults = true;
+            StateHasChanged();
+        }
+    }
+
+    // ★ 点击搜索结果
+    private async Task HandleSearchResultClick(SearchResult result)
+    {
+        Console.WriteLine($"[搜索] 点击了: {result.FirstLevelTitle} > {result.SecondLevelTitle} > {result.ThirdLevelTitle}");
+
+        bool handled = false;
+
+        // 已开发的页面 → 打开/切换选项卡
+        if (result.ThirdLevelTitle == "入库通知单")
+        {
+            OpenTab("inbound-notice", "入库通知单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "入库单")
+        {
+            OpenTab("inbound-order", "入库单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "入库通知变更单")
+        {
+            OpenTab("inbound-notice-change", "入库通知变更单");
+            handled = true;
+        }
+
+        if (!handled)
+        {
+            // 未开发的页面 → 显示自动消失的提示
+            _toastMessage = $"即将开发: {result.ThirdLevelTitle}";
+            _showToast = true;
+            StateHasChanged();
+            await Task.Delay(2500);
+            _showToast = false;
+            StateHasChanged();
+        }
+
+        showSearchResults = false;
+        searchKeyword = "";
+        StateHasChanged();
+    }
+}

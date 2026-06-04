@@ -1,0 +1,88 @@
+@inject IJSRuntime JS
+@using WmsPlus.Models
+
+@if (ShouldRender)
+{
+    <div class="mega-menu-panel @(IsVisible ? "mega-menu-panel-visible" : "mega-menu-panel-hidden")">
+        @if (MenuData != null && MenuData.Children.Count > 0)
+        {
+            var categories = GroupByCategory(MenuData.Children);
+            int columnIndex = 0;
+            
+            <div class="mega-menu-content">
+                @foreach (var category in categories)
+                {
+                    <div class="mega-menu-column" style="animation-delay: @(columnIndex * 50)ms">
+                        <h4 class="mega-menu-category-title">@category.Key</h4>
+                        <ul class="mega-menu-items">
+                            @foreach (var item in category.Value)
+                            {
+                                <li class="mega-menu-item" @onclick="() => HandleItemClick(item.Title)">
+                                    @item.Title
+                                    <span class="menu-item-arrow">›</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    columnIndex++;
+                }
+            </div>
+        }
+        else
+        {
+            <div class="mega-menu-empty">
+                <span>暂无菜单数据</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public SubMenuItem MenuData { get; set; } = default!;
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<string> OnItemClick { get; set; }
+
+    private bool ShouldRender => MenuData != null;
+
+    // 将Children按分类标题分组
+    private Dictionary<string, List<ThirdLevelMenuItem>> GroupByCategory(List<ThirdLevelMenuItem> items)
+    {
+        var result = new Dictionary<string, List<ThirdLevelMenuItem>>();
+        string currentCategory = "未分类";
+
+        foreach (var item in items)
+        {
+            if (item.IsCategoryHeader)
+            {
+                currentCategory = item.Title;
+                if (!result.ContainsKey(currentCategory))
+                {
+                    result[currentCategory] = new List<ThirdLevelMenuItem>();
+                }
+            }
+            else
+            {
+                if (!result.ContainsKey(currentCategory))
+                {
+                    result[currentCategory] = new List<ThirdLevelMenuItem>();
+                }
+                result[currentCategory].Add(item);
+            }
+        }
+
+        return result;
+    }
+
+    private async Task HandleItemClick(string title)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("console.log", $"[三级菜单] 点击了: {title}");
+        }
+        catch
+        {
+        }
+
+        await OnItemClick.InvokeAsync(title);
+    }
+}

@@ -1,0 +1,161 @@
+<div class="menu-item @(ExpandedKeys.Contains(Menu.Key) ? "expanded" : "") @(IsCollapsed ? "collapsed-item" : "")" @onclick="() => OnToggle.InvokeAsync(Menu.Key)">
+    <span class="menu-item-icon">
+    @switch (Menu.Icon)
+    {
+        case "warehouse":
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+            </svg>
+            break;
+        case "system":
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+            break;
+        case "external":
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+            </svg>
+            break;
+        default:
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8M8 12h8"/>
+            </svg>
+            break;
+    }
+    </span>
+    @if (!IsCollapsed)
+    {
+        <span class="menu-item-text">@Menu.Title</span>
+        <span class="menu-item-arrow">
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 2l4 4-4 4" class="@(ExpandedKeys.Contains(Menu.Key) ? "arrow-down" : "")"/>
+            </svg>
+        </span>
+    }
+</div>
+@if (!IsCollapsed)
+{
+    <div class="submenu @(ExpandedKeys.Contains(Menu.Key) ? "show" : "")">
+        @foreach (var child in Menu.Children)
+        {
+            <div class="submenu-item @(ActiveSecondLevelKey == child.Title ? "active" : "")"
+                 @onclick="() => HandleSubmenuClick(child)"
+                 id="submenu-@child.Title.Replace(" ", "-")">
+                <span class="submenu-icon">@GetChildIcon(child.Icon)</span>
+                <span class="submenu-text">@child.Title</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    @using WmsPlus.Models
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Parameter] public MenuGroup Menu { get; set; } = default!;
+    [Parameter] public EventCallback<string> OnToggle { get; set; }
+    [Parameter] public HashSet<string> ExpandedKeys { get; set; } = new();
+    
+    // ★ 新增：二级菜单点击事件回调
+    [Parameter] public EventCallback<SubMenuItem> OnSecondLevelClick { get; set; }
+    [Parameter] public string? ActiveSecondLevelKey { get; set; }
+    
+    // ★ 侧边栏收缩状态
+    [Parameter] public bool IsCollapsed { get; set; } = false;
+
+    private async Task HandleSubmenuClick(SubMenuItem child)
+    {
+        double top = 0;
+        try
+        {
+            var elementId = $"submenu-{child.Title.Replace(" ", "-")}";
+            top = await JS.InvokeAsync<double>("getMenuPosition", elementId);
+        }
+        catch { }
+        
+        await OnSecondLevelClick.InvokeAsync(child);
+        
+        try
+        {
+            await JS.InvokeVoidAsync("setMegaMenuPosition", top);
+        }
+        catch { }
+    }
+
+    private RenderFragment GetChildIcon(string iconType)
+    {
+        return iconType switch
+        {
+            "inbound" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16,16 12,12 8,16"/>
+                <line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>,
+            "outbound" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="8,8 12,12 16,8"/>
+                <line x1="12" y1="12" x2="12" y2="3"/>
+                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>,
+            "inventory" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+            </svg>,
+            "quality" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22,4 12,14.01 9,11.01"/>
+            </svg>,
+            "print" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6,9 6,2 18,2 18,9"/>
+                <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+            </svg>,
+            "basic" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>,
+            "settings" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>,
+            "custom" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>,
+            "service" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.5 19H9a7 7 0 110-14h8.5"/>
+                <polyline points="17,11 21,15 17,19"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>,
+            "download" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>,
+            "automation" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8" y2="16.01"/>
+                <line x1="16" y1="16" x2="16" y2="16.01"/>
+            </svg>,
+            "thirdparty" => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>,
+            _ => @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8M8 12h8"/>
+            </svg>
+        };
+    }
+}

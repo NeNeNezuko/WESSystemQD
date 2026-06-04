@@ -1,0 +1,78 @@
+/* ============================
+   AI-WMS PLUS 自定义全局样式
+   ============================ */
+
+:root {
+    /* 主题色 */
+    --wms-primary: #0A224D;
+    --wms-primary-light: #1E4A7F;
+    --wms-sidebar-bg: #0A224D;
+    --wms-content-bg: #F1F4FA;
+    --wms-tags-bg: #CED5E0;
+    --wms-card-bg: #FFFFFF;
+    --wms-text-primary: #333333;
+    --wms-text-secondary: #252837;
+    --wms-text-muted: #9CA3AF;
+    --wms-text-gray: #666666;
+    --wms-border-color: #E5E7EB;
+    --wms-search-bg: #F0F2F5;
+    --wms-danger: #FF0000;
+
+    /* 字体 */
+    --wms-font-family: "open sans", "segoe ui", helvetica, arial, "microsoft yahei", sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: var(--wms-font-family);
+    font-size: 14px;
+    color: var(--wms-text-primary);
+    background: #E6E6E6;
+    height: 100%;
+    overflow: hidden;
+}
+
+#app {
+    height: 100%;
+}
+
+/* AntDesign 覆盖 */
+.ant-btn-primary {
+    background-color: var(--wms-primary) !important;
+    border-color: var(--wms-primary) !important;
+}
+
+.ant-btn-primary:hover {
+    background-color: var(--wms-primary-light) !important;
+    border-color: var(--wms-primary-light) !important;
+}
+
+.ant-input:focus,
+.ant-input-focused {
+    border-color: var(--wms-primary) !important;
+    box-shadow: 0 0 0 2px rgba(10, 34, 77, 0.2) !important;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}

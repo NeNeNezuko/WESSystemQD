@@ -1,0 +1,84 @@
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        @if (!isInitialized)
+        {
+            <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+                <div style="text-align: center;">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        }
+        else if (!AuthService.IsAuthenticated && !IsLoginPage(routeData))
+        {
+            <RedirectToLogin />
+        }
+        else
+        {
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        }
+    </Found>
+    <NotFound>
+        <PageTitle>未找到</PageTitle>
+        <RedirectToLogin />
+    </NotFound>
+</Router>
+
+<style>
+    .loading-spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #1890ff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+@code {
+    private bool isInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await AuthService.InitializeAsync();
+            }
+            catch
+            {
+                // 忽略初始化错误
+            }
+            
+            isInitialized = true;
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += StateHasChanged;
+    }
+
+    private bool IsLoginPage(RouteData routeData)
+    {
+        var pageType = routeData.PageType;
+        return pageType == typeof(Pages.Login);
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+    }
+}
