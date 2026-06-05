@@ -236,6 +236,8 @@
     padding: 8px 10px;
     border-bottom: 1px solid #f0f0f0;
     background-color: #fafafa;
+    position: relative;
+    overflow: visible;
 }
 
 .query-title {
@@ -255,6 +257,33 @@
 
 .query-settings-btn:hover {
     background-color: #e8e8e8;
+}
+
+.settings-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 130px;
+    overflow: hidden;
+}
+
+.settings-dropdown-item {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #333333;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    white-space: nowrap;
+}
+
+.settings-dropdown-item:hover {
+    background-color: #f5f5f5;
 }
 
 .query-form {

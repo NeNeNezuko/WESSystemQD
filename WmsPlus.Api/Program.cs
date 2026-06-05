@@ -13,6 +13,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
+builder.Services.AddDbContext<WarehouseDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("WarehouseConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("WarehouseConnection"))
+    )
+);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
