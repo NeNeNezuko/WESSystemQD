@@ -55,12 +55,24 @@
             try
             {
                 await AuthService.InitializeAsync();
+
+                // 如果有 token，向后端验证其有效性
+                if (AuthService.IsAuthenticated)
+                {
+                    var isValid = await AuthService.ValidateTokenAsync();
+                    if (!isValid)
+                    {
+                        // token 无效或已过期，清除登录状态
+                        await AuthService.Logout();
+                    }
+                }
             }
             catch
             {
-                // 忽略初始化错误
+                // 初始化错误时清除登录状态
+                try { await AuthService.Logout(); } catch { }
             }
-            
+
             isInitialized = true;
             StateHasChanged();
         }

@@ -12,6 +12,12 @@ namespace WmsPlus.Models
         public string ApplyOrderNumber { get; set; } = "";
         public string OrderNumber { get; set; } = "";
         public bool IsClosed { get; set; }
+        // 表身明细字段
+        public string PrdNo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public string PrdSpec { get; set; } = "";
+        public decimal Qty { get; set; }
+        public string Unit { get; set; } = "";
     }
 
     public class InboundNoticeQuery

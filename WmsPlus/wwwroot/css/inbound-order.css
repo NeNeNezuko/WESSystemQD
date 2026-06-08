@@ -186,7 +186,7 @@
 .date-picker-trigger { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; cursor: pointer; }
 .date-display-text { font-size: 12px; color: #333; }
 .date-picker-icon { flex-shrink: 0; margin-left: 4px; }
-.datepicker-dropdown { position: absolute; left: 0; top: 100%; margin-top: 4px; z-index: 99999; }
+.datepicker-dropdown { position: fixed; z-index: 99999; }
 
 /* 双月弹出层 */
 .datepicker-popup-dual {

@@ -65,7 +65,7 @@
                 <!-- 单据日期 - 双月范围选择器 -->
                 <div class="form-item">
                     <label class="form-label">单据日期</label>
-                    <div class="date-picker-trigger" @onclick="ToggleDatePicker">
+                    <div class="date-picker-trigger" @onclick="ToggleDatePicker" @ref="datePickerTriggerRef">
                         <span class="date-display-text">@DateDisplayText</span>
                         <svg class="date-picker-icon" viewBox="0 0 16 16" width="12" height="12" fill="#999999">
                             <rect x="2" y="3" width="12" height="11" rx="2" stroke="#999999" stroke-width="1.2" fill="none"/>
@@ -78,7 +78,7 @@
                     <!-- 日历弹出层 -->
                     @if (ShowCalendar)
                     {
-                        <div class="datepicker-dropdown" @onclick:stopPropagation>
+                        <div class="datepicker-dropdown" @onclick:stopPropagation @ref="datePickerDropdownRef">
                             <div class="datepicker-popup-dual">
                                 <!-- 头部导航：年 + 月切换 -->
                                 <div class="dp-header-dual">
@@ -313,6 +313,8 @@
     private DateTime? SelectedStart;
     private DateTime? SelectedEnd;
     private bool PickingEnd = false;
+    private ElementReference datePickerTriggerRef;
+    private ElementReference datePickerDropdownRef;
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
 
@@ -354,7 +356,7 @@
     }
 
     // ===== 日历方法 =====
-    private void ToggleDatePicker()
+    private async Task ToggleDatePicker()
     {
         ShowCalendar = !ShowCalendar;
         if (ShowCalendar && SelectedStart.HasValue)
@@ -363,6 +365,16 @@
             ViewMonth = SelectedStart.Value.Month;
         }
         PickingEnd = false;
+        if (ShowCalendar)
+        {
+            await JS.InvokeVoidAsync("eval", @"(function(){
+                var trigger = arguments[0];
+                var dropdown = arguments[1];
+                var rect = trigger.getBoundingClientRect();
+                dropdown.style.left = rect.left + 'px';
+                dropdown.style.top = (rect.bottom + 4) + 'px';
+            })()", datePickerTriggerRef, datePickerDropdownRef);
+        }
         StateHasChanged();
     }
 

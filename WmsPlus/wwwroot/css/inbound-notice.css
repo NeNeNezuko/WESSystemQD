@@ -661,10 +661,7 @@
 
 /* 弹出层外容器 */
 .datepicker-dropdown {
-    position: absolute;
-    left: 0;
-    top: 100%;
-    margin-top: 4px;
+    position: fixed;
     z-index: 99999;
 }
 

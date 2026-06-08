@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using WmsPlus.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +23,32 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
     )
 );
 
+// JWT 认证配置
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "WmsPlus_SecretKey_2024!@#$%^&*()_+QwErTyUiOp";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "WmsPlus.Api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "WmsPlus";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
@@ -39,6 +68,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowBlazorApp");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

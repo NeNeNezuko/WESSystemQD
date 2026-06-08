@@ -131,22 +131,27 @@
             <CascadingValue Value="NotifyFavoriteChanged" Name="OnFavoriteChanged">
             <CascadingValue Value="_favoriteVersion" Name="FavoriteVersion">
             <!-- 工作台（始终存在） -->
-            @if (activeTabId == "dashboard")
-            {
+            <div style="display:@(activeTabId == "dashboard" ? "block" : "none")">
                 @Body
-            }
-            <!-- 已打开的标签页（保持组件实例不被销毁） -->
-            @if (tabs.Any(t => t.Id == "inbound-notice") && activeTabId == "inbound-notice")
+            </div>
+            <!-- 已打开的标签页（保持组件实例不被销毁，用 CSS 控制显隐） -->
+            @if (tabs.Any(t => t.Id == "inbound-notice"))
             {
-                <InboundNotice />
+                <div style="display:@(activeTabId == "inbound-notice" ? "flex" : "none")">
+                    <InboundNotice />
+                </div>
             }
-            @if (tabs.Any(t => t.Id == "inbound-order") && activeTabId == "inbound-order")
+            @if (tabs.Any(t => t.Id == "inbound-order"))
             {
-                <InboundOrder />
+                <div style="display:@(activeTabId == "inbound-order" ? "flex" : "none")">
+                    <InboundOrder />
+                </div>
             }
-            @if (tabs.Any(t => t.Id == "inbound-notice-change") && activeTabId == "inbound-notice-change")
+            @if (tabs.Any(t => t.Id == "inbound-notice-change"))
             {
-                <InboundNoticeChange />
+                <div style="display:@(activeTabId == "inbound-notice-change" ? "flex" : "none")">
+                    <InboundNoticeChange />
+                </div>
             }
             </CascadingValue>
             </CascadingValue>

@@ -1,5 +1,8 @@
 @inject IJSRuntime JS
 @inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<InboundNotice> _logger
+@inject TokenProvider TokenProvider
 
 <link rel="stylesheet" href="css/inbound-notice.css" />
 
@@ -70,7 +73,7 @@
                 <!-- 单据日期 - 双月历范围选择器 -->
                 <div class="form-item">
                     <label class="form-label">单据日期</label>
-                    <div class="date-picker-trigger" @onclick="ToggleDatePicker">
+                    <div class="date-picker-trigger" @onclick="ToggleDatePicker" @ref="datePickerTriggerRef">
                         <span class="date-display-text">@DateDisplayText</span>
                         <svg class="date-picker-icon" viewBox="0 0 16 16" width="12" height="12" fill="#999999">
                             <rect x="2" y="3" width="12" height="11" rx="2" stroke="#999999" stroke-width="1.2" fill="none"/>
@@ -83,7 +86,7 @@
                     <!-- 日历弹出层 -->
                     @if (ShowCalendar)
                     {
-                        <div class="datepicker-dropdown" @onclick:stopPropagation>
+                        <div class="datepicker-dropdown" @onclick:stopPropagation @ref="datePickerDropdownRef">
                             <div class="datepicker-popup-dual">
                                 <div class="dp-header-dual">
                                     <button class="dp-nav" @onclick="GoPrevYear" title="上一年">&#171;</button>
@@ -308,6 +311,8 @@
     private DateTime? SelectedStart;
     private DateTime? SelectedEnd;
     private bool PickingEnd = false;
+    private ElementReference datePickerTriggerRef;
+    private ElementReference datePickerDropdownRef;
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
 
@@ -349,7 +354,7 @@
     }
 
     // ===== 日历方法 =====
-    private void ToggleDatePicker()
+    private async Task ToggleDatePicker()
     {
         ShowCalendar = !ShowCalendar;
         if (ShowCalendar && SelectedStart.HasValue)
@@ -358,6 +363,16 @@
             ViewMonth = SelectedStart.Value.Month;
         }
         PickingEnd = false;
+        if (ShowCalendar)
+        {
+            await JS.InvokeVoidAsync("eval", @"(function(){
+                var trigger = arguments[0];
+                var dropdown = arguments[1];
+                var rect = trigger.getBoundingClientRect();
+                dropdown.style.left = rect.left + 'px';
+                dropdown.style.top = (rect.bottom + 4) + 'px';
+            })()", datePickerTriggerRef, datePickerDropdownRef);
+        }
         StateHasChanged();
     }
 
@@ -534,7 +549,43 @@
         try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
     }
 
-    private async Task LoadData() { dataSource = new List<InboundNoticeModel>(); StateHasChanged(); }
+    private async Task LoadData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/InboundNotice/search?dateFrom={query.DateFrom:yyyy-MM-dd}&dateTo={query.DateTo:yyyy-MM-dd}";
+            if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
+                url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
+            if (!string.IsNullOrWhiteSpace(query.WarehouseCode))
+                url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}";
+            if (!string.IsNullOrWhiteSpace(query.VendorCode))
+                url += $"&vendorCode={Uri.EscapeDataString(query.VendorCode)}";
+            if (!string.IsNullOrWhiteSpace(query.CloseStatus) && query.CloseStatus != "全部")
+                url += $"&closeStatus={Uri.EscapeDataString(query.CloseStatus)}";
+            if (!string.IsNullOrWhiteSpace(query.BusinessType))
+                url += $"&businessType={Uri.EscapeDataString(query.BusinessType)}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<InboundNoticeModel>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                dataSource = response.Data;
+            }
+            else
+            {
+                dataSource = new List<InboundNoticeModel>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载入库通知单数据失败");
+            dataSource = new List<InboundNoticeModel>();
+        }
+        StateHasChanged();
+    }
 
     private async Task ExportToExcel()
     {
@@ -556,5 +607,14 @@
         public bool IsToday { get; set; }
         public bool IsInRange { get; set; }
         public CalCell(int y, int m, int d, bool cur) { Year = y; Month = m; Day = d; IsCurrentMonth = cur; }
+    }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
     }
 }
