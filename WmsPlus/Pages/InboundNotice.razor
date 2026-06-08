@@ -252,39 +252,49 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th class="col-item-no">项次</th>
-                            <th class="col-date sortable">单据日期<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
-                            <th class="col-doc-no sortable">单据号码<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
-                            <th class="col-wh-code sortable">仓库代号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
-                            <th class="col-wh-name">仓库名称</th>
-                            <th class="col-vendor-code sortable">厂商代号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
-                            <th class="col-vendor-name">厂商名称</th>
-                            <th class="col-apply-no">申请单号(笔)</th>
-                            <th class="col-order-no">单据号码</th>
-                            <th class="col-closed sortable">结案否<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
-                            <th class="col-action">操作</th>
+                            @foreach (var col in columnConfigs.Where(c => c.Visible))
+                            {
+                                var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                if (col.Sortable)
+                                {
+                                    <th style="@widthStyle" class="sortable">
+                                        @col.DisplayName
+                                        <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                            <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                            <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                        </svg>
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                            }
+                            <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                <span>操作</span>
+                                <button class="column-settings-btn" title="栏位设置" @onclick="OpenColumnSettings">
+                                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                        <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                    </svg>
+                                </button>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (dataSource.Count == 0)
                         {
-                            <tr><td colspan="11" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            <tr><td colspan="@(VisibleColumnCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
                         }
                         else
                         {
                             @foreach (var item in dataSource)
                             {
                                 <tr>
-                                    <td>@item.ItemNo</td>
-                                    <td>@item.DocumentDate.ToString("yyyy-MM-dd")</td>
-                                    <td>@item.DocumentNumber</td>
-                                    <td>@item.WarehouseCode</td>
-                                    <td>@item.WarehouseName</td>
-                                    <td>@item.VendorCode</td>
-                                    <td>@item.VendorName</td>
-                                    <td>@item.ApplyOrderNumber</td>
-                                    <td>@item.OrderNumber</td>
-                                    <td>@(item.IsClosed ? "是" : "否")</td>
+                                    @foreach (var col in columnConfigs.Where(c => c.Visible))
+                                    {
+                                        var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                    }
                                     <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
                                 </tr>
                             }
@@ -296,11 +306,103 @@
     </div>
 </div>
 
+<!-- 导出对话框 -->
+@if (showExportDialog)
+{
+    <div class="export-dialog-overlay" @onclick="CancelExport">
+        <div class="export-dialog" @onclick:stopPropagation>
+            <div class="export-dialog-header">
+                <span>导出 Excel</span>
+                <button class="export-dialog-close" @onclick="CancelExport">&times;</button>
+            </div>
+            <div class="export-dialog-body">
+                <label class="export-label">文件名</label>
+                <input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput" />
+            </div>
+            <div class="export-dialog-footer">
+                <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
+                <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 栏位设计对话框 -->
+@if (showColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredColumnConfigs[i];
+                            var idx = columnConfigs.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private bool isFavorited = false;
     private bool showFavoriteSuccess = false;
     private bool isCollapsed = false;
     private bool showSettingsMenu = false;
+    private bool showExportDialog = false;
+    private string exportFileName = "";
+    private bool showColumnSettingsDialog = false;
+    private string columnSearchKeyword = "";
+    private List<ColumnConfig> columnConfigs = new();
+    private List<ColumnConfig> defaultColumnConfigs = new();
     private InboundNoticeQuery query = new();
     private List<InboundNoticeModel> dataSource = new();
 
@@ -349,6 +451,8 @@
         SelectedEnd = today;
         ViewYear = today.Year;
         ViewMonth = today.Month;
+        InitDefaultColumnConfigs();
+        await LoadColumnSettings();
         await LoadFavoriteStatus();
         await LoadData();
     }
@@ -546,6 +650,20 @@
     private async Task HandleExport()
     {
         if (dataSource.Count == 0) { await JS.InvokeVoidAsync("alert", "暂无数据可导出"); return; }
+        exportFileName = $"入库通知单_{DateTime.Now:yyyyMMddHHmmss}";
+        showExportDialog = true;
+        StateHasChanged();
+    }
+
+    private void CancelExport()
+    {
+        showExportDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmExport()
+    {
+        showExportDialog = false;
         try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
     }
 
@@ -589,12 +707,178 @@
 
     private async Task ExportToExcel()
     {
-        var csv = "项次,单据日期,单据号码,仓库代号,仓库名称,厂商代号,厂商名称,申请单号,单据号码,结案否\n";
+        var visibleCols = columnConfigs.Where(c => c.Visible).ToList();
+        var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+        var rows = new List<object[]>();
+        rows.Add(headers);
         foreach (var item in dataSource)
-            csv += $"{item.ItemNo},{item.DocumentDate:yyyy-MM-dd},{item.DocumentNumber},{item.WarehouseCode},{item.WarehouseName},{item.VendorCode},{item.VendorName},{item.ApplyOrderNumber},{item.OrderNumber},{(item.IsClosed ? "是" : "否")}\n";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        await JS.InvokeVoidAsync("eval", $"(function(){{var l=document.createElement('a');l.href='data:text/csv;charset=utf-8,{Convert.ToBase64String(bytes)}';l.download='入库通知单_{DateTime.Now:yyyyMMddHHmmss}.csv';l.click();}})()");
+        {
+            var row = new object[visibleCols.Count];
+            for (int i = 0; i < visibleCols.Count; i++)
+                row[i] = GetCellValue(item, visibleCols[i].FieldKey);
+            rows.Add(row);
+        }
+        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"入库通知单_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+        if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+        await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
     }
+
+    // ===== 栏位配置 =====
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+        public bool Sortable { get; set; } = false;
+    }
+
+    private const string COLUMN_SETTINGS_KEY = "wms_column_settings_inbound_notice";
+
+    private void InitDefaultColumnConfigs()
+    {
+        defaultColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "DocumentDate", OriginalName = "单据日期", DisplayName = "单据日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "DocumentNumber", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "WarehouseCode", OriginalName = "仓库代号", DisplayName = "仓库代号", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
+            new() { FieldKey = "WarehouseName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "VendorCode", OriginalName = "厂商代号", DisplayName = "厂商代号", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
+            new() { FieldKey = "VendorName", OriginalName = "厂商名称", DisplayName = "厂商名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "ApplyOrderNumber", OriginalName = "申请单号(笔)", DisplayName = "申请单号(笔)", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "OrderNumber", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "IsClosed", OriginalName = "结案否", DisplayName = "结案否", Visible = true, Width = 55, DefaultWidth = 55, Sortable = true },
+            new() { FieldKey = "PrdNo", OriginalName = "料号/品号", DisplayName = "料号/品号", Visible = false, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "PrdName", OriginalName = "品名", DisplayName = "品名", Visible = false, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "PrdSpec", OriginalName = "规格型号", DisplayName = "规格型号", Visible = false, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = false, Width = 60, DefaultWidth = 60 },
+            new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = false, Width = 50, DefaultWidth = 50 }
+        };
+        columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth,
+            Sortable = c.Sortable
+        }).ToList();
+    }
+
+    private async Task LoadColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", COLUMN_SETTINGS_KEY);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in columnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(columnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", COLUMN_SETTINGS_KEY, json);
+        }
+        catch { }
+    }
+
+    private void OpenColumnSettings()
+    {
+        columnSearchKeyword = "";
+        showColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = SaveColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = LoadColumnSettings(); // 放弃修改，重新加载
+        StateHasChanged();
+    }
+
+    private void SelectAllColumns()
+    {
+        foreach (var col in columnConfigs)
+            col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreDefaultColumns()
+    {
+        for (int i = 0; i < columnConfigs.Count && i < defaultColumnConfigs.Count; i++)
+        {
+            columnConfigs[i].Visible = defaultColumnConfigs[i].Visible;
+            columnConfigs[i].DisplayName = defaultColumnConfigs[i].DisplayName;
+            columnConfigs[i].Width = defaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredColumnConfigs =>
+        string.IsNullOrWhiteSpace(columnSearchKeyword)
+            ? columnConfigs
+            : columnConfigs.Where(c => c.OriginalName.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                       c.FieldKey.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int VisibleColumnCount => columnConfigs.Count(c => c.Visible);
+
+    // 获取单元格渲染值
+    private object GetCellValue(InboundNoticeModel item, string fieldKey) => fieldKey switch
+    {
+        "ItemNo" => item.ItemNo,
+        "DocumentDate" => item.DocumentDate.ToString("yyyy-MM-dd"),
+        "DocumentNumber" => item.DocumentNumber,
+        "WarehouseCode" => item.WarehouseCode,
+        "WarehouseName" => item.WarehouseName,
+        "VendorCode" => item.VendorCode,
+        "VendorName" => item.VendorName,
+        "ApplyOrderNumber" => item.ApplyOrderNumber,
+        "OrderNumber" => item.OrderNumber,
+        "IsClosed" => item.IsClosed ? "是" : "否",
+        "PrdNo" => item.PrdNo,
+        "PrdName" => item.PrdName,
+        "PrdSpec" => item.PrdSpec,
+        "Qty" => item.Qty,
+        "Unit" => item.Unit,
+        _ => ""
+    };
 
     // ===== 日历单元格数据类 =====
     private class CalCell

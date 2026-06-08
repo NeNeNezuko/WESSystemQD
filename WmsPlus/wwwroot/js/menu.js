@@ -12,3 +12,10 @@ window.setMegaMenuPosition = function (topPosition) {
         panel.style.top = topPosition + 'px';
     }
 };
+
+window.exportToExcel = function (rows, fileName) {
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "入库通知单");
+    XLSX.writeFile(wb, fileName);
+};
