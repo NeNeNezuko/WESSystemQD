@@ -5,6 +5,9 @@
 @inject TokenProvider TokenProvider
 
 <link rel="stylesheet" href="css/inbound-notice.css" />
+<style>
+.wh-col-action { width: 70px !important; min-width: 70px !important; }
+</style>
 
 <div class="inbound-notice-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
     <!-- 顶部标题栏 -->
@@ -163,7 +166,7 @@
                     <label class="form-label">仓库代号</label>
                     <div class="input-with-search">
                         <input type="text" class="form-input" placeholder="" @bind="query.WarehouseCode" />
-                        <button class="search-icon-btn" title="搜索">
+                        <button class="search-icon-btn" title="选择仓库" @onclick="OpenWarehouseSelector">
                             <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/>
                                 <line x1="11" y1="11" x2="15" y2="15"/>
@@ -200,17 +203,28 @@
                 </div>
 
                 <!-- 业务类型 -->
-                <div class="form-item">
-                    <label class="form-label">业务类型</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.BusinessType" />
-                        <button class="search-icon-btn" title="搜索">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="7" cy="7" r="5"/>
-                                <line x1="11" y1="11" x2="15" y2="15"/>
-                            </svg>
-                        </button>
+                <div class="form-item" style="flex-direction:column;align-items:stretch;height:auto;padding-bottom:4px;">
+                    <div style="display:flex;flex-direction:row;align-items:stretch;height:30px;">
+                        <label class="form-label" style="border-radius:2px 0 0 2px;">业务类型</label>
+                        <div class="input-with-search" style="flex:1;">
+                            <input type="text" class="form-input" placeholder="" value="@query.BusinessType" readonly />
+                            <button class="search-icon-btn" title="选择业务类型" @onclick="OpenBizTypeSelector">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="7" cy="7" r="5"/>
+                                    <line x1="11" y1="11" x2="15" y2="15"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
+                    @if (selectedBizTypes.Count > 0)
+                    {
+                        <div class="biz-type-tags-area">
+                            @foreach (var tag in selectedBizTypes)
+                            {
+                                <span class="biz-type-tag">@tag.tYPE_ID @tag.nAME<button class="biz-type-tag-close" @onclick="() => RemoveBizTypeTag(tag.tYPE_ID)">&times;</button></span>
+                            }
+                        </div>
+                    }
                 </div>
 
                 <!-- 查询按钮 -->
@@ -392,6 +406,234 @@
     </div>
 }
 
+<!-- 仓库选择器对话框 -->
+@if (showWarehouseDialog)
+{
+    <div class="wh-selector-overlay" @onclick="CloseWarehouseSelector">
+        <div class="wh-selector-dialog" @onclick:stopPropagation>
+            <!-- 头部 -->
+            <div class="wh-selector-header">
+                <span>仓库(MY_WH)</span>
+                <button class="wh-close-btn" @onclick="CloseWarehouseSelector">&times;</button>
+            </div>
+            <!-- 主体：左右分栏 -->
+            <div class="wh-selector-body">
+                <!-- 左侧面板：过滤区 -->
+                <div class="wh-left-panel">
+                    <div class="wh-filter-title">过滤</div>
+                    <input type="text" class="wh-search-input" placeholder="输入关键字查询" @bind="warehouseSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchWarehouse(); })" />
+                    <button class="wh-query-btn" @onclick="@(() => _ = SearchWarehouse())">查询</button>
+                </div>
+                <!-- 右侧区域：数据表格 -->
+                <div class="wh-right-panel">
+                    <table class="wh-data-table">
+                        <thead>
+                            <tr>
+                                <th class="wh-col-action">
+                                    操作
+                                    <button class="column-settings-btn" title="栏位设置" @onclick="OpenWhColumnSettings">
+                                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H8v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                        </svg>
+                                    </button>
+                                </th>
+                                <th style="width:50px">项次</th>
+                                @foreach (var col in whColumnConfigs.Where(c => c.Visible))
+                                {
+                                    var wStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                    <th style="@wStyle">@col.DisplayName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (warehouseData.Count == 0)
+                            {
+                                <tr><td colspan="@(WhVisibleColumnCount + 2)" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < warehouseData.Count; i++)
+                                {
+                                    var item = warehouseData[i];
+                                    var rowIdx = (warehousePageIndex - 1) * warehousePageSize + i + 1;
+                                    <tr>
+                                        <td><button class="wh-select-btn" @onclick="() => SelectWarehouse(item)">选择</button></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        @foreach (var col in whColumnConfigs.Where(c => c.Visible))
+                                        {
+                                            var cw = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                            <td style="@cw">@GetWhCellValue(item, col.FieldKey)</td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <!-- 分页 -->
+                    <div class="wh-pagination">
+                        <span class="wh-total-info">共 @warehouseTotalCount 笔记录</span>
+                        <div class="wh-page-controls">
+                            <button class="wh-page-btn" disabled="@(warehousePageIndex <= 1)" @onclick="async () => await GoToWhPage(warehousePageIndex - 1)">&lt;</button>
+                            <input type="number" class="wh-page-input" value="@warehousePageIndex" min="1" max="@WhTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToWhPage(p); }" />
+                            <span>/ @WhTotalPages</span>
+                            <button class="wh-page-btn" disabled="@(warehousePageIndex >= WhTotalPages)" @onclick="async () => await GoToWhPage(warehousePageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部 -->
+            <div class="wh-selector-footer">
+                <button class="wh-footer-cancel" @onclick="CloseWarehouseSelector">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 业务类型选择器对话框 -->
+@if (showBizTypeDialog)
+{
+    <div class="biz-type-selector-overlay" @onclick="CloseBizTypeSelector">
+        <div class="biz-type-selector-dialog" @onclick:stopPropagation>
+            <!-- 头部 -->
+            <div class="biz-type-header">
+                <span>入库业务类型(RK_TYPE_SET)</span>
+                <button class="biz-type-close-btn" @onclick="CloseBizTypeSelector">&times;</button>
+            </div>
+            <!-- 主体：左右分栏 -->
+            <div class="biz-type-body">
+                <!-- 左侧面板：过滤区 -->
+                <div class="biz-type-left-panel">
+                    <div class="biz-type-filter-title">过滤</div>
+                    <input type="text" class="biz-type-search-input" placeholder="输入关键字查询" @bind="bizTypeSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchBizType(); })" />
+                    <button class="biz-type-query-btn" @onclick="@(() => _ = SearchBizType())">查询</button>
+                </div>
+                <!-- 右侧区域：数据表格 -->
+                <div class="biz-type-right-panel">
+                    <table class="biz-type-table">
+                        <thead>
+                            <tr>
+                                <th class="biz-type-col-check"></th>
+                                <th style="width:50px">项次</th>
+                                <th class="biz-type-col-code">代码</th>
+                                <th>名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (bizTypeData.Count == 0)
+                            {
+                                <tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < bizTypeData.Count; i++)
+                                {
+                                    var item = bizTypeData[i];
+                                    var rowIdx = (bizTypePageIndex - 1) * bizTypePageSize + i + 1;
+                                    var isChecked = selectedBizTypes.Any(s => s.tYPE_ID == item.tYPE_ID);
+                                    <tr>
+                                        <td class="biz-type-col-check"><input type="checkbox" checked="@isChecked" @onchange="() => ToggleBizTypeSelect(item)" /></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.tYPE_ID</td>
+                                        <td>@item.nAME</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <!-- 分页 -->
+                    <div class="biz-type-pagination">
+                        <span class="biz-type-total-info">共 @bizTypeTotalCount 笔记录</span>
+                        <div class="biz-type-page-controls">
+                            <button class="biz-type-page-btn" disabled="@(bizTypePageIndex <= 1)" @onclick="async () => await GoToBizTypePage(bizTypePageIndex - 1)">&lt;</button>
+                            <input type="number" class="biz-type-page-input" value="@bizTypePageIndex" min="1" max="@BizTypeTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToBizTypePage(p); }" />
+                            <span>/ @BizTypeTotalPages</span>
+                            <button class="biz-type-page-btn" disabled="@(bizTypePageIndex >= BizTypeTotalPages)" @onclick="async () => await GoToBizTypePage(bizTypePageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部 -->
+            <div class="biz-type-footer">
+                <div class="biz-type-footer-left">
+                    <input type="checkbox" class="biz-type-select-all-check" id="bt-select-all" checked="@isAllBizTypeSelected" @onchange="SelectAllBizType" />
+                    <label for="bt-select-all">选全部</label>
+                </div>
+                <div class="biz-type-footer-right">
+                    <button class="biz-type-btn-clear" @onclick="ClearBizTypeSelection">清空</button>
+                    <button class="biz-type-btn-confirm" @onclick="ConfirmBizTypeSelection">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+    <!-- 仓库表格栏位设计对话框（内嵌） -->
+    @if (showWhColumnSettingsDialog && showWarehouseDialog)
+    {
+        <div class="column-settings-overlay" @onclick="CloseWhColumnSettings" style="z-index:10001;">
+            <div class="column-settings-dialog" @onclick:stopPropagation>
+                <div class="column-settings-header">
+                    <span>栏位设计</span>
+                    <button class="column-settings-close" @onclick="CloseWhColumnSettings">&times;</button>
+                </div>
+                <div class="column-settings-search">
+                    <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="whColumnSearchKeyword" @bind:event="oninput" />
+                </div>
+                <div class="column-settings-body">
+                    <table class="column-settings-table">
+                        <thead>
+                            <tr>
+                                <th class="col-seq">项次</th>
+                                <th class="col-visible">显示否</th>
+                                <th class="col-original">原栏位名</th>
+                                <th class="col-display">栏位标题</th>
+                                <th class="col-width">宽度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < FilteredWhColumnConfigs.Count; i++)
+                            {
+                                var col = FilteredWhColumnConfigs[i];
+                                var idx = whColumnConfigs.IndexOf(col) + 1;
+                                <tr>
+                                    <td class="col-seq">@idx</td>
+                                    <td class="col-visible">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </td>
+                                    <td class="col-original">@col.OriginalName</td>
+                                    <td class="col-display">
+                                        <input type="text" class="col-title-input" value="@col.DisplayName"
+                                               @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                    </td>
+                                    <td class="col-width">
+                                        <input type="number" class="col-width-input" value="@col.Width"
+                                               min="0" max="500"
+                                               @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="column-settings-footer">
+                    <div class="footer-left">
+                        <button class="col-select-all" @onclick="SelectAllWhColumns">全选</button>
+                        <button class="col-restore-default" @onclick="RestoreDefaultWhColumns">恢复默认</button>
+                    </div>
+                    <div class="footer-right">
+                        <button class="col-btn-confirm" @onclick="ConfirmWhColumnSettings">确定</button>
+                        <button class="col-btn-cancel" @onclick="CancelWhColumnSettings">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
 @code {
     private bool isFavorited = false;
     private bool showFavoriteSuccess = false;
@@ -405,6 +647,19 @@
     private List<ColumnConfig> defaultColumnConfigs = new();
     private InboundNoticeQuery query = new();
     private List<InboundNoticeModel> dataSource = new();
+
+    // ===== 仓库选择器状态 =====
+    private bool showWarehouseDialog = false;
+    private string warehouseSearchKeyword = "";
+    private List<WarehouseItem> warehouseData = new();
+    private int warehousePageIndex = 1;
+    private int warehousePageSize = 20;
+    private int warehouseTotalCount = 0;
+    private List<ColumnConfig> whColumnConfigs = new();
+    private List<ColumnConfig> whDefaultColumnConfigs = new();
+    private bool showWhColumnSettingsDialog = false;
+    private string whColumnSearchKeyword = "";
+    private const string WH_COLUMN_SETTINGS_KEY = "wms_column_settings_warehouse_selector";
 
     // ===== 日历状态 =====
     private bool ShowCalendar = false;
@@ -880,6 +1135,213 @@
         _ => ""
     };
 
+    // ===== 仓库选择器 =====
+    private class WarehouseItem
+    {
+        public string wh { get; set; } = "";
+        public string name { get; set; } = "";
+        public string wH_TYPE { get; set; } = "";
+        public string attrib { get; set; } = "";
+        public string dep { get; set; } = "";
+        public string invalid { get; set; } = "";
+    }
+
+    private void InitWhDefaultColumnConfigs()
+    {
+        whDefaultColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "wh", OriginalName = "仓库代号", DisplayName = "仓库代号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "name", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "wH_TYPE", OriginalName = "仓库类型", DisplayName = "仓库类型", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "attrib", OriginalName = "属性", DisplayName = "属性", Visible = false, Width = 60, DefaultWidth = 60 },
+            new() { FieldKey = "dep", OriginalName = "部门", DisplayName = "部门", Visible = false, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "invalid", OriginalName = "作废否", DisplayName = "作废否", Visible = false, Width = 60, DefaultWidth = 60 }
+        };
+        whColumnConfigs = whDefaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth
+        }).ToList();
+    }
+
+    private async Task OpenWarehouseSelector()
+    {
+        InitWhDefaultColumnConfigs();
+        await LoadWhColumnSettings();
+        warehouseSearchKeyword = "";
+        warehousePageIndex = 1;
+        await SearchWarehouse();
+        showWarehouseDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseWarehouseSelector()
+    {
+        showWarehouseDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchWarehouse()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/search?keyword={Uri.EscapeDataString(warehouseSearchKeyword ?? "")}&pageIndex={warehousePageIndex}&pageSize={warehousePageSize}";
+            Console.WriteLine($"[Warehouse] Request URL: {url}");
+            
+            var response = await Http.GetAsync(url);
+            Console.WriteLine($"[Warehouse] Response Status: {response.StatusCode}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[Warehouse] Response JSON: {json}");
+                
+                var result = System.Text.Json.JsonSerializer.Deserialize<WarehouseSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                Console.WriteLine($"[Warehouse] Deserialized result: {(result != null ? "not null" : "null")}");
+                
+                if (result != null)
+                {
+                    warehouseData = result.Items ?? new List<WarehouseItem>();
+                    warehouseTotalCount = result.TotalCount;
+                    Console.WriteLine($"[Warehouse] Items count: {warehouseData.Count}, Total: {warehouseTotalCount}");
+                }
+            }
+            else
+            {
+                var errBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[Warehouse] API error: {response.StatusCode} - {errBody}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Warehouse] Exception: {ex.Message}");
+            Console.WriteLine($"[Warehouse] Exception Stack: {ex.StackTrace}");
+        }
+        StateHasChanged();
+    }
+
+    private void SelectWarehouse(WarehouseItem item)
+    {
+        query.WarehouseCode = item.wh;
+        showWarehouseDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadWhColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", WH_COLUMN_SETTINGS_KEY);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in whColumnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveWhColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(whColumnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", WH_COLUMN_SETTINGS_KEY, json);
+        }
+        catch { }
+    }
+
+    private void OpenWhColumnSettings()
+    {
+        whColumnSearchKeyword = "";
+        showWhColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseWhColumnSettings()
+    {
+        showWhColumnSettingsDialog = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmWhColumnSettings()
+    {
+        showWhColumnSettingsDialog = false;
+        _ = SaveWhColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelWhColumnSettings()
+    {
+        showWhColumnSettingsDialog = false;
+        _ = LoadWhColumnSettings();
+        StateHasChanged();
+    }
+
+    private void SelectAllWhColumns()
+    {
+        foreach (var col in whColumnConfigs) col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreDefaultWhColumns()
+    {
+        for (int i = 0; i < whColumnConfigs.Count && i < whDefaultColumnConfigs.Count; i++)
+        {
+            whColumnConfigs[i].Visible = whDefaultColumnConfigs[i].Visible;
+            whColumnConfigs[i].DisplayName = whDefaultColumnConfigs[i].DisplayName;
+            whColumnConfigs[i].Width = whDefaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredWhColumnConfigs =>
+        string.IsNullOrWhiteSpace(whColumnSearchKeyword)
+            ? whColumnConfigs
+            : whColumnConfigs.Where(c => c.OriginalName.Contains(whColumnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                          c.FieldKey.Contains(whColumnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int WhVisibleColumnCount => whColumnConfigs.Count(c => c.Visible);
+
+    private object GetWhCellValue(WarehouseItem item, string fieldKey) => fieldKey switch
+    {
+        "wh" => item.wh,
+        "name" => item.name,
+        "wH_TYPE" => item.wH_TYPE,
+        "attrib" => item.attrib,
+        "dep" => item.dep,
+        "invalid" => item.invalid,
+        _ => ""
+    };
+
+    private int WhTotalPages => warehousePageSize > 0 ? (int)Math.Ceiling((double)warehouseTotalCount / warehousePageSize) : 1;
+
+    private async Task GoToWhPage(int page)
+    {
+        if (page >= 1 && page <= WhTotalPages)
+        {
+            warehousePageIndex = page;
+            await SearchWarehouse();
+        }
+    }
+
     // ===== 日历单元格数据类 =====
     private class CalCell
     {
@@ -900,5 +1362,146 @@
         public string Message { get; set; } = "";
         public T? Data { get; set; }
         public int Total { get; set; }
+    }
+
+    private class WarehouseSearchResult
+    {
+        public List<WarehouseItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    // ===== 业务类型选择器 =====
+    private class BizTypeItem
+    {
+        public string tYPE_ID { get; set; } = "";
+        public string nAME { get; set; } = "";
+    }
+
+    private class BizTypeSearchResult
+    {
+        public List<BizTypeItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    private bool showBizTypeDialog = false;
+    private List<BizTypeItem> bizTypeData = new();
+    private List<BizTypeItem> selectedBizTypes = new();
+    private string bizTypeSearchKeyword = "";
+    private int bizTypePageIndex = 1;
+    private int bizTypePageSize = 10;
+    private int bizTypeTotalCount = 0;
+
+    private bool isAllBizTypeSelected => bizTypeData.Count > 0 && bizTypeData.All(item => selectedBizTypes.Any(s => s.tYPE_ID == item.tYPE_ID));
+    private int BizTypeTotalPages => bizTypePageSize > 0 ? (int)Math.Ceiling((double)bizTypeTotalCount / bizTypePageSize) : 1;
+
+    private async Task OpenBizTypeSelector()
+    {
+        bizTypeSearchKeyword = "";
+        bizTypePageIndex = 1;
+        await SearchBizType();
+        showBizTypeDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseBizTypeSelector()
+    {
+        showBizTypeDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchBizType()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/rktypesearch?keyword={Uri.EscapeDataString(bizTypeSearchKeyword ?? "")}&pageIndex={bizTypePageIndex}&pageSize={bizTypePageSize}";
+            Console.WriteLine($"[BizType] Request URL: {url}");
+
+            var response = await Http.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<BizTypeSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (result != null)
+                {
+                    bizTypeData = result.Items ?? new List<BizTypeItem>();
+                    bizTypeTotalCount = result.TotalCount;
+                    Console.WriteLine($"[BizType] Items count: {bizTypeData.Count}, Total: {bizTypeTotalCount}");
+                }
+            }
+            else
+            {
+                var errBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[BizType] API error: {response.StatusCode} - {errBody}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[BizType] Exception: {ex.Message}");
+        }
+        StateHasChanged();
+    }
+
+    private void ToggleBizTypeSelect(BizTypeItem item)
+    {
+        var existing = selectedBizTypes.FirstOrDefault(s => s.tYPE_ID == item.tYPE_ID);
+        if (existing != null)
+        {
+            selectedBizTypes.Remove(existing);
+        }
+        else
+        {
+            selectedBizTypes.Add(new BizTypeItem { tYPE_ID = item.tYPE_ID, nAME = item.nAME });
+        }
+        StateHasChanged();
+    }
+
+    private void SelectAllBizType(ChangeEventArgs e)
+    {
+        bool selectAll = (bool)e.Value!;
+        if (selectAll)
+        {
+            foreach (var item in bizTypeData)
+            {
+                if (!selectedBizTypes.Any(s => s.tYPE_ID == item.tYPE_ID))
+                {
+                    selectedBizTypes.Add(new BizTypeItem { tYPE_ID = item.tYPE_ID, nAME = item.nAME });
+                }
+            }
+        }
+        else
+        {
+            foreach (var item in bizTypeData)
+            {
+                selectedBizTypes.RemoveAll(s => s.tYPE_ID == item.tYPE_ID);
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void RemoveBizTypeTag(string rkType)
+    {
+        selectedBizTypes.RemoveAll(s => s.tYPE_ID == rkType);
+        query.BusinessType = string.Join(",", selectedBizTypes.Select(s => s.tYPE_ID));
+        StateHasChanged();
+    }
+
+    private void ClearBizTypeSelection()
+    {
+        selectedBizTypes.Clear();
+        StateHasChanged();
+    }
+
+    private void ConfirmBizTypeSelection()
+    {
+        query.BusinessType = string.Join(",", selectedBizTypes.Select(s => s.tYPE_ID));
+        showBizTypeDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task GoToBizTypePage(int page)
+    {
+        if (page < 1 || page > BizTypeTotalPages) return;
+        bizTypePageIndex = page;
+        await SearchBizType();
     }
 }

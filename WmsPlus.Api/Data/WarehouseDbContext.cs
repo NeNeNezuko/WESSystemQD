@@ -11,6 +11,8 @@ namespace WmsPlus.Api.Data
 
         public DbSet<MfRktz> MfRktzs { get; set; }
         public DbSet<TfRktz> TfRktzs { get; set; }
+        public DbSet<MyWh> MyWhs { get; set; }
+        public DbSet<RkTypeSet> RkTypeSets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,6 +60,29 @@ namespace WmsPlus.Api.Data
                       .WithMany()
                       .HasForeignKey(e => e.TZ_NO)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // 仓库主数据
+            modelBuilder.Entity<MyWh>(entity =>
+            {
+                entity.ToTable("MY_WH");
+                entity.HasKey(e => e.WH);
+                entity.Property(e => e.WH).HasColumnName("WH").HasMaxLength(30);
+                entity.Property(e => e.NAME).HasColumnName("NAME").HasMaxLength(400);
+                entity.Property(e => e.WH_TYPE).HasColumnName("WH_TYPE").HasMaxLength(1);
+                entity.Property(e => e.ATTRIB).HasColumnName("ATTRIB").HasMaxLength(1);
+                entity.Property(e => e.DEP).HasColumnName("DEP").HasMaxLength(30);
+                entity.Property(e => e.INVALID).HasColumnName("INVALID").HasMaxLength(1);
+            });
+
+            // 入库业务类型设置
+            modelBuilder.Entity<RkTypeSet>(entity =>
+            {
+                entity.ToTable("cr_type_set");
+                entity.HasKey(e => new { e.CR_TYPE, e.TYPE_ID });
+                entity.Property(e => e.CR_TYPE).HasColumnName("CR_TYPE").HasMaxLength(1);
+                entity.Property(e => e.TYPE_ID).HasColumnName("TYPE_ID").HasMaxLength(10);
+                entity.Property(e => e.NAME).HasColumnName("NAME").HasMaxLength(300);
             });
         }
     }

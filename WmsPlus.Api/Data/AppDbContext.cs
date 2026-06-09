@@ -10,6 +10,8 @@ namespace WmsPlus.Api.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<DictTab> DictTabs { get; set; }
+        public DbSet<DictFld> DictFlds { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +25,23 @@ namespace WmsPlus.Api.Data
                 entity.Property(e => e.NAME).HasColumnName("NAME").HasMaxLength(400);
                 entity.Property(e => e.PWD).HasColumnName("PWD").HasMaxLength(100);
                 entity.Property(e => e.DEP).HasColumnName("DEP").HasMaxLength(30);
+            });
+
+            modelBuilder.Entity<DictTab>(entity =>
+            {
+                entity.ToTable("DICT_TAB");
+                entity.HasKey(e => e.TAB_NAME);
+                entity.Property(e => e.TAB_NAME).HasColumnName("TAB_NAME").HasMaxLength(40);
+                entity.Property(e => e.TAB_TITLE).HasColumnName("TAB_TITLE").HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<DictFld>(entity =>
+            {
+                entity.ToTable("DICT_FLD");
+                entity.HasKey(e => new { e.TAB_NAME, e.FLD_NAME });
+                entity.Property(e => e.TAB_NAME).HasColumnName("TAB_NAME").HasMaxLength(40);
+                entity.Property(e => e.FLD_NAME).HasColumnName("FLD_NAME").HasMaxLength(50);
+                entity.Property(e => e.Note).HasColumnName("Note").HasMaxLength(200);
             });
         }
     }
