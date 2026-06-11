@@ -1,0 +1,507 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<InboundNoticeReport> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/inbound-notice-report.css" />
+
+<div class="inbound-notice-report-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">入库通知单报表/查询</span>
+        </div>
+        <div class="header-right">
+            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 主内容区域 -->
+    <div class="page-content">
+        <!-- 左侧查询区域 -->
+        <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+            <div class="query-header">
+                <span class="query-title">查询</span>
+                <button class="query-settings-btn" title="设置" @onclick="ToggleSettingsMenu">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999999" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+                @if (showSettingsMenu)
+                {
+                    <div class="settings-dropdown" @onclick:stopPropagation>
+                        <div class="settings-dropdown-item" @onclick="BatchAddCondition">批次添加条件</div>
+                        <div class="settings-dropdown-item" @onclick="AddSingleCondition">添加单一条件</div>
+                        <div class="settings-dropdown-item" @onclick="CustomCondition">自定义条件</div>
+                        <div class="settings-dropdown-item" @onclick="RemoveCondition">移除条件</div>
+                        <div class="settings-dropdown-item" @onclick="SaveConditionValues">保存条件值</div>
+                    </div>
+                }
+            </div>
+
+            <div class="query-form">
+                <!-- 制表日期 - 日期范围选择器 -->
+                <DateRangeInput @bind-Value="query.DateRange" />
+
+                <!-- 业务单号 + 模糊 -->
+                <div class="form-item-fuzzy">
+                    <label class="form-label">业务单号</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="" @bind="query.BizOrderNo" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.FuzzyBizOrderNo" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ERP申请单据号 + 模糊 -->
+                <div class="form-item-fuzzy">
+                    <label class="form-label">ERP申请单据号</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="" @bind="query.ErpApplyNo" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.FuzzyErpApplyNo" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 单据号码 起 / 止 -->
+                <div class="form-item-range">
+                    <div class="range-row">
+                        <label class="range-label">单据号码起</label>
+                        <input type="text" class="range-input" placeholder="" @bind="query.DocNoFrom" />
+                    </div>
+                    <div class="range-row">
+                        <label class="range-label">单据号码止</label>
+                        <input type="text" class="range-input" placeholder="" @bind="query.DocNoTo" />
+                    </div>
+                </div>
+
+                <!-- 货品代号 起 / 止 -->
+                <div class="form-item-range">
+                    <div class="range-row">
+                        <label class="range-label">货品代号起</label>
+                        <div class="input-with-search">
+                            <input type="text" class="range-input" placeholder="" @bind="query.PrdNoFrom" />
+                            <button class="search-icon-btn" title="选择货品代号">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="range-row">
+                        <label class="range-label">货品代号止</label>
+                        <div class="input-with-search">
+                            <input type="text" class="range-input" placeholder="" @bind="query.PrdNoTo" />
+                            <button class="search-icon-btn" title="选择货品代号">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 货品名称 + 模糊 -->
+                <div class="form-item-fuzzy">
+                    <label class="form-label">货品名称</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.FuzzyPrdName" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 仓库代号 + 含下属 -->
+                <div class="form-item-fuzzy">
+                    <label class="form-label">仓库代号</label>
+                    <div class="form-input-wrapper">
+                        <div class="input-with-search" style="flex:1;">
+                            <input type="text" class="form-input" placeholder="" @bind="query.WarehouseCode" />
+                            <button class="search-icon-btn" title="选择仓库">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.IncludeChildWh" />
+                            <span>含下属</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="form-item query-btn-wrapper">
+                    <button class="query-submit-btn" @onclick="HandleSearch">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
+                            <circle cx="7" cy="7" r="5"/>
+                            <line x1="11" y1="11" x2="15" y2="15"/>
+                        </svg>
+                        <span>查询</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧数据表格区域 -->
+        <div class="table-panel">
+            <!-- 右上角工具栏按钮组（仅样式） -->
+            <div class="report-toolbar">
+                <button class="report-toolbar-btn" title="类别">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#666666">
+                        <rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/>
+                        <rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/>
+                    </svg>
+                    <span>类别</span>
+                </button>
+                <button class="report-toolbar-btn" title="导出Excel">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#666666">
+                        <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <span>导出Excel</span>
+                </button>
+                <button class="report-toolbar-btn" title="打印">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#666666">
+                        <path d="M5 2h6v3H5zM3 6h10v6H3zM4 13h8v1H4z" stroke="#666666" stroke-width="1.2" fill="none"/>
+                    </svg>
+                    <span>打印</span>
+                </button>
+                <button class="report-toolbar-btn" title="类型设计">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#666666">
+                        <path d="M2 3h4v2H2zM2 7h4v2H2zM2 11h4v2H2zM8 3h6v2H8zM8 7h6v2H8zM8 11h6v2H8z" stroke="#666666" stroke-width="1" fill="none"/>
+                    </svg>
+                    <span>类型设计</span>
+                </button>
+            </div>
+
+            <!-- 嵌套选项卡：明细表 / 统计表 -->
+            <div class="sub-tab-bar">
+                <span class="sub-tab-item @(activeSubTab == "detail" ? "active" : "")" @onclick="@(() => SwitchSubTab("detail"))">明细表</span>
+                <span class="sub-tab-item @(activeSubTab == "summary" ? "active" : "")" @onclick="@(() => SwitchSubTab("summary"))">统计表</span>
+            </div>
+
+            <!-- 数据表格容器 -->
+            <div class="data-table-container">
+                @if (activeSubTab == "detail")
+                {
+                    <!-- 明细表 -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="col-item-no">项次</th>
+                                <th class="col-make-time sortable">制单时间<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-source-no sortable">应身单号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-erp-apply-no sortable">ERP申请单据号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-doc-no sortable">单据号码<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-prd-no sortable">货品代号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-prd-name sortable">货品名称<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-bat-no">批号</th>
+                                <th class="col-qty text-right">数量<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-qty-rk text-right">已入库量<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-wh-name">仓库名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (detailData.Count == 0)
+                            {
+                                <tr><td colspan="10" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in detailData)
+                                {
+                                    <tr>
+                                        <td>@item.ItemNo</td>
+                                        <td>@(item.MakeTime.HasValue ? item.MakeTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</td>
+                                        <td>@item.SourceNo</td>
+                                        <td>@item.ErpApplyNo</td>
+                                        <td>@item.DocNo</td>
+                                        <td>@item.PrdNo</td>
+                                        <td>@item.PrdName</td>
+                                        <td class="text-right">@item.BatNo</td>
+                                        <td class="text-right">@item.Qty.ToString("N2")</td>
+                                        <td class="text-right">@item.QtyRk.ToString("N2")</td>
+                                        <td>@item.WhName</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <!-- 统计表 -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="col-item-no">项次</th>
+                                <th class="col-make-time sortable">制单时间<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-doc-year sortable">单据日期-年<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-doc-quarter sortable">单据日期-季<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-doc-month sortable">单据日期-月<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-doc-week sortable">单据日期-周<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-biz-order-no sortable">业务单号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-erp-apply-no sortable">ERP申请单据号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-doc-no sortable">单据号码<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-prd-no sortable">货品代号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-prd-name sortable">货品名称<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (summaryData.Count == 0)
+                            {
+                                <tr><td colspan="11" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in summaryData)
+                                {
+                                    <tr>
+                                        <td>@item.ItemNo</td>
+                                        <td>@(item.MakeTime.HasValue ? item.MakeTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</td>
+                                        <td class="text-center">@(item.DocYear > 0 ? item.DocYear.ToString() : "")</td>
+                                        <td class="text-center">@(item.DocQuarter > 0 ? $"Q{item.DocQuarter}" : "")</td>
+                                        <td class="text-center">@(item.DocMonth > 0 ? item.DocMonth.ToString() : "")</td>
+                                        <td class="text-center">@(item.DocWeek > 0 ? item.DocWeek.ToString() : "")</td>
+                                        <td>@item.BizOrderNo</td>
+                                        <td>@item.ErpApplyNo</td>
+                                        <td>@item.DocNo</td>
+                                        <td>@item.PrdNo</td>
+                                        <td>@item.PrdName</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            <!-- 底部统计栏：分组统计字段 + 分页信息 -->
+            <div class="stats-toolbar">
+                <div class="stat-checkbox-group">
+                    <span class="stat-label">分组统计字段:</span>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>制表日期</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>制表日期-年</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>制表日期-季</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>制表日期-月</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>制表日期-周</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>业务单号</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>ERP申请单据号</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>单据号码</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>货品代号</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>仓库代号</span></label>
+                    <label class="stat-checkbox-item"><input type="checkbox" checked /><span>业务员名称</span></label>
+                </div>
+                <div class="stat-pagination-info">
+                    <span>共 @(activeSubTab == "detail" ? detailData.Count : summaryData.Count) 笔记录</span>
+                    <button class="page-btn" disabled>&lt;</button>
+                    <input type="text" class="page-jump-input" value="0" readonly />
+                    <button class="page-btn" disabled>&gt;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    // ===== 状态变量 =====
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showSettingsMenu = false;
+    private string activeSubTab = "detail";
+    private InboundNoticeReportQuery query = new();
+    private List<InboundNoticeReportDetailModel> detailData = new();
+    private List<InboundNoticeReportSummaryModel> summaryData = new();
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFavoriteStatus();
+        await LoadDetailData();
+    }
+
+    // ===== 收藏功能 =====
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_notice_report"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_inbound_notice_report", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited) { showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false; }
+        StateHasChanged();
+    }
+
+    // ===== 折叠/设置菜单 =====
+    private void ToggleCollapse() { isCollapsed = !isCollapsed; StateHasChanged(); }
+    private void ToggleSettingsMenu() { showSettingsMenu = !showSettingsMenu; StateHasChanged(); }
+    private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void RemoveCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void SaveConditionValues() { showSettingsMenu = false; StateHasChanged(); }
+
+    // ===== 子选项卡切换 =====
+    private async Task SwitchSubTab(string tab)
+    {
+        if (activeSubTab != tab)
+        {
+            activeSubTab = tab;
+            if (tab == "summary" && summaryData.Count == 0 && detailData.Count == 0)
+            {
+                await LoadSummaryData();
+            }
+            else if (tab == "summary")
+            {
+                // 切到统计表时自动加载数据（如果还没加载过）
+                await LoadSummaryData();
+            }
+            StateHasChanged();
+        }
+    }
+
+    // ===== 查询功能 =====
+    private async Task HandleSearch()
+    {
+        if (activeSubTab == "detail")
+            await LoadDetailData();
+        else
+            await LoadSummaryData();
+    }
+
+    /// <summary>加载明细表数据</summary>
+    private async Task LoadDetailData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var today = DateTime.Today;
+            var dateFromStr = today.ToString("yyyy-MM-dd");
+            var dateToStr = today.ToString("yyyy-MM-dd");
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+            {
+                var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
+            }
+            var url = $"{ApiBaseUrl}/api/InboundNoticeReport/detail?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            if (!string.IsNullOrWhiteSpace(query.BizOrderNo)) url += $"&bizOrderNo={Uri.EscapeDataString(query.BizOrderNo)}&fuzzyBizOrderNo={query.FuzzyBizOrderNo}";
+            if (!string.IsNullOrWhiteSpace(query.ErpApplyNo)) url += $"&erpApplyNo={Uri.EscapeDataString(query.ErpApplyNo)}&fuzzyErpApplyNo={query.FuzzyErpApplyNo}";
+            if (!string.IsNullOrWhiteSpace(query.DocNoFrom)) url += $"&docNoFrom={Uri.EscapeDataString(query.DocNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.DocNoTo)) url += $"&docNoTo={Uri.EscapeDataString(query.DocNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdName)) url += $"&prdName={Uri.EscapeDataString(query.PrdName)}&fuzzyPrdName={query.FuzzyPrdName}";
+            if (!string.IsNullOrWhiteSpace(query.WarehouseCode)) url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}&includeChildWh={query.IncludeChildWh}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<InboundNoticeReportDetailModel>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+                detailData = response.Data;
+            else
+                detailData = new List<InboundNoticeReportDetailModel>();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载入库通知单报表-明细表数据失败");
+            detailData = new List<InboundNoticeReportDetailModel>();
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>加载统计表数据</summary>
+    private async Task LoadSummaryData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var today = DateTime.Today;
+            var dateFromStr = today.ToString("yyyy-MM-dd");
+            var dateToStr = today.ToString("yyyy-MM-dd");
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+            {
+                var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
+            }
+            var url = $"{ApiBaseUrl}/api/InboundNoticeReport/summary?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            if (!string.IsNullOrWhiteSpace(query.BizOrderNo)) url += $"&bizOrderNo={Uri.EscapeDataString(query.BizOrderNo)}&fuzzyBizOrderNo={query.FuzzyBizOrderNo}";
+            if (!string.IsNullOrWhiteSpace(query.ErpApplyNo)) url += $"&erpApplyNo={Uri.EscapeDataString(query.ErpApplyNo)}&fuzzyErpApplyNo={query.FuzzyErpApplyNo}";
+            if (!string.IsNullOrWhiteSpace(query.DocNoFrom)) url += $"&docNoFrom={Uri.EscapeDataString(query.DocNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.DocNoTo)) url += $"&docNoTo={Uri.EscapeDataString(query.DocNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdName)) url += $"&prdName={Uri.EscapeDataString(query.PrdName)}&fuzzyPrdName={query.FuzzyPrdName}";
+            if (!string.IsNullOrWhiteSpace(query.WarehouseCode)) url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}&includeChildWh={query.IncludeChildWh}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<InboundNoticeReportSummaryModel>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+                summaryData = response.Data;
+            else
+                summaryData = new List<InboundNoticeReportSummaryModel>();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载入库通知单报表-统计表数据失败");
+            summaryData = new List<InboundNoticeReportSummaryModel>();
+        }
+        StateHasChanged();
+    }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+}

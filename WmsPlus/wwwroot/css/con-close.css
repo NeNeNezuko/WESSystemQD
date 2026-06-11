@@ -1,0 +1,798 @@
+/* ===== 关账作业页面样式 ===== */
+
+.con-close-page {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    color: #333333;
+    background-color: #ffffff;
+}
+
+/* 顶部标题栏 */
+.con-close-page .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid #E8E8E8;
+    background-color: #FAFAFA;
+    flex-shrink: 0;
+}
+
+.con-close-page .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.con-close-page .favorite-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.con-close-page .favorite-btn:hover {
+    transform: scale(1.15);
+}
+
+.con-close-page .page-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.con-close-page .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.con-close-page .collapse-btn-fixed {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.con-close-page .collapse-btn-fixed:hover {
+    background-color: #E6F7FF;
+}
+
+/* 收藏成功提示 */
+.con-close-page .favorite-success-toast {
+    position: absolute;
+    top: 40px;
+    right: 24px;
+    z-index: 100;
+    animation: slideInFade 0.3s ease-out forwards;
+}
+
+.con-close-page .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #F6FFED;
+    border: 1px solid #B7EB8F;
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: #52C41A;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes slideInFade {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* 主内容区域：左右分栏 */
+.con-close-page .page-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 左侧查询面板 */
+.con-close-page .query-panel {
+    width: 280px;
+    min-width: 280px;
+    border-right: 1px solid #E8E8E8;
+    display: flex;
+    flex-direction: column;
+    background-color: #FAFAFA;
+    transition: width 0.25s ease, min-width 0.25s ease;
+    overflow: hidden;
+}
+
+.con-close-page .query-panel.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+}
+
+.con-close-page .query-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #E8E8E8;
+    flex-shrink: 0;
+}
+
+.con-close-page .query-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.con-close-page .query-settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.con-close-page .query-settings-btn:hover {
+    background-color: #E0E0E0;
+}
+
+/* 设置下拉菜单 */
+.con-close-page .settings-dropdown {
+    position: absolute;
+    right: 12px;
+    top: 42px;
+    z-index: 50;
+    background: #ffffff;
+    border: 1px solid #E8E8E8;
+    border-radius: 4px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    min-width: 140px;
+    padding: 4px 0;
+}
+
+.con-close-page .settings-dropdown-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333333;
+    transition: background-color 0.15s;
+}
+
+.con-close-page .settings-dropdown-item:hover {
+    background-color: #E6F7FF;
+    color: #1890FF;
+}
+
+/* 查询表单区域 */
+.con-close-page .query-form {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* 表单项（单边框融合式） */
+.con-close-page .form-item {
+    display: flex;
+    align-items: center;
+    border: 1px solid #D9D9D9;
+    border-bottom: none;
+    height: 32px;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.con-close-page .form-item:first-of-type {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.con-close-page .form-item:last-of-type {
+    border-bottom: 1px solid #D9D9D9;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.con-close-page .form-label {
+    padding: 0 10px;
+    font-size: 13px;
+    color: #666666;
+    white-space: nowrap;
+    border-right: 1px solid #D9D9D9;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    min-width: 70px;
+    flex-shrink: 0;
+    background-color: #FAFAFA;
+}
+
+.con-close-page .form-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 8px;
+    font-size: 13px;
+    height: 100%;
+    color: #333333;
+    background: transparent;
+}
+
+.con-close-page .form-input::placeholder {
+    color: #BFBFBF;
+}
+
+/* 下拉选择器包装 */
+.con-close-page .select-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.con-close-page .form-select {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 22px 0 8px;
+    font-size: 13px;
+    height: 100%;
+    color: #333333;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.con-close-page .select-arrow {
+    position: absolute;
+    right: 8px;
+    pointer-events: none;
+}
+
+/* 查询按钮 */
+.con-close-page .query-btn-wrapper {
+    margin-top: 8px;
+    border: none !important;
+    border-radius: 0 !important;
+    height: auto !important;
+}
+
+.con-close-page .query-submit-btn {
+    width: 100%;
+    height: 34px;
+    background-color: #1890FF;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.con-close-page .query-submit-btn:hover {
+    background-color: #40A9FF;
+}
+
+/* 右侧表格区域 */
+.con-close-page .table-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* 工具栏 */
+.con-close-page .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #E8E8E8;
+    flex-shrink: 0;
+}
+
+.con-close-page .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.con-close-page .toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    background-color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #333333;
+}
+
+.con-close-page .toolbar-btn:hover {
+    border-color: #40A9FF;
+    color: #1890FF;
+}
+
+.con-close-page .toolbar-btn.primary-btn {
+    background-color: #1890FF;
+    border-color: #1890FF;
+    color: #ffffff;
+}
+
+.con-close-page .toolbar-btn.primary-btn:hover {
+    background-color: #40A9FF;
+    border-color: #40A9FF;
+    color: #ffffff;
+}
+
+.con-close-page .toolbar-btn.export-btn:hover {
+    border-color: #69C0FF;
+    color: #1890FF;
+}
+
+/* 数据表格容器 */
+.con-close-page .data-table-container {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+}
+
+.con-close-page .data-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.con-close-page .data-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.con-close-page .data-table th {
+    background-color: #FAFAFA;
+    border-bottom: 1px solid #E8E8E8;
+    border-right: 1px solid #F0F0F0;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 500;
+    color: #666666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+}
+
+.con-close-page .data-table th.sortable {
+    cursor: pointer;
+}
+
+.con-close-page .data-table th.sortable:hover {
+    background-color: #E6F7FF;
+    color: #1890FF;
+}
+
+.con-close-page .data-table td {
+    border-bottom: 1px solid #F0F0F0;
+    border-right: 1px solid #FAFAFA;
+    padding: 7px 10px;
+    color: #333333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.con-close-page .data-table tbody tr:hover {
+    background-color: #E6F7FF;
+}
+
+.con-close-page .data-table tbody tr:hover td {
+    background-color: transparent;
+}
+
+/* 操作列 */
+.con-close-page .col-action {
+    width: 45px;
+    text-align: center !important;
+    padding: 0 !important;
+}
+
+.con-close-page .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+}
+
+.con-close-page .action-btn:hover {
+    background-color: #E6F7FF;
+}
+
+/* 空数据占位 */
+.con-close-page .empty-data-cell {
+    text-align: center !important;
+    padding: 60px 20px !important;
+    border-right: none !important;
+}
+
+.con-close-page .empty-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.con-close-page .empty-text {
+    color: #BFBFBF;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* 栏位设置按钮 */
+.con-close-page .column-settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+}
+
+.con-close-page .column-settings-btn:hover {
+    background-color: #E0E0E0;
+}
+
+/* ===== 导出对话框 ===== */
+.con-close-page .export-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.con-close-page .export-dialog {
+    background: #ffffff;
+    border-radius: 6px;
+    width: 400px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.con-close-page .export-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #E8E8E8;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.con-close-page .export-dialog-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999999;
+    line-height: 1;
+}
+
+.con-close-page .export-dialog-body {
+    padding: 18px;
+}
+
+.con-close-page .export-label {
+    display: block;
+    font-size: 13px;
+    color: #666666;
+    margin-bottom: 8px;
+}
+
+.con-close-page .export-filename-input {
+    width: 100%;
+    height: 34px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.con-close-page .export-filename-input:focus {
+    border-color: #40A9FF;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.con-close-page .export-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #E8E8E8;
+}
+
+.con-close-page .export-btn-cancel,
+.con-close-page .export-btn-confirm {
+    padding: 5px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid #D9D9D9;
+    background-color: #ffffff;
+    transition: all 0.2s;
+}
+
+.con-close-page .export-btn-cancel:hover {
+    border-color: #1890FF;
+    color: #1890FF;
+}
+
+.con-close-page .export-btn-confirm {
+    background-color: #1890FF;
+    border-color: #1890FF;
+    color: #ffffff;
+}
+
+.con-close-page .export-btn-confirm:hover {
+    background-color: #40A9FF;
+    border-color: #40A9FF;
+}
+
+/* ===== 栏位设计对话框 ===== */
+.con-close-page .column-settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.con-close-page .column-settings-dialog {
+    background: #ffffff;
+    border-radius: 6px;
+    width: 650px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.con-close-page .column-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #E8E8E8;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.con-close-page .column-settings-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999999;
+    line-height: 1;
+}
+
+.con-close-page .column-settings-search {
+    padding: 10px 18px;
+    border-bottom: 1px solid #E8E8E8;
+    flex-shrink: 0;
+}
+
+.con-close-page .column-search-input {
+    width: 100%;
+    height: 32px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.con-close-page .column-search-input:focus {
+    border-color: #40A9FF;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.con-close-page .column-settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.con-close-page .column-settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.con-close-page .column-settings-table th {
+    background-color: #FAFAFA;
+    border-bottom: 1px solid #E8E8E8;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 500;
+    color: #666666;
+    position: sticky;
+    top: 0;
+}
+
+.con-close-page .column-settings-table td {
+    border-bottom: 1px solid #F0F0F0;
+    padding: 7px 10px;
+}
+
+.con-close-page .column-settings-table tbody tr:hover {
+    background-color: #E6F7FF;
+}
+
+.con-close-page .col-seq { width: 45px; }
+.con-close-page .col-visible { width: 65px; }
+.con-close-page .col-original { width: 140px; }
+.con-close-page .col-display { width: 140px; }
+.col-width { width: 80px; }
+
+/* 开关样式 */
+.con-close-page .toggle-switch {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.con-close-page .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.con-close-page .toggle-slider {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background-color: #CCCCCC;
+    border-radius: 10px;
+    transition: background-color 0.2s;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.con-close-page .toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+.con-close-page .toggle-switch input:checked + .toggle-slider {
+    background-color: #1890FF;
+}
+
+.con-close-page .toggle-switch input:checked + .toggle-slider::after {
+    transform: translateX(16px);
+}
+
+.con-close-page .col-title-input,
+.con-close-page .col-width-input {
+    width: 100%;
+    height: 28px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    padding: 0 6px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.con-close-page .col-title-input:focus,
+.con-close-page .col-width-input:focus {
+    border-color: #40A9FF;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* 栏位设计底部按钮区 */
+.con-close-page .column-settings-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-top: 1px solid #E8E8E8;
+    flex-shrink: 0;
+}
+
+.con-close-page .footer-left {
+    display: flex;
+    gap: 8px;
+}
+
+.con-close-page .footer-right {
+    display: flex;
+    gap: 8px;
+}
+
+.con-close-page .col-select-all,
+.con-close-page .col-restore-default,
+.con-close-page .col-btn-cancel,
+.con-close-page .col-btn-confirm {
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid #D9D9D9;
+    background-color: #ffffff;
+    transition: all 0.2s;
+}
+
+.con-close-page .col-select-all:hover,
+.con-close-page .col-restore-default:hover,
+.con-close-page .col-btn-cancel:hover {
+    border-color: #1890FF;
+    color: #1890FF;
+}
+
+.con-close-page .col-btn-confirm {
+    background-color: #1890FF;
+    border-color: #1890FF;
+    color: #ffffff;
+}
+
+.con-close-page .col-btn-confirm:hover {
+    background-color: #40A9FF;
+    border-color: #40A9FF;
+}

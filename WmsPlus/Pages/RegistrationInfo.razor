@@ -65,7 +65,7 @@
                 </div>
                 <div class="grid-item">
                     <label class="grid-label">应用日期</label>
-                    <input type="date" class="grid-input" @bind="query.ApplyDate" />
+                    <input type="date" class="grid-input" value="@query.ApplyDate" @onchange="@((ChangeEventArgs e) => query.ApplyDate = e.Value?.ToString() ?? "")" />
                 </div>
                 <div class="grid-item grid-item-btn">
                     <button class="register-action-btn" @onclick="HandleRegister" type="button">注册</button>
@@ -90,11 +90,11 @@
                 </div>
                 <div class="grid-item">
                     <label class="grid-label">合同到期日</label>
-                    <input type="date" class="grid-input" @bind="query.ContractExpireDate" />
+                    <input type="date" class="grid-input" value="@query.ContractExpireDate" @onchange="@((ChangeEventArgs e) => query.ContractExpireDate = e.Value?.ToString() ?? "")" />
                 </div>
                 <div class="grid-item">
                     <label class="grid-label grid-label-danger">停用日</label>
-                    <input type="date" class="grid-input grid-input-danger" @bind="query.StopDate" />
+                    <input type="date" class="grid-input grid-input-danger" value="@query.StopDate" @onchange="@((ChangeEventArgs e) => query.StopDate = e.Value?.ToString() ?? "")" />
                 </div>
 
                 <!-- 第3行：停用否 | 可用模组基数 | 空 | 空 -->
@@ -118,16 +118,16 @@
         <div class="table-panel">
             <!-- 内层标签栏：模块列表 / 模块列表二 / 模块列表三 / 其他 -->
             <div class="inner-tab-bar">
-                <div class="inner-tab-item @(activeInnerTab == "module-list" ? "active" : "")" @onclick="() => SwitchInnerTab('module-list')">
+                <div class="inner-tab-item @(activeInnerTab == "module-list" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list"))">
                     模块列表
                 </div>
-                <div class="inner-tab-item @(activeInnerTab == "module-list-two" ? "active" : "")" @onclick="() => SwitchInnerTab('module-list-two')">
+                <div class="inner-tab-item @(activeInnerTab == "module-list-two" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list-two"))">
                     模块列表二
                 </div>
-                <div class="inner-tab-item @(activeInnerTab == "module-list-three" ? "active" : "")" @onclick="() => SwitchInnerTab('module-list-three')">
+                <div class="inner-tab-item @(activeInnerTab == "module-list-three" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list-three"))">
                     模块列表三
                 </div>
-                <div class="inner-tab-item @(activeInnerTab == "other" ? "active" : "")" @onclick="() => SwitchInnerTab('other')">
+                <div class="inner-tab-item @(activeInnerTab == "other" ? "active" : "")" @onclick="@(() => SwitchInnerTab("other"))">
                     其他
                 </div>
             </div>

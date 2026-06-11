@@ -1,0 +1,170 @@
+/* ========== 批号有效期作业页面样式 ========== */
+.batch-validity-operation-page {
+    width: 100%;
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    overflow: hidden;
+    padding: 0 2px 0 0;
+}
+
+/* ========== 融合式起止货品筛选框（双重复合筛选） ========== */
+.form-item-fused {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.fused-row {
+    display: flex;
+    align-items: stretch;
+    height: 30px;
+    position: relative;
+}
+
+.fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.fused-divider {
+    /* 分隔线由 fused-row:first-child 的 border-bottom 实现 */
+    display: none;
+}
+
+.form-item-fused .fused-label {
+    font-size: 12px;
+    color: #333333;
+    font-weight: 400;
+    padding: 0 8px;
+    white-space: nowrap;
+    background-color: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+}
+
+.form-item-fused .fused-input-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.form-item-fused .fused-input {
+    width: 100%;
+    height: 100%;
+    padding: 0 6px;
+    font-size: 12px;
+    color: #333333;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+}
+
+.form-item-fused .fused-search-btn {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* ========== 带搜索按钮的输入框 ========== */
+.input-with-search-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.input-with-search-btn .form-input {
+    padding-right: 24px;
+    border: none !important;
+    outline: none !important;
+}
+
+.search-action-btn {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* ========== Toggle Switch 开关（判断有效日期为空） ========== */
+.toggle-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    padding: 0 4px;
+    background-color: #ffffff;
+}
+
+.toggle-switch-label {
+    font-size: 12px;
+    color: #333333;
+    white-space: nowrap;
+}
+
+.query-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.query-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.query-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cccccc;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.query-toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.query-toggle-switch input:checked + .query-toggle-slider {
+    background-color: #1890ff;
+}
+
+.query-toggle-switch input:checked + .query-toggle-slider::before {
+    transform: translateX(16px);
+}

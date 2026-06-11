@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WmsPlus.Api.Data;
+using WmsPlus.Api.Models;
 
 namespace WmsPlus.Api.Controllers;
 

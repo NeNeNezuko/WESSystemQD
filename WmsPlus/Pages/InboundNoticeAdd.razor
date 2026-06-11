@@ -268,17 +268,52 @@
                             @foreach (var item in productItems)
                             {
                                 <tr style="border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#ffffff'">
-                                    <td style="text-align:center;padding:5px 4px;font-size:11px;">@item.ItemNo</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.PrdNo</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.PrdName</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.WhCode</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.UnitName</td>
-                                    <td style="text-align:right;padding:5px 4px;font-size:11px;">@item.Qty</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.BatchNo</td>
-                                    <td style="text-align:right;padding:5px 4px;font-size:11px;">@item.ReceivedQty</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.ExtSysOrderNo</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.ErpApplyNo</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.BizOrderNo</td>
+                                    <td style="text-align:center;padding:3px 4px;font-size:11px;">@item.ItemNo</td>
+                                    <td style="padding:2px 3px;">
+                                        <div class="td-input-group">
+                                            <input type="text" class="td-input" placeholder="" @bind="item.PrdNo" />
+                                            <span class="td-search-icon">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.PrdName" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <div class="td-input-group">
+                                            <input type="text" class="td-input" placeholder="" @bind="item.WhCode" />
+                                            <span class="td-search-icon">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.UnitName" readonly />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.Qty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <div class="td-input-group">
+                                            <input type="text" class="td-input" placeholder="" @bind="item.BatchNo" />
+                                            <span class="td-search-icon">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.ReceivedQty" readonly />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ExtSysOrderNo" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ErpApplyNo" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.BizOrderNo" />
+                                    </td>
                                 </tr>
                             }
                         }
@@ -331,15 +366,31 @@
                             @foreach (var item in barcodeItems)
                             {
                                 <tr style="border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#ffffff'">
-                                    <td style="padding:5px 4px;font-size:11px;">@item.BarcodeType</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.Barcode</td>
-                                    <td style="text-align:right;padding:5px 4px;font-size:11px;">@item.ScanQty</td>
-                                    <td style="text-align:right;padding:5px 4px;font-size:11px;">@item.ActualQty</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.ContainerBarcode</td>
-                                    <td style="text-align:right;padding:5px 4px;font-size:11px;">@item.BoxQty</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.BoxLabelTag</td>
-                                    <td style="padding:5px 4px;font-size:11px;">@item.ContainerPartLabel</td>
-                                    <td style="text-align:center;padding:5px 4px;font-size:11px;">
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.BarcodeType" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.Barcode" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.ScanQty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.ActualQty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ContainerBarcode" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.BoxQty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.BoxLabelTag" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ContainerPartLabel" />
+                                    </td>
+                                    <td style="text-align:center;padding:3px 4px;font-size:11px;">
                                         <button class="row-action-btn" @onclick="() => RemoveBarcodeRow(item.ItemNo)">删除</button>
                                     </td>
                                 </tr>

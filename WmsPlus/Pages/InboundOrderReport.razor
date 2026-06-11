@@ -1,0 +1,1098 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<InboundOrderReport> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/inbound-order-report.css" />
+
+<div class="inbound-order-report-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">入库单报表/查询</span>
+        </div>
+        <div class="header-right">
+            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 主内容区域 -->
+    <div class="page-content">
+        <!-- 左侧查询区域 -->
+        <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+            <div class="query-header">
+                <span class="query-title">查询</span>
+                <button class="query-settings-btn" title="设置" @onclick="ToggleSettingsMenu">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999999" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+                @if (showSettingsMenu)
+                {
+                    <div class="settings-dropdown" @onclick:stopPropagation>
+                        <div class="settings-dropdown-item" @onclick="BatchAddCondition">批次添加条件</div>
+                        <div class="settings-dropdown-item" @onclick="AddSingleCondition">添加单一条件</div>
+                        <div class="settings-dropdown-item" @onclick="CustomCondition">自定义条件</div>
+                        <div class="settings-dropdown-item" @onclick="RemoveCondition">移除条件</div>
+                        <div class="settings-dropdown-item" @onclick="SaveConditionValues">保存条件值</div>
+                    </div>
+                }
+            </div>
+
+            <div class="query-form">
+                <!-- 制单日期 - 日期范围选择器 + 模糊复选框 -->
+                <div class="form-item form-item-date-range">
+                    <label class="form-label">制单日期</label>
+                    <div class="date-range-with-fuzzy">
+                        <DateRangeInput @bind-Value="query.DateRange" />
+                        <label class="fuzzy-checkbox-inline">
+                            <input type="checkbox" @bind="query.DateFuzzy" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ERP申请单号 -->
+                <div class="form-item">
+                    <label class="form-label">ERP申请单号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.ErpApNo" />
+                </div>
+
+                <!-- 单据号码 起/止 - 融合式双栏位 -->
+                <div class="form-item-fused">
+                    <label class="form-label">单据号码</label>
+                    <div class="fused-inputs">
+                        <input type="text" class="form-input fused-from" placeholder="起" @bind="query.BilNoFrom" />
+                        <span class="fused-separator">~</span>
+                        <input type="text" class="form-input fused-to" placeholder="止" @bind="query.BilNoTo" />
+                    </div>
+                </div>
+
+                <!-- 货品代号 起 -->
+                <ProductCodeInput @bind-Value="query.PrdNoFrom" Label="货品代号 起" />
+
+                <!-- 货品代号 止 -->
+                <ProductCodeInput @bind-Value="query.PrdNoTo" Label="货品代号 止" />
+
+                <!-- 货品名称 + 模糊复选框 -->
+                <div class="form-item">
+                    <label class="form-label">货品名称</label>
+                    <div class="input-with-fuzzy">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.PrdNameFuzzy" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 仓库名称 + 模糊复选框 -->
+                <div class="form-item">
+                    <label class="form-label">仓库名称</label>
+                    <div class="input-with-fuzzy">
+                        <input type="text" class="form-input" placeholder="" @bind="query.WhName" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.WhNameFuzzy" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 储位代号 起/止 - 融合式双栏位(带放大镜按钮) -->
+                <div class="form-item-fused">
+                    <label class="form-label">储位代号</label>
+                    <div class="fused-inputs">
+                        <input type="text" class="form-input fused-from" placeholder="起" @bind="query.ChuwFrom" />
+                        <span class="fused-separator">~</span>
+                        <input type="text" class="form-input fused-to" placeholder="止" @bind="query.ChuwTo" />
+                        <button class="fused-search-btn" title="搜索储位">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="form-item query-btn-wrapper">
+                    <button class="query-submit-btn" @onclick="HandleSearch">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
+                            <circle cx="7" cy="7" r="5"/>
+                            <line x1="11" y1="11" x2="15" y2="15"/>
+                        </svg>
+                        <span>查询</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧数据表格区域 -->
+        <div class="table-panel">
+            <!-- 工具栏 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <button class="toolbar-btn category-btn">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <rect x="1" y="2" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                            <rect x="9" y="2" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                            <rect x="1" y="9" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                            <rect x="9" y="9" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                        </svg>
+                        <span>类别</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                        <span>导出Excel</span>
+                    </button>
+                    <button class="toolbar-btn print-btn">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M4 2h8v3H4V2zm10 4H2v7h12V6zM5 13v2h6v-2" stroke="#666666" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
+                        </svg>
+                        <span>打印</span>
+                    </button>
+                </div>
+                <div class="toolbar-right"></div>
+            </div>
+
+            <!-- 嵌套选项卡导航 -->
+            <div class="report-tab-nav">
+                <button class="report-tab @(activeReportTab == "detail" ? "active" : "")" @onclick='() => SwitchReportTab("detail")'>明细表</button>
+                <button class="report-tab @(activeReportTab == "stats" ? "active" : "")" @onclick='() => SwitchReportTab("stats")'>统计表</button>
+            </div>
+
+            <!-- 数据表格区域 -->
+            <div class="data-table-container">
+                @if (activeReportTab == "detail")
+                {
+                    <!-- 明细表 -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in detailColumnConfigs.Where(c => c.Visible))
+                                {
+                                    var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                                <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                    <span>操作</span>
+                                    <button class="column-settings-btn" title="栏位设置" @onclick="OpenDetailColumnSettings">
+                                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                        </svg>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (detailDataSource.Count == 0)
+                            {
+                                <tr><td colspan="@(DetailVisibleColumnCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in detailDataSource)
+                                {
+                                    var rowIdx = detailDataSource.IndexOf(item) + 1;
+                                    <tr>
+                                        <td style="width:45px">@rowIdx</td>
+                                        @foreach (var col in detailColumnConfigs.Where(c => c.Visible).Skip(1))
+                                        {
+                                            var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                            <td style="@widthStyle">@GetDetailCellValue(item, col.FieldKey)</td>
+                                        }
+                                        <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (activeReportTab == "stats")
+                {
+                    <!-- 统计表 -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in statsColumnConfigs.Where(c => c.Visible))
+                                {
+                                    var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                                <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                    <span>操作</span>
+                                    <button class="column-settings-btn" title="栏位设置" @onclick="OpenStatsColumnSettings">
+                                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                        </svg>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (statsDataSource.Count == 0)
+                            {
+                                <tr><td colspan="@(StatsVisibleColumnCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in statsDataSource)
+                                {
+                                    var rowIdx = statsDataSource.IndexOf(item) + 1;
+                                    <tr>
+                                        <td style="width:45px">@rowIdx</td>
+                                        @foreach (var col in statsColumnConfigs.Where(c => c.Visible).Skip(1))
+                                        {
+                                            var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                            <td style="@widthStyle">@GetStatsCellValue(item, col.FieldKey)</td>
+                                        }
+                                        <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            <!-- 底部统计栏 -->
+            <div class="report-footer-bar">
+                <div class="footer-left">
+                    <span class="group-label">分组统计字段:</span>
+                    <label class="group-check"><input type="checkbox" checked /><span>制单日年季</span></label>
+                    <label class="group-check"><input type="checkbox" checked /><span>制单日起季</span></label>
+                    <label class="group-check"><input type="checkbox" checked /><span>制单日期月</span></label>
+                    <label class="group-check"><input type="checkbox" checked /><span>制单日期周</span></label>
+                    <label class="group-check"><input type="checkbox" checked /><span>货品代号</span></label>
+                    <label class="group-check"><input type="checkbox" checked /><span>仓库代号</span></label>
+                    <label class="group-check"><input type="checkbox" checked /><span>客户名称</span></label>
+                </div>
+                <div class="footer-right">
+                    <span>共 @totalCount 笔记录</span>
+                    <span class="page-info">&lt; 1 &gt;</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导出对话框 -->
+@if (showExportDialog)
+{
+    <div class="export-dialog-overlay" @onclick="CancelExport">
+        <div class="export-dialog" @onclick:stopPropagation>
+            <div class="export-dialog-header">
+                <span>导出 Excel</span>
+                <button class="export-dialog-close" @onclick="CancelExport">&times;</button>
+            </div>
+            <div class="export-dialog-body">
+                <label class="export-label">文件名</label>
+                <input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput" />
+            </div>
+            <div class="export-dialog-footer">
+                <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
+                <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 明细表栏位设计对话框 -->
+@if (showDetailColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseDetailColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>明细表 - 栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseDetailColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="detailColumnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredDetailColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredDetailColumnConfigs[i];
+                            var idx = detailColumnConfigs.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllDetailColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultDetailColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmDetailColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelDetailColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 统计表栏位设计对话框 -->
+@if (showStatsColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseStatsColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>统计表 - 栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseStatsColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="statsColumnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredStatsColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredStatsColumnConfigs[i];
+                            var idx = statsColumnConfigs.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllStatsColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultStatsColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmStatsColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelStatsColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    // ===== 级联参数 =====
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
+
+    // ===== 基本状态 =====
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showSettingsMenu = false;
+    private bool showExportDialog = false;
+    private string exportFileName = "";
+
+    // ===== 嵌套选项卡 =====
+    private string activeReportTab = "detail"; // "detail" | "stats"
+
+    // ===== 明细表状态 =====
+    private List<ColumnConfig> detailColumnConfigs = new();
+    private List<ColumnConfig> detailDefaultColumnConfigs = new();
+    private List<InboundOrderReportDetailItem> detailDataSource = new();
+    private bool showDetailColumnSettingsDialog = false;
+    private string detailColumnSearchKeyword = "";
+    private int detailPageIndex = 1;
+    private int detailPageSize = 20;
+    private int detailTotalCount = 0;
+
+    // ===== 统计表状态 =====
+    private List<ColumnConfig> statsColumnConfigs = new();
+    private List<ColumnConfig> statsDefaultColumnConfigs = new();
+    private List<InboundOrderReportStatsItem> statsDataSource = new();
+    private bool showStatsColumnSettingsDialog = false;
+    private string statsColumnSearchKeyword = "";
+    private int statsPageIndex = 1;
+    private int statsPageSize = 20;
+    private int statsTotalCount = 0;
+
+    // ===== 总计数 =====
+    private int totalCount = 0;
+
+    // ===== 查询模型 =====
+    private InboundOrderReportQuery query = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitDetailDefaultColumnConfigs();
+        InitStatsDefaultColumnConfigs();
+        await LoadDetailColumnSettings();
+        await LoadStatsColumnSettings();
+        await LoadFavoriteStatus();
+        await HandleSearch();
+    }
+
+    // ===== 折叠/收藏/设置菜单 =====
+    private void ToggleCollapse()
+    {
+        isCollapsed = !isCollapsed;
+        StateHasChanged();
+    }
+
+    private void ToggleSettingsMenu()
+    {
+        showSettingsMenu = !showSettingsMenu;
+        StateHasChanged();
+    }
+
+    private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void RemoveCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void SaveConditionValues() { showSettingsMenu = false; StateHasChanged(); }
+
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_order_report"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_inbound_order_report", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    // ===== 选项卡切换 =====
+    private async Task SwitchReportTab(string tab)
+    {
+        activeReportTab = tab;
+        StateHasChanged();
+        await HandleSearch();
+    }
+
+    // ===== 搜索 =====
+    private async Task HandleSearch()
+    {
+        if (activeReportTab == "detail")
+            await LoadDetailData();
+        else
+            await LoadStatsData();
+    }
+
+    private async Task LoadDetailData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+
+            // 解析DateRange
+            var dateFromStr = "";
+            var dateToStr = "";
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("~"))
+            {
+                var parts = query.DateRange.Split("~", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
+                {
+                    dateFromStr = parts[0];
+                    dateToStr = parts[1];
+                }
+            }
+
+            // 构建URL
+            var url = $"{ApiBaseUrl}/api/InboundOrderReport/detailSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            url += $"&dateFuzzy={query.DateFuzzy}";
+            if (!string.IsNullOrWhiteSpace(query.ErpApNo)) url += $"&erpApNo={Uri.EscapeDataString(query.ErpApNo)}";
+            if (!string.IsNullOrWhiteSpace(query.BilNoFrom)) url += $"&bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.BilNoTo)) url += $"&bilNoTo={Uri.EscapeDataString(query.BilNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdName)) url += $"&prdName={Uri.EscapeDataString(query.PrdName)}";
+            url += $"&prdNameFuzzy={query.PrdNameFuzzy}";
+            if (!string.IsNullOrWhiteSpace(query.WhName)) url += $"&whName={Uri.EscapeDataString(query.WhName)}";
+            url += $"&whNameFuzzy={query.WhNameFuzzy}";
+            if (!string.IsNullOrWhiteSpace(query.ChuwFrom)) url += $"&chuwFrom={Uri.EscapeDataString(query.ChuwFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.ChuwTo)) url += $"&chuwTo={Uri.EscapeDataString(query.ChuwTo)}";
+            url += $"&pageIndex={detailPageIndex}&pageSize={detailPageSize}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<InboundOrderReportDetailItem>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                detailDataSource = response.Data;
+                detailTotalCount = response.Total > 0 ? response.Total : response.Data.Count;
+                totalCount = detailTotalCount;
+            }
+            else
+            {
+                detailDataSource = new List<InboundOrderReportDetailItem>();
+                detailTotalCount = 0;
+                totalCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载入库单报表明细数据失败");
+            detailDataSource = new List<InboundOrderReportDetailItem>();
+            detailTotalCount = 0;
+            totalCount = 0;
+        }
+        StateHasChanged();
+    }
+
+    private async Task LoadStatsData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+
+            // 解析DateRange
+            var dateFromStr = "";
+            var dateToStr = "";
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("~"))
+            {
+                var parts = query.DateRange.Split("~", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
+                {
+                    dateFromStr = parts[0];
+                    dateToStr = parts[1];
+                }
+            }
+
+            // 构建URL
+            var url = $"{ApiBaseUrl}/api/InboundOrderReport/statsSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            url += $"&dateFuzzy={query.DateFuzzy}";
+            if (!string.IsNullOrWhiteSpace(query.ErpApNo)) url += $"&erpApNo={Uri.EscapeDataString(query.ErpApNo)}";
+            if (!string.IsNullOrWhiteSpace(query.BilNoFrom)) url += $"&bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.BilNoTo)) url += $"&bilNoTo={Uri.EscapeDataString(query.BilNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdName)) url += $"&prdName={Uri.EscapeDataString(query.PrdName)}";
+            url += $"&prdNameFuzzy={query.PrdNameFuzzy}";
+            if (!string.IsNullOrWhiteSpace(query.WhName)) url += $"&whName={Uri.EscapeDataString(query.WhName)}";
+            url += $"&whNameFuzzy={query.WhNameFuzzy}";
+            if (!string.IsNullOrWhiteSpace(query.ChuwFrom)) url += $"&chuwFrom={Uri.EscapeDataString(query.ChuwFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.ChuwTo)) url += $"&chuwTo={Uri.EscapeDataString(query.ChuwTo)}";
+            url += $"&pageIndex={statsPageIndex}&pageSize={statsPageSize}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<InboundOrderReportStatsItem>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                statsDataSource = response.Data;
+                statsTotalCount = response.Total > 0 ? response.Total : response.Data.Count;
+                totalCount = statsTotalCount;
+            }
+            else
+            {
+                statsDataSource = new List<InboundOrderReportStatsItem>();
+                statsTotalCount = 0;
+                totalCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载入库单报表统计数据失败");
+            statsDataSource = new List<InboundOrderReportStatsItem>();
+            statsTotalCount = 0;
+            totalCount = 0;
+        }
+        StateHasChanged();
+    }
+
+    // ===== 导出 =====
+    private async Task HandleExport()
+    {
+        var currentData = activeReportTab == "detail" ? detailDataSource.Count : statsDataSource.Count;
+        if (currentData == 0) { await JS.InvokeVoidAsync("alert", "暂无数据可导出"); return; }
+        exportFileName = $"入库单报表_{DateTime.Now:yyyyMMddHHmmss}";
+        showExportDialog = true;
+        StateHasChanged();
+    }
+
+    private void CancelExport()
+    {
+        showExportDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmExport()
+    {
+        showExportDialog = false;
+        try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
+    }
+
+    private async Task ExportToExcel()
+    {
+        if (activeReportTab == "detail")
+        {
+            var visibleCols = detailColumnConfigs.Where(c => c.Visible).ToList();
+            var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+            var rows = new List<object[]>();
+            rows.Add(headers);
+            foreach (var item in detailDataSource)
+            {
+                var row = new object[visibleCols.Count];
+                for (int i = 0; i < visibleCols.Count; i++)
+                    row[i] = GetDetailCellValue(item, visibleCols[i].FieldKey);
+                rows.Add(row);
+            }
+            var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"入库单报表_明细_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+            if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+            await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
+        }
+        else
+        {
+            var visibleCols = statsColumnConfigs.Where(c => c.Visible).ToList();
+            var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+            var rows = new List<object[]>();
+            rows.Add(headers);
+            foreach (var item in statsDataSource)
+            {
+                var row = new object[visibleCols.Count];
+                for (int i = 0; i < visibleCols.Count; i++)
+                    row[i] = GetStatsCellValue(item, visibleCols[i].FieldKey);
+                rows.Add(row);
+            }
+            var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"入库单报表_统计_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+            if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+            await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
+        }
+    }
+
+    // ===== 栏位配置类 =====
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+    }
+
+    private const string DETAIL_COLUMN_SETTINGS_KEY = "wms_column_settings_inbound_report_detail";
+    private const string STATS_COLUMN_SETTINGS_KEY = "wms_column_settings_inbound_report_stats";
+
+    // ===== 明细表默认栏位配置 (11个) =====
+    private void InitDetailDefaultColumnConfigs()
+    {
+        detailDefaultColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "RowIdx", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "SysDate", OriginalName = "制单时间/网", DisplayName = "制单时间/网", Visible = true, Width = 140, DefaultWidth = 140 },
+            new() { FieldKey = "BusNo", OriginalName = "业务单号", DisplayName = "业务单号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "ErpApNo", OriginalName = "ERP申请单号", DisplayName = "ERP申请单号", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "RkNo", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "Qty1", OriginalName = "数量(副)", DisplayName = "数量(副)", Visible = true, Width = 70, DefaultWidth = 70 }
+        };
+        detailColumnConfigs = detailDefaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth
+        }).ToList();
+    }
+
+    // ===== 统计表默认栏位配置 (12个) =====
+    private void InitStatsDefaultColumnConfigs()
+    {
+        statsDefaultColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "RowIdx", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "YearPart", OriginalName = "单据日期-年", DisplayName = "单据日期-年", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "QuarterPart", OriginalName = "单据日期-季", DisplayName = "单据日期-季", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "MonthPart", OriginalName = "单据日期-月", DisplayName = "单据日期-月", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "WeekPart", OriginalName = "单据日期-周", DisplayName = "单据日期-周", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "Wh", OriginalName = "仓库代号", DisplayName = "仓库代号", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "CusName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "TotalQty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "TotalQty1", OriginalName = "数量(副)", DisplayName = "数量(副)", Visible = true, Width = 70, DefaultWidth = 70 }
+        };
+        statsColumnConfigs = statsDefaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth
+        }).ToList();
+    }
+
+    // ===== 明细表栏位设置加载/保存 =====
+    private async Task LoadDetailColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", DETAIL_COLUMN_SETTINGS_KEY);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in detailColumnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveDetailColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(detailColumnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", DETAIL_COLUMN_SETTINGS_KEY, json);
+        }
+        catch { }
+    }
+
+    private void OpenDetailColumnSettings()
+    {
+        detailColumnSearchKeyword = "";
+        showDetailColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseDetailColumnSettings()
+    {
+        showDetailColumnSettingsDialog = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmDetailColumnSettings()
+    {
+        showDetailColumnSettingsDialog = false;
+        _ = SaveDetailColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelDetailColumnSettings()
+    {
+        showDetailColumnSettingsDialog = false;
+        _ = LoadDetailColumnSettings();
+        StateHasChanged();
+    }
+
+    private void SelectAllDetailColumns()
+    {
+        foreach (var col in detailColumnConfigs)
+            col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreDefaultDetailColumns()
+    {
+        for (int i = 0; i < detailColumnConfigs.Count && i < detailDefaultColumnConfigs.Count; i++)
+        {
+            detailColumnConfigs[i].Visible = detailDefaultColumnConfigs[i].Visible;
+            detailColumnConfigs[i].DisplayName = detailDefaultColumnConfigs[i].DisplayName;
+            detailColumnConfigs[i].Width = detailDefaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredDetailColumnConfigs =>
+        string.IsNullOrWhiteSpace(detailColumnSearchKeyword)
+            ? detailColumnConfigs
+            : detailColumnConfigs.Where(c => c.OriginalName.Contains(detailColumnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                             c.FieldKey.Contains(detailColumnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int DetailVisibleColumnCount => detailColumnConfigs.Count(c => c.Visible);
+
+    // ===== 统计表栏位设置加载/保存 =====
+    private async Task LoadStatsColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", STATS_COLUMN_SETTINGS_KEY);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in statsColumnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveStatsColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(statsColumnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", STATS_COLUMN_SETTINGS_KEY, json);
+        }
+        catch { }
+    }
+
+    private void OpenStatsColumnSettings()
+    {
+        statsColumnSearchKeyword = "";
+        showStatsColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseStatsColumnSettings()
+    {
+        showStatsColumnSettingsDialog = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmStatsColumnSettings()
+    {
+        showStatsColumnSettingsDialog = false;
+        _ = SaveStatsColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelStatsColumnSettings()
+    {
+        showStatsColumnSettingsDialog = false;
+        _ = LoadStatsColumnSettings();
+        StateHasChanged();
+    }
+
+    private void SelectAllStatsColumns()
+    {
+        foreach (var col in statsColumnConfigs)
+            col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreDefaultStatsColumns()
+    {
+        for (int i = 0; i < statsColumnConfigs.Count && i < statsDefaultColumnConfigs.Count; i++)
+        {
+            statsColumnConfigs[i].Visible = statsDefaultColumnConfigs[i].Visible;
+            statsColumnConfigs[i].DisplayName = statsDefaultColumnConfigs[i].DisplayName;
+            statsColumnConfigs[i].Width = statsDefaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredStatsColumnConfigs =>
+        string.IsNullOrWhiteSpace(statsColumnSearchKeyword)
+            ? statsColumnConfigs
+            : statsColumnConfigs.Where(c => c.OriginalName.Contains(statsColumnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                            c.FieldKey.Contains(statsColumnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int StatsVisibleColumnCount => statsColumnConfigs.Count(c => c.Visible);
+
+    // ===== 单元格渲染值 =====
+    private object GetDetailCellValue(InboundOrderReportDetailItem item, string fieldKey) => fieldKey switch
+    {
+        "RowIdx" => "",
+        "SysDate" => item.SysDate,
+        "BusNo" => item.BusNo ?? "",
+        "ErpApNo" => item.ErpApNo ?? "",
+        "RkNo" => item.RkNo ?? "",
+        "PrdNo" => item.PrdNo ?? "",
+        "PrdName" => item.PrdName ?? "",
+        "BatNo" => item.BatNo ?? "",
+        "WhName" => item.WhName ?? "",
+        "Qty" => item.Qty,
+        "Qty1" => item.Qty1,
+        _ => ""
+    };
+
+    private object GetStatsCellValue(InboundOrderReportStatsItem item, string fieldKey) => fieldKey switch
+    {
+        "RowIdx" => "",
+        "YearPart" => item.YearPart ?? "",
+        "QuarterPart" => item.QuarterPart ?? "",
+        "MonthPart" => item.MonthPart ?? "",
+        "WeekPart" => item.WeekPart ?? "",
+        "PrdNo" => item.PrdNo ?? "",
+        "PrdName" => item.PrdName ?? "",
+        "Wh" => item.Wh ?? "",
+        "WhName" => item.WhName ?? "",
+        "CusName" => item.CusName ?? "",
+        "TotalQty" => item.TotalQty,
+        "TotalQty1" => item.TotalQty1,
+        _ => ""
+    };
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+
+    // ===== 查询模型 =====
+    private class InboundOrderReportQuery
+    {
+        public string DateRange { get; set; } = "";
+        public bool DateFuzzy { get; set; } = false;
+        public string ErpApNo { get; set; } = "";
+        public string BilNoFrom { get; set; } = "";
+        public string BilNoTo { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public bool PrdNameFuzzy { get; set; } = false;
+        public string WhName { get; set; } = "";
+        public bool WhNameFuzzy { get; set; } = false;
+        public string ChuwFrom { get; set; } = "";
+        public string ChuwTo { get; set; } = "";
+    }
+
+    // ===== 明细表数据模型 =====
+    private class InboundOrderReportDetailItem
+    {
+        public string? SysDate { get; set; }
+        public string? BusNo { get; set; }
+        public string? ErpApNo { get; set; }
+        public string? RkNo { get; set; }
+        public string? PrdNo { get; set; }
+        public string? PrdName { get; set; }
+        public string? BatNo { get; set; }
+        public string? WhName { get; set; }
+        public decimal Qty { get; set; }
+        public decimal Qty1 { get; set; }
+    }
+
+    // ===== 统计表数据模型 =====
+    private class InboundOrderReportStatsItem
+    {
+        public string? YearPart { get; set; }
+        public string? QuarterPart { get; set; }
+        public string? MonthPart { get; set; }
+        public string? WeekPart { get; set; }
+        public string? PrdNo { get; set; }
+        public string? PrdName { get; set; }
+        public string? Wh { get; set; }
+        public string? WhName { get; set; }
+        public string? CusName { get; set; }
+        public decimal TotalQty { get; set; }
+        public decimal TotalQty1 { get; set; }
+    }
+}

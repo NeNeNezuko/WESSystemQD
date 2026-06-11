@@ -21,6 +21,9 @@ public class MfJhrw
     /// <summary>波次单号</summary>
     public string? BC_NO { get; set; }
 
+    /// <summary>通知单号</summary>
+    public string? TZ_NO { get; set; }
+
     /// <summary>经办人</summary>
     public string? SAL_NO { get; set; }
 

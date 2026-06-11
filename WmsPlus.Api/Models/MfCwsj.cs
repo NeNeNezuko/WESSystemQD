@@ -9,6 +9,9 @@ public class MfCwsj
     /// <summary>上架单号（主键）</summary>
     public string SJ_NO { get; set; } = "";
 
+    /// <summary>仓库代号</summary>
+    public string? WH { get; set; }
+
     /// <summary>上架单ID</summary>
     public string? SJ_ID { get; set; }
 

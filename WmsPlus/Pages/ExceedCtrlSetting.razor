@@ -1,0 +1,348 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<ExceedCtrlSetting> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/exceed-ctrl-setting.css" />
+
+<div class="exceed-ctrl-page">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">超交管制设定/查询</span>
+        </div>
+    </div>
+
+    <!-- 保存成功提示 -->
+    @if (showSaveSuccess)
+    {
+        <div class="save-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>保存成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 主内容区域：左右分栏 -->
+    <div class="page-content">
+        <!-- 左侧：树状查询 -->
+        <div class="tree-panel">
+            <div class="tree-header">树状查询</div>
+            <!-- 搜索框 -->
+            <div class="tree-search">
+                <div class="tree-search-box">
+                    <input type="text" placeholder="查找..." @bind="searchKeyword" @bind:event="oninput" @onkeyup="OnSearchKeyUp" />
+                    <svg class="tree-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                </div>
+            </div>
+            <!-- 树节点列表 -->
+            <div class="tree-body">
+                @if (treeData != null)
+                {
+                    @RenderTreeNode(treeData, 0)
+                }
+                else
+                {
+                    <div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">加载中...</div>
+                }
+            </div>
+        </div>
+
+        <!-- 右侧：超交检查设置 -->
+        <div class="config-panel">
+            <div class="config-header">
+                <span class="config-title">超交检测</span>
+                <button class="save-btn" @onclick="SaveConfig" disabled="@(!hasSelectedLeaf)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                        <polyline points="17,21 17,13 7,13 7,21"/>
+                        <polyline points="7,3 7,8 15,8"/>
+                    </svg>
+                    保存
+                </button>
+            </div>
+
+            <div class="config-body">
+                @if (!hasSelectedLeaf)
+                {
+                    <div class="empty-hint">请从左侧选择一个业务类型节点</div>
+                }
+                else
+                {
+                    <!-- 超交检测方式 -->
+                    <div class="config-item">
+                        <div class="config-item-left">
+                            <div class="config-radio checked"></div>
+                            <span class="config-item-label">超交检测</span>
+                        </div>
+                        <div class="config-item-control">
+                            <span class="control-label">管制</span>
+                            <select class="config-select" @bind="currentConfig.CheckMode" @bind:event="onchange">
+                                <option value="管制">管制</option>
+                                <option value="不管制">不管制</option>
+                                <option value="允许在货品交别所设超交">允许在货品交别所设超交</option>
+                                <option value="允许在货品超交率范围内超交">允许在货品超交率范围内超交</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 超交比例 -->
+                    <div class="config-item">
+                        <div class="config-item-left">
+                            <div class="config-radio checked"></div>
+                            <span class="config-item-label">超交比例(%)</span>
+                        </div>
+                        <div class="config-item-control">
+                            <input type="number" class="config-number-input" @bind="currentConfig.RateValue" @bind:event="oninput" min="0" max="100" />
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // 树数据
+    private BizTypeTreeNode? treeData;
+    // 搜索关键字
+    private string searchKeyword = "";
+    // 当前选中的叶子节点
+    private BizTypeTreeNode? selectedNode;
+    // 当前配置
+    private ExceedConfigDto currentConfig = new();
+    // 是否有选中叶子节点
+    private bool hasSelectedLeaf => selectedNode?.IsLeaf == true;
+    // 收藏状态
+    private bool isFavorited = false;
+    // 保存成功提示
+    private bool showSaveSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTreeData();
+    }
+
+    /// <summary>加载业务类型树</summary>
+    private async Task LoadTreeData()
+    {
+        try
+        {
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, "http://localhost:5102/api/ExceedCtrlSetting/tree", TokenProvider.Token);
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                treeData = System.Text.Json.JsonSerializer.Deserialize<BizTypeTreeNode>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载树数据失败");
+        }
+    }
+
+    /// <summary>加载选中节点的配置</summary>
+    private async Task LoadConfig()
+    {
+        if (selectedNode == null || !selectedNode.IsLeaf) return;
+
+        try
+        {
+            var url = $"http://localhost:5102/api/ExceedCtrlSetting/config?crType={selectedNode.CrType}&typeId={selectedNode.TypeId}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                currentConfig = System.Text.Json.JsonSerializer.Deserialize<ExceedConfigDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            }
+            else
+            {
+                currentConfig = new ExceedConfigDto { CheckMode = "管制", RateValue = 0 };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载配置失败");
+            currentConfig = new ExceedConfigDto { CheckMode = "管制", RateValue = 0 };
+        }
+    }
+
+    /// <summary>保存配置</summary>
+    private async Task SaveConfig()
+    {
+        if (selectedNode == null || !selectedNode.IsLeaf) return;
+
+        try
+        {
+            var saveRequest = new SaveExceedConfigRequest
+            {
+                CrType = selectedNode.CrType ?? "",
+                TypeId = selectedNode.TypeId ?? "",
+                CheckMode = currentConfig.CheckMode,
+                RateValue = currentConfig.RateValue
+            };
+
+            var jsonContent = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(saveRequest),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post, "http://localhost:5102/api/ExceedCtrlSetting/save", TokenProvider.Token);
+            request.Content = jsonContent;
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                showSaveSuccess = true;
+                StateHasChanged();
+                await Task.Delay(2000);
+                showSaveSuccess = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "保存配置失败");
+        }
+    }
+
+    /// <summary>点击树节点</summary>
+    private async Task OnNodeClick(BizTypeTreeNode node)
+    {
+        // 更新选中状态（仅通过重新构建树来实现，简单处理）
+        ClearSelection(treeData!);
+        node.IsSelected = true;
+        selectedNode = node;
+
+        if (node.IsLeaf)
+        {
+            await LoadConfig();
+        }
+        else
+        {
+            // 切换展开/收起
+            node.IsExpanded = !node.IsExpanded;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>清除所有节点的选中状态</summary>
+    private void ClearSelection(BizTypeTreeNode node)
+    {
+        node.IsSelected = false;
+        foreach (var child in node.Children)
+        {
+            ClearSelection(child);
+        }
+    }
+
+    /// <summary>搜索框回车/输入事件</summary>
+    private void OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        // 搜索过滤在客户端实现，按关键字匹配节点名称
+        FilterTreeByKeyword(treeData!, searchKeyword.Trim());
+        StateHasChanged();
+    }
+
+    /// <summary>按关键字过滤树节点</summary>
+    private bool FilterTreeByKeyword(BizTypeTreeNode node, string keyword)
+    {
+        if (string.IsNullOrEmpty(keyword))
+        {
+            SetAllVisible(node, true);
+            return true;
+        }
+
+        var anyChildMatch = false;
+        foreach (var child in node.Children)
+        {
+            if (FilterTreeByKeyword(child, keyword))
+                anyChildMatch = true;
+        }
+
+        var nameMatch = node.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase);
+        node._isVisible = nameMatch || anyChildMatch;
+
+        if (anyChildMatch && !nameMatch)
+            node.IsExpanded = true;
+
+        return node._isVisible;
+    }
+
+    private void SetAllVisible(BizTypeTreeNode node, bool visible)
+    {
+        node._isVisible = true;
+        foreach (var child in node.Children)
+            SetAllVisible(child, visible);
+    }
+
+    /// <summary>收藏切换</summary>
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        // TODO: 持久化收藏状态
+    }
+
+    /// <summary>递归渲染树节点</summary>
+    private RenderFragment RenderTreeNode(BizTypeTreeNode node, int depth) => __builder =>
+    {
+        if (!node._isVisible) return;
+
+        var indent = depth * 16;
+        <div class="tree-node @(node.IsSelected ? "selected" : "")"
+             style="padding-left: @(12 + indent)px;"
+             @onclick="() => OnNodeClick(node)">
+            <!-- 展开/收起图标 -->
+            <div class="tree-expand-icon @(node.IsExpanded ? "expanded" : "") @(node.Children.Count == 0 ? "leaf" : "")">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+            <!-- 文件夹/文件图标 -->
+            <div class="tree-node-icon">
+                @if (node.Children.Count > 0)
+                {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#faad14">
+                        <path d="M3 7v13a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#1890ff">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/>
+                        <path d="M14 2v6h6" fill="#bae0ff"/>
+                    </svg>
+                }
+            </div>
+            <span class="tree-node-label">@node.Name</span>
+        </div>
+
+        // 子节点
+        if (node.IsExpanded && node.Children.Count > 0)
+        {
+            foreach (var child in node.Children)
+            {
+                @RenderTreeNode(child, depth + 1)
+            }
+        }
+    };
+}

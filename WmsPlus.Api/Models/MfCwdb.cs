@@ -9,6 +9,9 @@ public class MfCwdb
     /// <summary>调拨单号（主键）</summary>
     public string DB_NO { get; set; } = "";
 
+    /// <summary>仓库代号</summary>
+    public string? WH { get; set; }
+
     /// <summary>调拨单ID</summary>
     public string? DB_ID { get; set; }
 

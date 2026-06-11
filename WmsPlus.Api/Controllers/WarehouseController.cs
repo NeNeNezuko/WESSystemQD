@@ -50,6 +50,41 @@ public class WarehouseController : ControllerBase
     }
 
     /// <summary>
+    /// 搜索货品主档列表（分页，查询PRDT表）
+    /// </summary>
+    [HttpGet("prdsearch")]
+    public async Task<IActionResult> SearchProduct(
+        [FromQuery] string? keyword = null,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var query = _warehouseCtx.Prdts.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(p => p.PRD_NO.Contains(keyword) || (p.NAME != null && p.NAME.Contains(keyword)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(p => p.PRD_NO)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new
+            {
+                PRD_NO = p.PRD_NO,
+                NAME = p.NAME ?? "",
+                SNM = p.SNM ?? "",
+                IDX1 = p.IDX1 ?? "",
+                UT = p.UT ?? "",
+                SPC = p.SPC ?? ""
+            })
+            .ToListAsync();
+
+        return Ok(new { items, totalCount });
+    }
+
+    /// <summary>
     /// 获取表的字段元数据（从 DICT_TAB + DICT_FLD 查询）
     /// </summary>
     [HttpGet("columns")]

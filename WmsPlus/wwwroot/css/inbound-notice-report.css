@@ -1,0 +1,310 @@
+/* ========== 入库通知单报表 - 继承入库通知单基础样式，扩展报表特有样式 ========== */
+
+/* 页面容器 */
+.inbound-notice-report-page {
+    width: 100%;
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    overflow: hidden;
+    padding: 0 2px 0 0;
+}
+
+/* ========== 嵌套选项卡（明细表/统计表） ========== */
+.sub-tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 10px;
+    background-color: #ffffff;
+    border-bottom: 2px solid #e8e8e8;
+}
+
+.sub-tab-item {
+    font-size: 12px;
+    color: #333333;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+.sub-tab-item:hover {
+    color: #1890ff;
+}
+
+.sub-tab-item.active {
+    color: #1890ff;
+    font-weight: 500;
+    border-bottom-color: #1890ff;
+}
+
+/* ========== 起止范围复合筛选栏 ========== */
+.form-item-range {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.range-row {
+    display: flex;
+    align-items: stretch;
+    height: 26px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.range-row * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+}
+
+.range-label {
+    font-size: 11px;
+    color: #666666;
+    padding: 0 8px;
+    white-space: nowrap;
+    background-color: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+}
+
+.range-input {
+    width: 100%;
+    padding: 0 6px;
+    font-size: 12px;
+    color: #333333;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+}
+
+/* ========== 模糊复选框行（输入框+内联checkbox） ========== */
+.form-item-fuzzy {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+    position: relative;
+}
+
+.form-item-fuzzy > * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.form-item-fuzzy .form-label {
+    font-size: 12px;
+    color: #333333;
+    font-weight: 400;
+    padding: 0 8px;
+    white-space: nowrap;
+    background-color: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: auto;
+}
+
+.form-item-fuzzy .form-input-wrapper {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 4px;
+    padding: 0 6px;
+}
+
+.form-item-fuzzy .form-input {
+    flex: 1;
+    padding: 0;
+    font-size: 12px;
+    color: #333333;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+    min-width: 0;
+}
+
+.fuzzy-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    color: #666666;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.fuzzy-checkbox input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    accent-color: #1890ff;
+}
+
+/* ========== 右上角工具栏按钮组（报表专用） ========== */
+.report-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #e8e8e8;
+    background-color: #fafafa;
+    min-height: 34px;
+}
+
+.report-toolbar-btn {
+    height: 24px;
+    padding: 0 10px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.3s;
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.report-toolbar-btn:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+.report-toolbar-btn svg {
+    fill: currentColor;
+}
+
+/* ========== 底部统计栏 ========== */
+.stats-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    border-top: 1px solid #e8e8e8;
+    background-color: #fafafa;
+    min-height: 30px;
+}
+
+.stat-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: #666666;
+}
+
+.stat-checkbox-group .stat-label {
+    color: #999999;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.stat-checkbox-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.stat-checkbox-item input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    accent-color: #1890ff;
+}
+
+.stat-pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #666666;
+    white-space: nowrap;
+}
+
+.page-btn {
+    width: 22px;
+    height: 22px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-jump-input {
+    width: 36px;
+    height: 20px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    text-align: center;
+    font-size: 11px;
+    outline: none;
+}
+
+.page-jump-input:focus {
+    border-color: #1890ff;
+}
+
+/* ========== 明细表列宽 ========== */
+.col-make-time { width: 90px; }
+.col-source-no { width: 95px; }
+.col-erp-apply-no { width: 110px; }
+.col-doc-no { width: 110px; }
+.col-prd-no { width: 85px; }
+.col-prd-name { width: 110px; }
+.col-bat-no { width: 85px; }
+.col-qty { width: 60px; text-align: right; }
+.col-qty-rk { width: 65px; text-align: right; }
+
+/* ========== 统计表列宽 ========== */
+.col-doc-year { width: 65px; text-align: center; }
+.col-doc-quarter { width: 50px; text-align: center; }
+.col-doc-month { width: 50px; text-align: center; }
+.col-doc-week { width: 50px; text-align: center; }
+.col-biz-order-no { width: 95px; }
+
+/* ========== 表格数据右对齐 ========== */
+.data-table td.text-right {
+    text-align: right;
+}

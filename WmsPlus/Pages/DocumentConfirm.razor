@@ -104,29 +104,11 @@
                 <!-- 起止货品（融合式单边框）-->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <label class="form-label">货品代号 起</label>
-                        <div class="input-with-search">
-                            <input type="text" class="form-input" placeholder="" @bind="query.PrdNoFrom" />
-                            <button class="search-icon-btn" title="搜索">
-                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
-                                    <circle cx="6.5" cy="6.5" r="5" stroke="#999999" stroke-width="1.5" fill="none"/>
-                                    <line x1="10" y1="10" x2="14.5" y2="14.5" stroke="#999999" stroke-width="1.5"/>
-                                </svg>
-                            </button>
-                        </div>
+                        <ProductCodeInput @bind-Value="query.PrdNoFrom" Label="货品代号 起" />
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <label class="form-label">货品代号 止</label>
-                        <div class="input-with-search">
-                            <input type="text" class="form-input" placeholder="" @bind="query.PrdNoTo" />
-                            <button class="search-icon-btn" title="搜索">
-                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
-                                    <circle cx="6.5" cy="6.5" r="5" stroke="#999999" stroke-width="1.5" fill="none"/>
-                                    <line x1="10" y1="10" x2="14.5" y2="14.5" stroke="#999999" stroke-width="1.5"/>
-                                </svg>
-                            </button>
-                        </div>
+                        <ProductCodeInput @bind-Value="query.PrdNoTo" Label="货品代号 止" />
                     </div>
                 </div>
 

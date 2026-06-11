@@ -1,0 +1,963 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<ReceivingReport> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/receiving-report.css" />
+
+<div class="receiving-report-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">收货单报表</span>
+        </div>
+        <div class="header-right">
+            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 内层选项卡：明细表 | 统计表 -->
+    <div class="inner-tab-bar">
+        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
+            明细表
+        </div>
+        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
+            统计表
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="page-content">
+        <!-- 左侧查询区域 -->
+        <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+            <div class="query-header">
+                <span class="query-title">查询</span>
+                <button class="query-settings-btn" title="设置" @onclick="ToggleSettingsMenu">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999999" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+                @if (showSettingsMenu)
+                {
+                    <div class="settings-dropdown" @onclick:stopPropagation>
+                        <div class="settings-dropdown-item" @onclick="BatchAddCondition">批次添加条件</div>
+                        <div class="settings-dropdown-item" @onclick="AddSingleCondition">添加单一条件</div>
+                        <div class="settings-dropdown-item" @onclick="CustomCondition">自定义条件</div>
+                        <div class="settings-dropdown-item" @onclick="RemoveCondition">移除条件</div>
+                        <div class="settings-dropdown-item" @onclick="SaveConditionValues">保存条件值</div>
+                    </div>
+                }
+            </div>
+
+            <div class="query-form">
+                <!-- 收货日期 -->
+                <DateRangeInput @bind-Value="query.DateRange" />
+
+                <!-- 转入单号（融合式起止输入框）-->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">转入单号 起</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">转入单号 止</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
+                    </div>
+                </div>
+
+                <!-- 单据号码（融合式起止输入框）-->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">单据号码 起</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.ShNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">单据号码 止</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.ShNoTo" />
+                    </div>
+                </div>
+
+                <!-- 货品代号（融合式起止输入框，使用ProductCodeInput组件）-->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <ProductCodeInput @bind-Value="query.PrdNoFrom" Label="货品代号 起" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <ProductCodeInput @bind-Value="query.PrdNoTo" Label="货品代号 止" />
+                    </div>
+                </div>
+
+                <!-- 货品名称 + 模糊checkbox -->
+                <div class="form-item">
+                    <label class="form-label">货品名称</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" style="width:16px;height:16px;margin-right:4px;" checked="@query.PrdNameFuzzy" @onchange="@((ChangeEventArgs e) => query.PrdNameFuzzy = (bool)e.Value!)" />
+                            模糊
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 仓库 + 含下架checkbox -->
+                <div class="form-item">
+                    <label class="form-label">仓库</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <WarehouseCodeInput @bind-Value="query.Wh" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" style="width:16px;height:16px;margin-right:4px;" checked="@query.IncludeOffShelf" @onchange="@((ChangeEventArgs e) => query.IncludeOffShelf = (bool)e.Value!)" />
+                            含下架
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="form-item query-btn-wrapper">
+                    <button class="query-submit-btn" @onclick="HandleSearch">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
+                            <circle cx="7" cy="7" r="5"/>
+                            <line x1="11" y1="11" x2="15" y2="15"/>
+                        </svg>
+                        <span>查询</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧数据表格区域 -->
+        <div class="table-panel">
+            <!-- 工具栏 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <button class="toolbar-btn export-btn" @onclick="HandleTypeConfig">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M3 3h10v2H3V3zm0 4h7v2H3V7zm0 4h10v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>
+                        </svg>
+                        <span>类型</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                        <span>导出Excel</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandlePrint">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M4 2h8v3H4V2zM3 6h10v6H3V6z" stroke="#666666" stroke-width="1.2" fill="none"/>
+                            <line x1="6" y1="13" x2="6" y2="15" stroke="#666666" stroke-width="1.2"/>
+                            <line x1="10" y1="13" x2="10" y2="15" stroke="#666666" stroke-width="1.2"/>
+                        </svg>
+                        <span>打印</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleColumnDesign">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" stroke="#666666" stroke-width="1" fill="none"/>
+                        </svg>
+                        <span>栏位设计</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            @foreach (var col in columnConfigs.Where(c => c.Visible))
+                            {
+                                var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                if (col.Sortable)
+                                {
+                                    <th style="@widthStyle" class="sortable">
+                                        @col.DisplayName
+                                        <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                            <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                            <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                        </svg>
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                            }
+                            <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                <span>操作</span>
+                                <button class="column-settings-btn" title="栏位设置" @onclick="OpenColumnSettings">
+                                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                        <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                    </svg>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (detailDataSource.Count == 0)
+                        {
+                            <tr><td colspan="@(VisibleColumnCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in detailDataSource)
+                            {
+                                <tr>
+                                    @foreach (var col in columnConfigs.Where(c => c.Visible))
+                                    {
+                                        var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                    }
+                                    <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 底部统计栏 -->
+            <div class="table-footer">
+                <div class="footer-left">
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByDate" @onchange="@((ChangeEventArgs e) => groupByDate = (bool)e.Value!)" />
+                        制表日期
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByYear" @onchange="@((ChangeEventArgs e) => groupByYear = (bool)e.Value!)" />
+                        制表日期年
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByQuarter" @onchange="@((ChangeEventArgs e) => groupByQuarter = (bool)e.Value!)" />
+                        制表日期季
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByMonth" @onchange="@((ChangeEventArgs e) => groupByMonth = (bool)e.Value!)" />
+                        制表日期月
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByWeek" @onchange="@((ChangeEventArgs e) => groupByWeek = (bool)e.Value!)" />
+                        制表日期周
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByDay" @onchange="@((ChangeEventArgs e) => groupByDay = (bool)e.Value!)" />
+                        制表日期日
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByPrdNo" @onchange="@((ChangeEventArgs e) => groupByPrdNo = (bool)e.Value!)" />
+                        货品代号
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByWh" @onchange="@((ChangeEventArgs e) => groupByWh = (bool)e.Value!)" />
+                        仓库
+                    </label>
+                    <label class="group-checkbox">
+                        <input type="checkbox" checked="@groupByCustomer" @onchange="@((ChangeEventArgs e) => groupByCustomer = (bool)e.Value!)" />
+                        客户名称
+                    </label>
+                </div>
+                <div class="footer-right">
+                    <span class="record-count">共 @totalRecords 笔记录</span>
+                    <button class="page-btn" @onclick="GoToFirstPage" disabled="@(currentPage <= 1)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M10 12L6 8l4-4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M13 12L9 8l4-4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="page-btn" @onclick="GoToPrevPage" disabled="@(currentPage <= 1)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M10 12L6 8l4-4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="page-btn" @onclick="GoToNextPage" disabled="@(currentPage >= totalPages)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M6 4l4 4-4 4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="page-btn" @onclick="GoToLastPage" disabled="@(currentPage >= totalPages)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M6 4l4 4-4 4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 4l4 4-4 4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导出对话框 -->
+@if (showExportDialog)
+{
+    <div class="export-dialog-overlay" @onclick="CancelExport">
+        <div class="export-dialog" @onclick:stopPropagation>
+            <div class="export-dialog-header">
+                <span>导出 Excel</span>
+                <button class="export-dialog-close" @onclick="CancelExport">&times;</button>
+            </div>
+            <div class="export-dialog-body">
+                <label class="export-label">文件名</label>
+                <input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput" />
+            </div>
+            <div class="export-dialog-footer">
+                <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
+                <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 栏位设计对话框 -->
+@if (showColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredColumnConfigs[i];
+                            var idx = columnConfigs.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    // ===== 状态变量 =====
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showSettingsMenu = false;
+    private bool showExportDialog = false;
+    private string exportFileName = "";
+    private bool showColumnSettingsDialog = false;
+    private string columnSearchKeyword = "";
+    private string activeInnerTab = "detail";  // 内层选项卡：detail(明细表) / summary(统计表)
+    private List<ColumnConfig> columnConfigs = new();
+    private List<ColumnConfig> defaultColumnConfigs = new();
+    private ReceivingReportQuery query = new();
+    private List<ReceivingReportDetailModel> detailDataSource = new();
+    private List<ReceivingReportSummaryModel> summaryDataSource = new();
+
+    // 分组统计字段
+    private bool groupByDate = false;
+    private bool groupByYear = false;
+    private bool groupByQuarter = false;
+    private bool groupByMonth = false;
+    private bool groupByWeek = false;
+    private bool groupByDay = false;
+    private bool groupByPrdNo = false;
+    private bool groupByWh = false;
+    private bool groupByCustomer = false;
+
+    // 分页相关
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalRecords = 0;
+    private int totalPages = 0;
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+
+    // 当前数据源（根据选项卡动态切换）
+    private object CurrentDataSource => activeInnerTab == "detail" ? (object)detailDataSource : summaryDataSource;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitDefaultColumnConfigs();
+        await LoadColumnSettings();
+        await LoadFavoriteStatus();
+        await LoadData();
+    }
+
+    // ===== 内层选项卡切换 =====
+    private void SwitchInnerTab(string tab)
+    {
+        activeInnerTab = tab;
+        InitDefaultColumnConfigs();  // 切换选项卡时重新初始化栏位配置
+        _ = LoadColumnSettings();     // 加载对应选项卡的栏位设置
+        _ = LoadData();               // 切换选项卡时重新加载数据
+        StateHasChanged();
+    }
+
+    private void SwitchToDetailTab() => SwitchInnerTab("detail");
+    private void SwitchToSummaryTab() => SwitchInnerTab("summary");
+
+    // ===== 折叠/展开 =====
+    private void ToggleCollapse()
+    {
+        isCollapsed = !isCollapsed;
+        StateHasChanged();
+    }
+
+    // ===== 设置菜单方法 =====
+    private void ToggleSettingsMenu()
+    {
+        showSettingsMenu = !showSettingsMenu;
+        StateHasChanged();
+    }
+
+    private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void RemoveCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void SaveConditionValues() { showSettingsMenu = false; StateHasChanged(); }
+
+    // ===== 收藏功能 =====
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_receiving_report"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_receiving_report", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    // ===== 查询操作 =====
+    private async Task HandleSearch()
+    {
+        currentPage = 1;
+        await LoadData();
+    }
+
+    // ===== 工具栏按钮（占位） =====
+    private void HandleTypeConfig() { /* TODO: 类型配置 */ }
+    private void HandlePrint() { /* TODO: 打印 */ }
+    private void HandleColumnDesign() { OpenColumnSettings(); }
+
+    // ===== 导出 =====
+    private async Task HandleExport()
+    {
+        if ((activeInnerTab == "detail" && detailDataSource.Count == 0) ||
+            (activeInnerTab == "summary" && summaryDataSource.Count == 0))
+        {
+            await JS.InvokeVoidAsync("alert", "暂无数据可导出");
+            return;
+        }
+        exportFileName = $"收货单报表_{(activeInnerTab == "detail" ? "明细表" : "统计表")}_{DateTime.Now:yyyyMMddHHmmss}";
+        showExportDialog = true;
+        StateHasChanged();
+    }
+
+    private void CancelExport()
+    {
+        showExportDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmExport()
+    {
+        showExportDialog = false;
+        try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
+    }
+
+    // ===== 数据加载 =====
+    private async Task LoadData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = activeInnerTab == "detail"
+                ? $"{ApiBaseUrl}/api/ReceivingReport/detail"
+                : $"{ApiBaseUrl}/api/ReceivingReport/summary";
+
+            // 构建查询参数
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("\u2192"))
+            {
+                var parts = query.DateRange.Split("\u2192", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
+                {
+                    url += $"?dateFrom={Uri.EscapeDataString(parts[0])}&dateTo={Uri.EscapeDataString(parts[1])}";
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(query.BilNoFrom))
+                url += $"{(url.Contains("?") ? "&" : "?")}bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.BilNoTo))
+                url += $"&bilNoTo={Uri.EscapeDataString(query.BilNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.ShNoFrom))
+                url += $"&shNoFrom={Uri.EscapeDataString(query.ShNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.ShNoTo))
+                url += $"&shNoTo={Uri.EscapeDataString(query.ShNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom))
+                url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo))
+                url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdName))
+                url += $"&prdName={Uri.EscapeDataString(query.PrdName)}&prdNameFuzzy={query.PrdNameFuzzy.ToString().ToLower()}";
+            if (!string.IsNullOrWhiteSpace(query.Wh))
+                url += $"&wh={Uri.EscapeDataString(query.Wh)}&includeOffShelf={query.IncludeOffShelf.ToString().ToLower()}";
+
+            // 分页参数
+            url += $"&page={currentPage}&pageSize={pageSize}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+
+            if (activeInnerTab == "detail")
+            {
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<ReceivingReportDetailModel>>>(jsonOptions);
+                if (response != null && response.Success && response.Data != null)
+                {
+                    detailDataSource = response.Data;
+                    totalRecords = response.Total;
+                }
+                else
+                {
+                    detailDataSource = new List<ReceivingReportDetailModel>();
+                    totalRecords = 0;
+                }
+            }
+            else
+            {
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<ReceivingReportSummaryModel>>>(jsonOptions);
+                if (response != null && response.Success && response.Data != null)
+                {
+                    summaryDataSource = response.Data;
+                    totalRecords = response.Total;
+                }
+                else
+                {
+                    summaryDataSource = new List<ReceivingReportSummaryModel>();
+                    totalRecords = 0;
+                }
+            }
+
+            totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载收货单报表数据失败");
+            if (activeInnerTab == "detail")
+                detailDataSource = new List<ReceivingReportDetailModel>();
+            else
+                summaryDataSource = new List<ReceivingReportSummaryModel>();
+            totalRecords = 0;
+            totalPages = 0;
+        }
+        StateHasChanged();
+    }
+
+    // ===== Excel导出 =====
+    private async Task ExportToExcel()
+    {
+        var visibleCols = columnConfigs.Where(c => c.Visible).ToList();
+        var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+        var rows = new List<object[]>();
+        rows.Add(headers);
+
+        if (activeInnerTab == "detail")
+        {
+            foreach (var item in detailDataSource)
+            {
+                var row = new object[visibleCols.Count];
+                for (int i = 0; i < visibleCols.Count; i++)
+                    row[i] = GetCellValue(item, visibleCols[i].FieldKey);
+                rows.Add(row);
+            }
+        }
+        else
+        {
+            foreach (var item in summaryDataSource)
+            {
+                var row = new object[visibleCols.Count];
+                for (int i = 0; i < visibleCols.Count; i++)
+                    row[i] = GetCellValue(item, visibleCols[i].FieldKey);
+                rows.Add(row);
+            }
+        }
+
+        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"收货单报表_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+        if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+        await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
+    }
+
+    // ===== 栏位配置 =====
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+        public bool Sortable { get; set; } = false;
+    }
+
+    // 根据当前选项卡获取对应的localStorage key
+    private string ColumnSettingsKey =>
+        activeInnerTab == "detail"
+            ? "wms_column_settings_receiving_report_detail"
+            : "wms_column_settings_receiving_report_summary";
+
+    private void InitDefaultColumnConfigs()
+    {
+        if (activeInnerTab == "detail")
+        {
+            defaultColumnConfigs = new List<ColumnConfig>
+            {
+                new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
+                new() { FieldKey = "LastAcceptTime", OriginalName = "最近验收时间", DisplayName = "最近验收时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+                new() { FieldKey = "BilNo", OriginalName = "转入单号", DisplayName = "转入单号", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
+                new() { FieldKey = "ShNo", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
+                new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+                new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+                new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 100, DefaultWidth = 100 },
+                new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 100, DefaultWidth = 100 },
+                new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+                new() { FieldKey = "QtySub", OriginalName = "数量(副)", DisplayName = "数量(副)", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+                new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 60, DefaultWidth = 60 },
+                new() { FieldKey = "DepName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 100, DefaultWidth = 100 }
+            };
+        }
+        else
+        {
+            defaultColumnConfigs = new List<ColumnConfig>
+            {
+                new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
+                new() { FieldKey = "LastAcceptTime", OriginalName = "最近验收时间", DisplayName = "最近验收时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+                new() { FieldKey = "DocYear", OriginalName = "制表日期-年", DisplayName = "制表日期-年", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "DocQuarter", OriginalName = "制表日期-季", DisplayName = "制表日期-季", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "DocMonth", OriginalName = "制表日期-月", DisplayName = "制表日期-月", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "DocWeek", OriginalName = "制表日期-周", DisplayName = "制表日期-周", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "DocDay", OriginalName = "制表日期-日", DisplayName = "制表日期-日", Visible = true, Width = 90, DefaultWidth = 90 },
+                new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+                new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+                new() { FieldKey = "Spec", OriginalName = "规格", DisplayName = "规格", Visible = true, Width = 100, DefaultWidth = 100 },
+                new() { FieldKey = "Ledger", OriginalName = "台账", DisplayName = "台账", Visible = true, Width = 80, DefaultWidth = 80 },
+                new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 100, DefaultWidth = 100 },
+                new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 100, DefaultWidth = 100 }
+            };
+        }
+
+        columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth,
+            Sortable = c.Sortable
+        }).ToList();
+    }
+
+    private async Task LoadColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", ColumnSettingsKey);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in columnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(columnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", ColumnSettingsKey, json);
+        }
+        catch { }
+    }
+
+    private void OpenColumnSettings()
+    {
+        columnSearchKeyword = "";
+        showColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = SaveColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = LoadColumnSettings();
+        StateHasChanged();
+    }
+
+    private void SelectAllColumns()
+    {
+        foreach (var col in columnConfigs)
+            col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreDefaultColumns()
+    {
+        for (int i = 0; i < columnConfigs.Count && i < defaultColumnConfigs.Count; i++)
+        {
+            columnConfigs[i].Visible = defaultColumnConfigs[i].Visible;
+            columnConfigs[i].DisplayName = defaultColumnConfigs[i].DisplayName;
+            columnConfigs[i].Width = defaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredColumnConfigs =>
+        string.IsNullOrWhiteSpace(columnSearchKeyword)
+            ? columnConfigs
+            : columnConfigs.Where(c => c.OriginalName.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                       c.FieldKey.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int VisibleColumnCount => columnConfigs.Count(c => c.Visible);
+
+    // 获取单元格渲染值（根据当前选项卡返回不同模型的值）
+    private object GetCellValue(object item, string fieldKey)
+    {
+        if (activeInnerTab == "detail" && item is ReceivingReportDetailModel detailItem)
+        {
+            return GetDetailCellValue(detailItem, fieldKey);
+        }
+        else if (activeInnerTab == "summary" && item is ReceivingReportSummaryModel summaryItem)
+        {
+            return GetSummaryCellValue(summaryItem, fieldKey);
+        }
+        return "";
+    }
+
+    private object GetDetailCellValue(ReceivingReportDetailModel item, string fieldKey) => fieldKey switch
+    {
+        "SeqNo" => item.SeqNo,
+        "LastAcceptTime" => item.LastAcceptTime.HasValue ? item.LastAcceptTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
+        "BilNo" => item.BilNo ?? "",
+        "ShNo" => item.ShNo ?? "",
+        "PrdNo" => item.PrdNo ?? "",
+        "PrdName" => item.PrdName ?? "",
+        "BatNo" => item.BatNo ?? "",
+        "WhName" => item.WhName ?? "",
+        "Qty" => item.Qty,
+        "QtySub" => item.QtySub,
+        "Unit" => item.Unit ?? "",
+        "DepName" => item.DepName ?? "",
+        _ => ""
+    };
+
+    private object GetSummaryCellValue(ReceivingReportSummaryModel item, string fieldKey) => fieldKey switch
+    {
+        "SeqNo" => item.SeqNo,
+        "LastAcceptTime" => item.LastAcceptTime.HasValue ? item.LastAcceptTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
+        "DocYear" => item.DocYear ?? "",
+        "DocQuarter" => item.DocQuarter ?? "",
+        "DocMonth" => item.DocMonth ?? "",
+        "DocWeek" => item.DocWeek ?? "",
+        "DocDay" => item.DocDay ?? "",
+        "PrdNo" => item.PrdNo ?? "",
+        "PrdName" => item.PrdName ?? "",
+        "Spec" => item.Spec ?? "",
+        "Ledger" => item.Ledger ?? "",
+        "WhName" => item.WhName ?? "",
+        "CustomerName" => item.CustomerName ?? "",
+        _ => ""
+    };
+
+    // ===== 分页方法 =====
+    private async Task GoToFirstPage()
+    {
+        if (currentPage <= 1) return;
+        currentPage = 1;
+        await LoadData();
+    }
+
+    private async Task GoToPrevPage()
+    {
+        if (currentPage <= 1) return;
+        currentPage--;
+        await LoadData();
+    }
+
+    private async Task GoToNextPage()
+    {
+        if (currentPage >= totalPages) return;
+        currentPage++;
+        await LoadData();
+    }
+
+    private async Task GoToLastPage()
+    {
+        if (currentPage >= totalPages) return;
+        currentPage = totalPages;
+        await LoadData();
+    }
+
+    // ===== 查询模型 =====
+    private class ReceivingReportQuery
+    {
+        public string DateRange { get; set; } = "";
+        public string BilNoFrom { get; set; } = "";
+        public string BilNoTo { get; set; } = "";
+        public string ShNoFrom { get; set; } = "";
+        public string ShNoTo { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public bool PrdNameFuzzy { get; set; } = false;
+        public string Wh { get; set; } = "";
+        public bool IncludeOffShelf { get; set; } = false;
+    }
+
+    // ===== 明细表数据模型 =====
+    private class ReceivingReportDetailModel
+    {
+        public int SeqNo { get; set; }
+        public DateTime? LastAcceptTime { get; set; }
+        public string? BilNo { get; set; }
+        public string? ShNo { get; set; }
+        public string? PrdNo { get; set; }
+        public string? PrdName { get; set; }
+        public string? BatNo { get; set; }
+        public string? WhName { get; set; }
+        public decimal Qty { get; set; }
+        public decimal QtySub { get; set; }
+        public string? Unit { get; set; }
+        public string? DepName { get; set; }
+    }
+
+    // ===== 统计表数据模型 =====
+    private class ReceivingReportSummaryModel
+    {
+        public int SeqNo { get; set; }
+        public DateTime? LastAcceptTime { get; set; }
+        public string? DocYear { get; set; }
+        public string? DocQuarter { get; set; }
+        public string? DocMonth { get; set; }
+        public string? DocWeek { get; set; }
+        public string? DocDay { get; set; }
+        public string? PrdNo { get; set; }
+        public string? PrdName { get; set; }
+        public string? Spec { get; set; }
+        public string? Ledger { get; set; }
+        public string? WhName { get; set; }
+        public string? CustomerName { get; set; }
+    }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+}

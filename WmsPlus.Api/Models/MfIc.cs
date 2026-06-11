@@ -9,6 +9,9 @@ public class MfIc
     /// <summary>调拨单号（主键）</summary>
     public string IC_NO { get; set; } = "";
 
+    /// <summary>仓库代号</summary>
+    public string? WH { get; set; }
+
     /// <summary>单据日期</summary>
     public DateTime? IC_DD { get; set; }
 

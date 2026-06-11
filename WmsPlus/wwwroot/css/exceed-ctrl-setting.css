@@ -1,0 +1,402 @@
+/* 超交管制设定页面 - 整体布局 */
+.exceed-ctrl-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+/* 顶部标题栏 */
+.exceed-ctrl-page .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    min-height: 44px;
+    flex-shrink: 0;
+}
+
+.exceed-ctrl-page .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.exceed-ctrl-page .favorite-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.exceed-ctrl-page .favorite-btn:hover {
+    background: #f0f0f0;
+}
+
+.exceed-ctrl-page .page-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* 主内容区 - 左右分栏 */
+.exceed-ctrl-page .page-content {
+    display: flex;
+    flex: 1 1 0%;
+    overflow: hidden;
+}
+
+/* ===== 左侧树状查询区域 ===== */
+.exceed-ctrl-page .tree-panel {
+    width: 280px;
+    min-width: 280px;
+    background: #fff;
+    border-right: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.exceed-ctrl-page .tree-header {
+    padding: 12px 14px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* 树搜索框 */
+.exceed-ctrl-page .tree-search {
+    padding: 8px 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.exceed-ctrl-page .tree-search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 5px 8px;
+    background: #fff;
+}
+
+.exceed-ctrl-page .tree-search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    color: #333;
+    background: transparent;
+}
+
+.exceed-ctrl-page .tree-search-box input::placeholder {
+    color: #bbb;
+}
+
+.exceed-ctrl-page .tree-search-icon {
+    width: 14px;
+    height: 14px;
+    color: #999;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* 树节点列表 */
+.exceed-ctrl-page .tree-body {
+    flex: 1 1 0%;
+    overflow-y: auto;
+    padding: 6px 0;
+}
+
+.exceed-ctrl-page .tree-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.exceed-ctrl-page .tree-body::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+/* 单个树节点 */
+.exceed-ctrl-page .tree-node {
+    display: flex;
+    align-items: center;
+    padding: 5px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    color: #555;
+    transition: background-color 0.15s;
+}
+
+.exceed-ctrl-page .tree-node:hover {
+    background: #f5f5f5;
+}
+
+.exceed-ctrl-page .tree-node.selected {
+    background: #e6f7ff;
+    color: #1890ff;
+}
+
+/* 展开/收起图标 */
+.exceed-ctrl-page .tree-expand-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #999;
+    transition: transform 0.2s;
+}
+
+.exceed-ctrl-page .tree-expand-icon.expanded {
+    transform: rotate(90deg);
+}
+
+.exceed-ctrl-page .tree-expand-icon.leaf {
+    visibility: hidden;
+}
+
+/* 文件夹/叶子图标 */
+.exceed-ctrl-page .tree-node-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 节点名称 */
+.exceed-ctrl-page .tree-node-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+}
+
+/* 子节点缩进 */
+.exceed-ctrl-page .tree-children {
+    /* 子节点通过 padding-left 缩进，由组件动态控制 */
+}
+
+/* ===== 右侧超交检查设置区域 ===== */
+.exceed-ctrl-page .config-panel {
+    flex: 1 1 0%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.exceed-ctrl-page .config-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+
+.exceed-ctrl-page .config-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* 保存按钮 */
+.exceed-ctrl-page .save-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 16px;
+    background: #1890ff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.exceed-ctrl-page .save-btn:hover {
+    background: #40a9ff;
+}
+
+.exceed-ctrl-page .save-btn:active {
+    background: #096dd9;
+}
+
+.exceed-ctrl-page .save-btn:disabled {
+    background: #91caff;
+    cursor: not-allowed;
+}
+
+.exceed-ctrl-page .save-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* 设置项容器 */
+.exceed-ctrl-page .config-body {
+    flex: 1 1 0%;
+    padding: 24px 30px;
+    overflow-y: auto;
+}
+
+/* 单个设置项 */
+.exceed-ctrl-page .config-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.exceed-ctrl-page .config-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 设置项左侧：radio + 标签 */
+.exceed-ctrl-page .config-item-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    padding-top: 6px;
+}
+
+/* 自定义 radio 样式 */
+.exceed-ctrl-page .config-radio {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #d9d9d9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+.exceed-ctrl-page .config-radio.checked {
+    border-color: #1890ff;
+}
+
+.exceed-ctrl-page .config-radio.checked::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #1890ff;
+    border-radius: 50%;
+}
+
+.exceed-ctrl-page .config-item-label {
+    font-size: 13px;
+    color: #333;
+    white-space: nowrap;
+}
+
+/* 设置项右侧：控件区域 */
+.exceed-ctrl-page .config-item-control {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 下拉选择框标签 */
+.exceed-ctrl-page .control-label {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 下拉选择框 */
+.exceed-ctrl-page .config-select {
+    width: 240px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+}
+
+.exceed-ctrl-page .config-select:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* 数字输入框 */
+.exceed-ctrl-page .config-number-input {
+    width: 100px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    outline: none;
+}
+
+.exceed-ctrl-page .config-number-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* ===== 保存成功提示 Toast ===== */
+.exceed-ctrl-page .save-success-toast {
+    position: fixed;
+    top: 60px;
+    right: 24px;
+    z-index: 1000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.exceed-ctrl-page .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-size: 13px;
+    color: #333;
+    border-left: 3px solid #52c41a;
+}
+
+/* 空状态提示 */
+.exceed-ctrl-page .empty-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0%;
+    color: #999;
+    font-size: 13px;
+}
