@@ -20,5 +20,8 @@ namespace WmsPlus.Models
         public DateTime? DateTo { get; set; }
         public string ChangeNumber { get; set; } = "";
         public string DocType { get; set; } = "全部";
+        public string WarehouseCode { get; set; } = "";
+        public string DeptCode { get; set; } = "";
+        public string BusinessType { get; set; } = "";
     }
 }

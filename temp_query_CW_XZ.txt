@@ -1,0 +1,4 @@
+﻿output
+UP_DD | 时间戳
+NAME | 性质说明
+CWXZ_NO | 储存性质代号

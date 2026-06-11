@@ -94,4 +94,94 @@ public class WarehouseController : ControllerBase
 
         return Ok(new { items, totalCount });
     }
+
+    /// <summary>
+    /// 搜索出库业务类型列表（分页，CR_TYPE=2）
+    /// </summary>
+    [HttpGet("cktypesearch")]
+    public async Task<IActionResult> SearchCkType(
+        [FromQuery] string? keyword = null,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var query = _warehouseCtx.RkTypeSets.Where(r => r.CR_TYPE == "2");
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(r => r.TYPE_ID.Contains(keyword)
+                || (r.NAME != null && r.NAME.Contains(keyword)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(r => r.TYPE_ID)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .Select(r => new
+            {
+                TYPE_ID = r.TYPE_ID,
+                NAME = r.NAME ?? ""
+            })
+            .ToListAsync();
+
+        return Ok(new { items, totalCount });
+    }
+
+    /// <summary>
+    /// 搜索部门列表（分页）
+    /// </summary>
+    [HttpGet("deptsearch")]
+    public async Task<IActionResult> SearchDept([FromQuery] string? keyword = null, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+    {
+        var query = _warehouseCtx.Depts.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(d => d.DEP.Contains(keyword) || (d.NAME != null && d.NAME.Contains(keyword)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(d => d.DEP)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .Select(d => new
+            {
+                DEP = d.DEP,
+                NAME = d.NAME ?? ""
+            })
+            .ToListAsync();
+
+        return Ok(new { items, totalCount });
+    }
+
+    /// <summary>
+    /// 搜索客户列表（分页，从MF_CKTB去重获取）
+    /// </summary>
+    [HttpGet("customersearch")]
+    public async Task<IActionResult> SearchCustomer([FromQuery] string? keyword = null, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+    {
+        var baseQuery = _warehouseCtx.MfCktbs
+            .Where(m => m.CUS_NO != null && m.CUS_NO != "");
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            baseQuery = baseQuery.Where(m => m.CUS_NO.Contains(keyword)
+                || (m.CUS_NAME != null && m.CUS_NAME.Contains(keyword)));
+        }
+
+        var distinctQuery = baseQuery
+            .GroupBy(m => new { m.CUS_NO, m.CUS_NAME })
+            .Select(g => g.Key);
+
+        var totalCount = await distinctQuery.CountAsync();
+        var items = await distinctQuery
+            .OrderBy(x => x.CUS_NO)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new { CUS_NO = x.CUS_NO, CUS_NAME = x.CUS_NAME ?? "" })
+            .ToListAsync();
+
+        return Ok(new { items, totalCount });
+    }
 }

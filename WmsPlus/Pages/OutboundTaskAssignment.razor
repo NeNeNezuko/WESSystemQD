@@ -1,0 +1,1193 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<OutboundTaskAssignment> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/outbound-task-assignment.css" />
+
+<div class="ota-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">出库任务分配作业</span>
+        </div>
+        <div class="header-right">
+            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 内层选项卡栏 + 工具按钮 -->
+    <div class="inner-tab-bar">
+        <div class="tab-list">
+            @foreach (var tab in innerTabs)
+            {
+                <div class="tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
+                    <span>@tab.Title</span>
+                </div>
+            }
+        </div>
+        <!-- 右侧工具按钮（随Tab变化） -->
+        <div class="tab-toolbar">
+            @if (activeInnerTabId == "notice")
+            {
+                <button class="toolbar-action-btn" @onclick="HandleMainWaveAssign">主笔派次</button>
+                <button class="toolbar-action-btn" @onclick="HandleBoxList">箱单</button>
+            }
+            else if (activeInnerTabId == "wave")
+            {
+                <button class="toolbar-action-btn" @onclick="HandlePrint">打印</button>
+                <button class="toolbar-action-btn" @onclick="HandleDataSourceBatch">数源批次</button>
+            }
+            else if (activeInnerTabId == "pick-task")
+            {
+                <button class="toolbar-action-btn" @onclick="HandlePrint">打印</button>
+                <button class="toolbar-action-btn" @onclick="HandleFilterEmployee">筛选设定员工</button>
+                <button class="toolbar-action-btn primary" @onclick="HandleDispatch">派工</button>
+            }
+            else if (activeInnerTabId == "param")
+            {
+                <button class="toolbar-action-btn primary" @onclick="HandleSaveParam">点保存</button>
+            }
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="page-content">
+        <!-- 左侧查询区域（Tab1-3共用，Tab4隐藏） -->
+        @if (activeInnerTabId != "param")
+        {
+            <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+                <div class="query-header">
+                    <span class="query-title">查询</span>
+                    <button class="query-settings-btn" title="设置" @onclick="ToggleSettingsMenu">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999999" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2.83 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2.83 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </button>
+                    @if (showSettingsMenu)
+                    {
+                        <div class="settings-dropdown" @onclick:stopPropagation>
+                            <div class="settings-dropdown-item" @onclick="BatchAddCondition">批次添加条件</div>
+                            <div class="settings-dropdown-item" @onclick="AddSingleCondition">添加单一条件</div>
+                            <div class="settings-dropdown-item" @onclick="CustomCondition">自定义条件</div>
+                            <div class="settings-dropdown-item" @onclick="RemoveCondition">移除条件</div>
+                            <div class="settings-dropdown-item" @onclick="SaveConditionValues">保存条件值</div>
+                        </div>
+                    }
+                </div>
+
+                <div class="query-form">
+                    @if (activeInnerTabId == "notice")
+                    {
+                        <!-- ====== Tab1: 出库通知 查询条件 ====== -->
+                        <!-- 来源单据类型 -->
+                        <div class="form-item">
+                            <label class="form-label">来源单据类型</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked="@sourceTypeNotice" @onchange="(e) => sourceTypeNotice = (bool)e.Value!" /> 出库通知单</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@sourceTypeTransfer" @onchange="(e) => sourceTypeTransfer = (bool)e.Value!" /> 调拨通知单</label>
+                            </div>
+                        </div>
+                        <!-- 预计日期范围 -->
+                        <DateRangeInput @bind-Value="query.DateRange" />
+                        <!-- 预计到货时间 -->
+                        <DateRangeInput @bind-Value="query.EstimateArriveRange" />
+                        <!-- 仓库 -->
+                        <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
+                        <!-- 业务类型（出库） -->
+                        <CkTypeInput @bind-Value="query.BusinessType" />
+                        <!-- 申请单号 -->
+                        <div class="form-item">
+                            <label class="form-label">申请单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.ApplyOrderNumber" />
+                        </div>
+                        <!-- 通知单号 -->
+                        <div class="form-item">
+                            <label class="form-label">通知单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.NoticeNumber" />
+                        </div>
+                        <!-- 业务单号 -->
+                        <div class="form-item">
+                            <label class="form-label">业务单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.BusinessOrderNumber" />
+                        </div>
+                        <!-- 处理状态 -->
+                        <div class="form-item">
+                            <label class="form-label">处理状态</label>
+                            <div class="select-wrapper">
+                                <select class="form-select" @bind="query.ProcessStatus">
+                                    <option value="待处理">待处理</option>
+                                    <option value="全部">全部</option>
+                                </select>
+                                <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                    <path d="M2 4l4 4 4-4"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 跟踪否 -->
+                        <div class="form-item">
+                            <label class="form-label">跟踪否</label>
+                            <div class="input-with-icon">
+                                <input type="text" class="form-input" placeholder="待处理" value="待处理" readonly />
+                                <svg class="input-icon-search" viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 收货点 -->
+                        <div class="form-item">
+                            <label class="form-label">收货点</label>
+                            <div class="input-with-icon">
+                                <input type="text" class="form-input" placeholder="" @bind="query.ReceivePoint" />
+                                <svg class="input-icon-search" viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 客户代号 -->
+                        <CustomerCodeInput @bind-Value="query.CustomerCode" />
+                    }
+                    else if (activeInnerTabId == "wave")
+                    {
+                        <!-- ====== Tab2: 波次管理 查询条件 ====== -->
+                        <DateRangeInput @bind-Value="query.DateRange" />
+                        <DateRangeInput @bind-Value="query.EstimateArriveRange" />
+                        <!-- 波次单号 -->
+                        <div class="form-item">
+                            <label class="form-label">波次单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.WaveNumber" />
+                        </div>
+                        <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
+                        <CkTypeInput @bind-Value="query.BusinessType" />
+                        <div class="form-item">
+                            <label class="form-label">申请单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.ApplyOrderNumber" />
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">通知单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.NoticeNumber" />
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">业务单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.BusinessOrderNumber" />
+                        </div>
+                        <!-- 进单等级 -->
+                        <div class="form-item">
+                            <label class="form-label">进单等级</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked="@priorityQuery" @onchange="(e) => priorityQuery = (bool)e.Value!" /> 查询</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@priorityUrgent" @onchange="(e) => priorityUrgent = (bool)e.Value!" /> 紧急</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@priorityEmergency" @onchange="(e) => priorityEmergency = (bool)e.Value!" /> 特急</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@priorityClosed" @onchange="(e) => priorityClosed = (bool)e.Value!" /> 已结</label>
+                            </div>
+                        </div>
+                        <!-- 流程状态 -->
+                        <div class="form-item">
+                            <label class="form-label">流程状态</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked="@flowUnassigned" @onchange="(e) => flowUnassigned = (bool)e.Value!" /> 未派工</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@flowClosed" @onchange="(e) => flowClosed = (bool)e.Value!" /> 已结案</label>
+                            </div>
+                        </div>
+                        <!-- 收货点 -->
+                        <div class="form-item">
+                            <label class="form-label">收货点</label>
+                            <div class="input-with-icon">
+                                <input type="text" class="form-input" placeholder="" @bind="query.ReceivePoint" />
+                                <svg class="input-icon-search" viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 打印列示 -->
+                        <div class="form-item">
+                            <label class="form-label">打印列示</label>
+                            <div class="select-wrapper">
+                                <select class="form-select" @bind="query.PrintListType">
+                                    <option value="全部">全部</option>
+                                    <option value="已打印">已打印</option>
+                                    <option value="未打印">未打印</option>
+                                </select>
+                                <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                    <path d="M2 4l4 4 4-4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    }
+                    else if (activeInnerTabId == "pick-task")
+                    {
+                        <!-- ====== Tab3: 波次拣货任务管理 查询条件 ====== -->
+                        <DateRangeInput @bind-Value="query.DateRange" />
+                        <DateRangeInput @bind-Value="query.EstimateArriveRange" />
+                        <div class="form-item">
+                            <label class="form-label">波次单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.WaveNumber" />
+                        </div>
+                        <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
+                        <CkTypeInput @bind-Value="query.BusinessType" />
+                        <div class="form-item">
+                            <label class="form-label">申请单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.ApplyOrderNumber" />
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">通知单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.NoticeNumber" />
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">业务单号</label>
+                            <input type="text" class="form-input" placeholder="" @bind="query.BusinessOrderNumber" />
+                        </div>
+                        <!-- 进单等级 -->
+                        <div class="form-item">
+                            <label class="form-label">进单等级</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked="@pickPriorityQuery" @onchange="(e) => pickPriorityQuery = (bool)e.Value!" /> 查询</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@pickPriorityUrgent" @onchange="(e) => pickPriorityUrgent = (bool)e.Value!" /> 紧急</label>
+                                <label class="checkbox-label"><input type="checkbox" checked="@pickPriorityEmergency" @onchange="(e) => pickPriorityEmergency = (bool)e.Value!" /> 特急</label>
+                            </div>
+                        </div>
+                        <!-- 流程状态(派工) -->
+                        <div class="form-item">
+                            <label class="form-label">流程状态</label>
+                            <div class="select-wrapper">
+                                <select class="form-select" @bind="query.ProcessStatusPg">
+                                    <option value="未派工">未派工</option>
+                                    <option value="已派工">已派工</option>
+                                    <option value="全部">全部</option>
+                                </select>
+                                <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                    <path d="M2 4l4 4 4-4"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 收货点 -->
+                        <div class="form-item">
+                            <label class="form-label">收货点</label>
+                            <div class="input-with-icon">
+                                <input type="text" class="form-input" placeholder="" @bind="query.ReceivePoint" />
+                                <svg class="input-icon-search" viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 打印列示 -->
+                        <div class="form-item">
+                            <label class="form-label">打印列示</label>
+                            <div class="select-wrapper">
+                                <select class="form-select" @bind="query.PrintListType">
+                                    <option value="全部">全部</option>
+                                    <option value="已打印">已打印</option>
+                                    <option value="未打印">未打印</option>
+                                </select>
+                                <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                    <path d="M2 4l4 4 4-4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- 查询按钮（Tab1-3共用） -->
+                    <div class="form-item query-btn-wrapper">
+                        <button class="query-submit-btn" @onclick="HandleSearch">
+                            <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
+                                <circle cx="7" cy="7" r="5"/>
+                                <line x1="11" y1="11" x2="15" y2="15"/>
+                            </svg>
+                            <span>查询</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- 右侧数据区域 -->
+        <div class="table-panel">
+            @if (activeInnerTabId == "param")
+            {
+                <!-- ====== Tab4: 参数设定 ====== -->
+                <div class="param-setting-area">
+                    <div class="param-item">
+                        <label class="param-checkbox-label">
+                            <input type="checkbox" @bind="paramSetting.PickerAutoAssign" />
+                            <span>拣货员先为空(受串自动化)</span>
+                        </label>
+                    </div>
+                    <div class="param-item">
+                        <label class="param-checkbox-label">
+                            <input type="checkbox" @bind="paramSetting.ShowWaveDetailWindow" />
+                            <span>生成波次-显示明细窗口</span>
+                        </label>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- ====== Tab1-3: 双表格布局 ====== -->
+
+                <!-- 上方：主表格 -->
+                <div class="upper-table-section">
+                    <div class="section-title">@CurrentMainTableTitle</div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    @foreach (var col in CurrentMainColumns.Where(c => c.Visible))
+                                    {
+                                        var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                        if (col.Sortable)
+                                        {
+                                            <th style="@widthStyle" class="sortable">
+                                                @col.DisplayName
+                                                <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                                    <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                                    <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                                </svg>
+                                            </th>
+                                        }
+                                        else
+                                        {
+                                            <th style="@widthStyle">@col.DisplayName</th>
+                                        }
+                                    }
+                                    <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                        <span>操作</span>
+                                        <button class="column-settings-btn" title="栏位设置" @onclick="OpenColumnSettings">
+                                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                                <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                            </svg>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (mainDataSource.Count == 0)
+                                {
+                                    <tr><td colspan="@(CurrentMainVisibleCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                                }
+                                else
+                                {
+                                    @foreach (var item in mainDataSource)
+                                    {
+                                        <tr class="@(selectedMainRowKey == GetMainRowKey(item) ? "selected-row" : "")" @onclick="() => HandleMainRowClick(item)">
+                                            @foreach (var col in CurrentMainColumns.Where(c => c.Visible))
+                                            {
+                                                var wStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                                <td style="@wStyle">@GetMainCellValue(item, col.FieldKey)</td>
+                                            }
+                                            <td><button class="action-btn" title="操作" @onclick:stopPropagation><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- 分页信息 -->
+                    <div class="table-pagination">
+                        <span class="pagination-info">共 @mainDataSource.Count 笔记录</span>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" disabled="@(mainPageIndex <= 0)" @onclick="() => { if(mainPageIndex > 0) { mainPageIndex--; StateHasChanged(); } }">&lt;</button>
+                            <input type="number" class="pagination-page-input" @bind="mainPageIndex" @bind:event="oninput" min="0" />
+                            <button class="pagination-btn" @onclick="() => { mainPageIndex++; StateHasChanged(); }">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下方：明细表格 -->
+                <div class="lower-table-section">
+                    <div class="section-title">@CurrentDetailTableTitle</div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    @foreach (var col in CurrentDetailColumns.Where(c => c.Visible))
+                                    {
+                                        var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                        <th style="@widthStyle">@col.DisplayName</th>
+                                    }
+                                    <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                        <span>操作</span>
+                                        <button class="column-settings-btn" title="栏位设置" @onclick="OpenDetailColumnSettings">
+                                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                                <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                            </svg>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (detailDataSource.Count == 0)
+                                {
+                                    <tr><td colspan="@(CurrentDetailVisibleCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                                }
+                                else
+                                {
+                                    @foreach (var item in detailDataSource)
+                                    {
+                                        <tr>
+                                            @foreach (var col in CurrentDetailColumns.Where(c => c.Visible))
+                                            {
+                                                var wStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                                <td style="@wStyle">@GetDetailCellValue(item, col.FieldKey)</td>
+                                            }
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 栏位设计对话框 - 主表 -->
+@if (showColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredColumnConfigs[i];
+                            var idx = CurrentMainColumns.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 栏位设计对话框 - 明细表 -->
+@if (showDetailColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseDetailColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计（明细）</span>
+                <button class="column-settings-close" @onclick="CloseDetailColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="detailColumnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredDetailColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredDetailColumnConfigs[i];
+                            var idx = CurrentDetailColumns.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllDetailColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultDetailColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmDetailColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelDetailColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    // ====== 状态变量 ======
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showSettingsMenu = false;
+
+    // 内层Tab管理
+    private string activeInnerTabId = "notice";
+    private List<InnerTabItem> innerTabs = new();
+
+    // 查询相关
+    private OutboundTaskAssignmentQuery query = new();
+    private int mainPageIndex = 0;
+
+    // Tab1 特有状态
+    private bool sourceTypeNotice = true;
+    private bool sourceTypeTransfer = true;
+
+    // Tab2 特有状态
+    private bool priorityQuery = true;
+    private bool priorityUrgent = true;
+    private bool priorityEmergency = true;
+    private bool priorityClosed = true;
+    private bool flowUnassigned = true;
+    private bool flowClosed = true;
+
+    // Tab3 特有状态
+    private bool pickPriorityQuery = true;
+    private bool pickPriorityUrgent = true;
+    private bool pickPriorityEmergency = true;
+
+    // Tab4 参数设定
+    private ParamSettingModel paramSetting = new();
+
+    // 数据源
+    private List<dynamic> mainDataSource = new();
+    private List<dynamic> detailDataSource = new();
+    private string selectedMainRowKey = "";
+
+    // 栏位配置
+    private bool showColumnSettingsDialog = false;
+    private bool showDetailColumnSettingsDialog = false;
+    private string columnSearchKeyword = "";
+    private string detailColumnSearchKeyword = "";
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitInnerTabs();
+        InitAllColumnConfigs();
+        await LoadFavoriteStatus();
+        await LoadData();
+    }
+
+    // ====== 内层Tab管理 ======
+    public class InnerTabItem
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+        public bool IsActive { get; set; }
+    }
+
+    private void InitInnerTabs()
+    {
+        innerTabs = new List<InnerTabItem>
+        {
+            new() { Id = "notice", Title = "出库通知", IsActive = true },
+            new() { Id = "wave", Title = "波次管理", IsActive = false },
+            new() { Id = "pick-task", Title = "波次拣货任务管理", IsActive = false },
+            new() { Id = "param", Title = "参数设定", IsActive = false }
+        };
+    }
+
+    private void SwitchInnerTab(string tabId)
+    {
+        foreach (var tab in innerTabs)
+            tab.IsActive = (tab.Id == tabId);
+        activeInnerTabId = tabId;
+        mainDataSource.Clear();
+        detailDataSource.Clear();
+        selectedMainRowKey = "";
+        StateHasChanged();
+    }
+
+    // ====== 当前Tab的栏位配置（动态切换） ======
+    private List<ColumnConfig> CurrentMainColumns => activeInnerTabId switch
+    {
+        "notice" => noticeMainColumns,
+        "wave" => waveMainColumns,
+        "pick-task" => pickTaskMainColumns,
+        _ => noticeMainColumns
+    };
+
+    private List<ColumnConfig> CurrentDetailColumns => activeInnerTabId switch
+    {
+        "notice" => noticeDetailColumns,
+        "wave" => waveDetailColumns,
+        "pick-task" => pickTaskDetailColumns,
+        _ => noticeDetailColumns
+    };
+
+    private string CurrentMainTableTitle => activeInnerTabId switch
+    {
+        "notice" => "查询单",
+        "wave" => "波次单",
+        "pick-task" => "波次拣货任务单",
+        _ => ""
+    };
+
+    private string CurrentDetailTableTitle => activeInnerTabId switch
+    {
+        "notice" => "通知单明细",
+        "wave" => "波次单明细",
+        "pick-task" => "波次拣货任务单明细",
+        _ => ""
+    };
+
+    private int CurrentMainVisibleCount => CurrentMainColumns.Count(c => c.Visible);
+    private int CurrentDetailVisibleCount => CurrentDetailColumns.Count(c => c.Visible);
+
+    // ====== 各Tab的栏位配置 ======
+    // Tab1: 出库通知 - 主表
+    private List<ColumnConfig> noticeMainColumns = new();
+    private List<ColumnConfig> noticeDefaultMainColumns = new();
+    // Tab1: 出库通知 - 明细表
+    private List<ColumnConfig> noticeDetailColumns = new();
+    private List<ColumnConfig> noticeDefaultDetailColumns = new();
+
+    // Tab2: 波次管理 - 主表
+    private List<ColumnConfig> waveMainColumns = new();
+    private List<ColumnConfig> waveDefaultMainColumns = new();
+    // Tab2: 波次管理 - 明细表
+    private List<ColumnConfig> waveDetailColumns = new();
+    private List<ColumnConfig> waveDefaultDetailColumns = new();
+
+    // Tab3: 波次拣货任务管理 - 主表
+    private List<ColumnConfig> pickTaskMainColumns = new();
+    private List<ColumnConfig> pickTaskDefaultMainColumns = new();
+    // Tab3: 波次拣货任务管理 - 明细表
+    private List<ColumnConfig> pickTaskDetailColumns = new();
+    private List<ColumnConfig> pickTaskDefaultDetailColumns = new();
+
+    private void InitAllColumnConfigs()
+    {
+        // --- Tab1: 出库通知 主表 ---
+        noticeDefaultMainColumns = new List<ColumnConfig>
+        {
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "PriorityLevel", OriginalName = "排单等级", DisplayName = "排单等级", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "BizTypeName", OriginalName = "业务类型名称", DisplayName = "业务类型名称", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "DocumentDate", OriginalName = "单据日期", DisplayName = "单据日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "NoticeNo", OriginalName = "通知单号", DisplayName = "通知单号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "ApplyNo", OriginalName = "申请单号", DisplayName = "申请单号", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "ExpectedOutDate", OriginalName = "预出库日期", DisplayName = "预出库日期", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "CustomerCode", OriginalName = "客户代号", DisplayName = "客户代号", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "OperatorName", OriginalName = "经办人名称", DisplayName = "经办人名称", Visible = true, Width = 85, DefaultWidth = 85 }
+        };
+        CloneColumnConfigs(noticeDefaultMainColumns, ref noticeMainColumns);
+
+        // --- Tab1: 出库通知 明细表 ---
+        noticeDefaultDetailColumns = new List<ColumnConfig>
+        {
+            new() { FieldKey = "NoticeNo", OriginalName = "通知单号", DisplayName = "通知单号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "WaveNo", OriginalName = "波次", DisplayName = "波次", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "BatchNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "WarehouseName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "OrigQty", OriginalName = "原单数量", DisplayName = "原单数量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "ConvertedWaveQty", OriginalName = "已转换波次数量", DisplayName = "已转换波次数量", Visible = true, Width = 110, DefaultWidth = 110 },
+            new() { FieldKey = "ReturnQty", OriginalName = "返回数量", DisplayName = "返回数量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "PickedQty", OriginalName = "已拣货量", DisplayName = "已拣货量", Visible = true, Width = 75, DefaultWidth = 75 }
+        };
+        CloneColumnConfigs(noticeDefaultDetailColumns, ref noticeDetailColumns);
+
+        // --- Tab2: 波次管理 主表 ---
+        waveDefaultMainColumns = new List<ColumnConfig>
+        {
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "WaveDate", OriginalName = "波次日期", DisplayName = "波次日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "WaveNo", OriginalName = "波次单号", DisplayName = "波次单号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "WarehouseName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "DeptName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "OperatorName", OriginalName = "经办人名称", DisplayName = "经办人名称", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "ResultMark", OriginalName = "排单结果标记", DisplayName = "排单结果标记", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "Remark", OriginalName = "备注", DisplayName = "备注", Visible = true, Width = 60, DefaultWidth = 60 },
+            new() { FieldKey = "PriorityLevel", OriginalName = "排单等级", DisplayName = "排单等级", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "DispatchStatus", OriginalName = "派工状态", DisplayName = "派工状态", Visible = true, Width = 75, DefaultWidth = 75 }
+        };
+        CloneColumnConfigs(waveDefaultMainColumns, ref waveMainColumns);
+
+        // --- Tab2: 波次管理 明细表 ---
+        waveDefaultDetailColumns = new List<ColumnConfig>
+        {
+            new() { FieldKey = "WaveDate", OriginalName = "波次日期", DisplayName = "波次日期", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "WaveNo", OriginalName = "波次单号", DisplayName = "波次单号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "WarehouseName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "BatchNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 60, DefaultWidth = 60 },
+            new() { FieldKey = "BoxQty", OriginalName = "数量(箱)", DisplayName = "数量(箱)", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "Remark", OriginalName = "备注", DisplayName = "备注", Visible = true, Width = 60, DefaultWidth = 60 }
+        };
+        CloneColumnConfigs(waveDefaultDetailColumns, ref waveDetailColumns);
+
+        // --- Tab3: 波次拣货任务管理 主表 ---
+        pickTaskDefaultMainColumns = new List<ColumnConfig>
+        {
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "AcceptDate", OriginalName = "接责日期", DisplayName = "接责日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "TaskNo", OriginalName = "波次拣货任务单号", DisplayName = "波次拣货任务单号", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
+            new() { FieldKey = "DeptName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "AcceptorName", OriginalName = "接责员名称", DisplayName = "接责员名称", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "AcceptResultMark", OriginalName = "接责结果标记", DisplayName = "接责结果标记", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "Remark", OriginalName = "备注", DisplayName = "备注", Visible = true, Width = 60, DefaultWidth = 60 },
+            new() { FieldKey = "PriorityLevel", OriginalName = "排单等级", DisplayName = "排单等级", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "DispatchStatus", OriginalName = "派工状态", DisplayName = "派工状态", Visible = true, Width = 75, DefaultWidth = 75 }
+        };
+        CloneColumnConfigs(pickTaskDefaultMainColumns, ref pickTaskMainColumns);
+
+        // --- Tab3: 波次拣货任务管理 明细表 ---
+        pickTaskDefaultDetailColumns = new List<ColumnConfig>
+        {
+            new() { FieldKey = "TaskNo", OriginalName = "波次拣货任务单号", DisplayName = "波次拣货任务单号", Visible = true, Width = 130, DefaultWidth = 130 },
+            new() { FieldKey = "WaveNo", OriginalName = "波次", DisplayName = "波次", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "BatchNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "LocationCode", OriginalName = "储位代号", DisplayName = "储位代号", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 60, DefaultWidth = 60 },
+            new() { FieldKey = "BoxQty", OriginalName = "数量(箱)", DisplayName = "数量(箱)", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "PreparedQty", OriginalName = "已备货量", DisplayName = "已备货量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "PreparedBoxQty", OriginalName = "已备货量(箱)", DisplayName = "已备货量(箱)", Visible = true, Width = 90, DefaultWidth = 90 }
+        };
+        CloneColumnConfigs(pickTaskDefaultDetailColumns, ref pickTaskDetailColumns);
+    }
+
+    private void CloneColumnConfigs(List<ColumnConfig> source, ref List<ColumnConfig> target)
+    {
+        target = source.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth,
+            Sortable = c.Sortable
+        }).ToList();
+    }
+
+    // ====== 收藏功能 ======
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_outbound_task"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_outbound_task", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    // ====== 折叠/设置菜单 ======
+    private void ToggleCollapse() { isCollapsed = !isCollapsed; StateHasChanged(); }
+    private void ToggleSettingsMenu() { showSettingsMenu = !showSettingsMenu; StateHasChanged(); }
+    private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void RemoveCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void SaveConditionValues() { showSettingsMenu = false; StateHasChanged(); }
+
+    // ====== 工具栏按钮 ======
+    private void HandleMainWaveAssign() { /* TODO */ }
+    private void HandleBoxList() { /* TODO */ }
+    private void HandlePrint() { /* TODO */ }
+    private void HandleDataSourceBatch() { /* TODO */ }
+    private void HandleFilterEmployee() { /* TODO */ }
+    private void HandleDispatch() { /* TODO */ }
+    private async Task HandleSaveParam()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var body = new { paramSetting.PickerAutoAssign, paramSetting.ShowWaveDetailWindow };
+            var json = System.Text.Json.JsonSerializer.Serialize(body);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post, $"{ApiBaseUrl}/api/OutboundTaskAssignment/param-setting", TokenProvider.Token);
+            request.Content = content;
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<bool>>(jsonOptions);
+            if (response?.Success == true)
+            {
+                await JS.InvokeVoidAsync("alert", "保存成功");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "保存参数设定失败");
+        }
+    }
+
+    // ====== 数据加载 ======
+    private async Task HandleSearch() { await LoadData(); }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var today = DateTime.Today;
+            var dateFromStr = today.ToString("yyyy-MM-dd");
+            var dateToStr = today.ToString("yyyy-MM-dd");
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("\u2192"))
+            {
+                var parts = query.DateRange.Split('\u2192', StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
+            }
+
+            string url = "";
+            System.Text.Json.JsonSerializerOptions jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+            if (activeInnerTabId == "notice")
+            {
+                url = $"{ApiBaseUrl}/api/OutboundTaskAssignment/outbound-notice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                BuildCommonQueryParams(ref url);
+                if (!string.IsNullOrWhiteSpace(query.CustomerCode)) url += $"&customerCode={Uri.EscapeDataString(query.CustomerCode)}";
+
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<OutboundNoticeModel>>>(jsonOptions);
+                if (response != null && response.Success && response.Data != null)
+                {
+                    mainDataSource = response.Data.Cast<dynamic>().ToList();
+                }
+                else { mainDataSource = new List<dynamic>(); }
+            }
+            else if (activeInnerTabId == "wave")
+            {
+                url = $"{ApiBaseUrl}/api/OutboundTaskAssignment/wave-manage/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                BuildCommonQueryParams(ref url);
+                if (!string.IsNullOrWhiteSpace(query.WaveNumber)) url += $"&waveNumber={Uri.EscapeDataString(query.WaveNumber)}";
+
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<WaveManageModel>>>(jsonOptions);
+                if (response != null && response.Success && response.Data != null)
+                {
+                    mainDataSource = response.Data.Cast<dynamic>().ToList();
+                }
+                else { mainDataSource = new List<dynamic>(); }
+            }
+            else if (activeInnerTabId == "pick-task")
+            {
+                url = $"{ApiBaseUrl}/api/OutboundTaskAssignment/wave-pick-task-manage/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                BuildCommonQueryParams(ref url);
+                if (!string.IsNullOrWhiteSpace(query.WaveNumber)) url += $"&waveNumber={Uri.EscapeDataString(query.WaveNumber)}";
+
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<WavePickTaskManageModel>>>(jsonOptions);
+                if (response != null && response.Success && response.Data != null)
+                {
+                    mainDataSource = response.Data.Cast<dynamic>().ToList();
+                }
+                else { mainDataSource = new List<dynamic>(); }
+            }
+            else if (activeInnerTabId == "param")
+            {
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, $"{ApiBaseUrl}/api/OutboundTaskAssignment/param-setting", TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<ParamSettingModel>>(jsonOptions);
+                if (response != null && response.Success && response.Data != null)
+                {
+                    paramSetting = response.Data;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载数据失败");
+            mainDataSource = new List<dynamic>();
+        }
+        StateHasChanged();
+    }
+
+    private void BuildCommonQueryParams(ref string url)
+    {
+        if (!string.IsNullOrWhiteSpace(query.WarehouseCode)) url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}";
+        if (!string.IsNullOrWhiteSpace(query.BusinessType)) url += $"&businessType={Uri.EscapeDataString(query.BusinessType)}";
+        if (!string.IsNullOrWhiteSpace(query.ApplyOrderNumber)) url += $"&applyOrderNumber={Uri.EscapeDataString(query.ApplyOrderNumber)}";
+        if (!string.IsNullOrWhiteSpace(query.NoticeNumber)) url += $"&noticeNumber={Uri.EscapeDataString(query.NoticeNumber)}";
+        if (!string.IsNullOrWhiteSpace(query.BusinessOrderNumber)) url += $"&businessOrderNumber={Uri.EscapeDataString(query.BusinessOrderNumber)}";
+    }
+
+    // ====== 主表行点击 → 加载明细 ======
+    private async Task HandleMainRowClick(dynamic item)
+    {
+        try
+        {
+            selectedMainRowKey = GetMainRowKey(item);
+            string keyVal = selectedMainRowKey;
+            const string ApiBaseUrl = "http://localhost:5102";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            string url = "";
+
+            if (activeInnerTabId == "notice")
+            {
+                url = $"{ApiBaseUrl}/api/OutboundTaskAssignment/outbound-notice/detail/{Uri.EscapeDataString(keyVal)}";
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<OutboundNoticeDetailModel>>>(jsonOptions);
+                detailDataSource = (response?.Success == true && response.Data != null) ? response.Data.Cast<dynamic>().ToList() : new List<dynamic>();
+            }
+            else if (activeInnerTabId == "wave")
+            {
+                url = $"{ApiBaseUrl}/api/OutboundTaskAssignment/wave-manage/detail/{Uri.EscapeDataString(keyVal)}";
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<WaveManageDetailModel>>>(jsonOptions);
+                detailDataSource = (response?.Success == true && response.Data != null) ? response.Data.Cast<dynamic>().ToList() : new List<dynamic>();
+            }
+            else if (activeInnerTabId == "pick-task")
+            {
+                url = $"{ApiBaseUrl}/api/OutboundTaskAssignment/wave-pick-task-manage/detail/{Uri.EscapeDataString(keyVal)}";
+                var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+                var responseMsg = await Http.SendAsync(request);
+                var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<WavePickTaskManageDetailModel>>>(jsonOptions);
+                detailDataSource = (response?.Success == true && response.Data != null) ? response.Data.Cast<dynamic>().ToList() : new List<dynamic>();
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载明细数据失败");
+        }
+    }
+
+    private string GetMainRowKey(dynamic item) => activeInnerTabId switch
+    {
+        "notice" => item.NoticeNo ?? "",
+        "wave" => item.WaveNo ?? "",
+        "pick-task" => item.TaskNo ?? "",
+        _ => ""
+    };
+
+    // ====== 单元格渲染 ======
+    private object GetMainCellValue(dynamic item, string fieldKey) => fieldKey switch
+    {
+        "ItemNo" => item.ItemNo,
+        "PriorityLevel" => item.PriorityLevel,
+        "BizTypeName" => item.BizTypeName ?? "",
+        "DocumentDate" => item.DocumentDate != null ? ((DateTime)item.DocumentDate).ToString("yyyy-MM-dd") : "",
+        "NoticeNo" => item.NoticeNo ?? "",
+        "ApplyNo" => item.ApplyNo ?? "",
+        "ExpectedOutDate" => item.ExpectedOutDate != null ? ((DateTime)item.ExpectedOutDate).ToString("yyyy-MM-dd") : "",
+        "CustomerCode" => item.CustomerCode ?? "",
+        "CustomerName" => item.CustomerName ?? "",
+        "OperatorName" => item.OperatorName ?? "",
+        "WaveDate" => item.WaveDate != null ? ((DateTime)item.WaveDate).ToString("yyyy-MM-dd") : "",
+        "WaveNo" => item.WaveNo ?? "",
+        "WarehouseName" => item.WarehouseName ?? "",
+        "DeptName" => item.DeptName ?? "",
+        "ResultMark" => item.ResultMark ?? "",
+        "Remark" => item.Remark ?? "",
+        "DispatchStatus" => item.DispatchStatus ?? "",
+        "AcceptDate" => item.AcceptDate != null ? ((DateTime)item.AcceptDate).ToString("yyyy-MM-dd") : "",
+        "TaskNo" => item.TaskNo ?? "",
+        "AcceptorName" => item.AcceptorName ?? "",
+        "AcceptResultMark" => item.AcceptResultMark ?? "",
+        _ => ""
+    };
+
+    private object GetDetailCellValue(dynamic item, string fieldKey) => fieldKey switch
+    {
+        "NoticeNo" => item.NoticeNo ?? "",
+        "WaveNo" => item.WaveNo ?? "",
+        "PrdNo" => item.PrdNo ?? "",
+        "PrdName" => item.PrdName ?? "",
+        "BatchNo" => item.BatchNo ?? "",
+        "WarehouseName" => item.WarehouseName ?? "",
+        "Unit" => item.Unit ?? "",
+        "OrigQty" => item.OrigQty,
+        "ConvertedWaveQty" => item.ConvertedWaveQty,
+        "ReturnQty" => item.ReturnQty,
+        "PickedQty" => item.PickedQty,
+        "ItemNo" => item.ItemNo,
+        "Qty" => item.Qty,
+        "BoxQty" => item.BoxQty,
+        "LocationCode" => item.LocationCode ?? "",
+        "TaskNo" => item.TaskNo ?? "",
+        "PreparedQty" => item.PreparedQty,
+        "PreparedBoxQty" => item.PreparedBoxQty,
+        _ => ""
+    };
+
+    // ====== 栏位配置对话框 - 主表 ======
+    private List<ColumnConfig> FilteredColumnConfigs =>
+        string.IsNullOrWhiteSpace(columnSearchKeyword)
+            ? CurrentMainColumns
+            : CurrentMainColumns.Where(c => c.OriginalName.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                               c.FieldKey.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private void OpenColumnSettings() { columnSearchKeyword = ""; showColumnSettingsDialog = true; StateHasChanged(); }
+    private void CloseColumnSettings() { showColumnSettingsDialog = false; StateHasChanged(); }
+    private void ConfirmColumnSettings() { showColumnSettingsDialog = false; StateHasChanged(); }
+    private void CancelColumnSettings() { showColumnSettingsDialog = false; StateHasChanged(); }
+    private void SelectAllColumns() { foreach (var col in CurrentMainColumns) col.Visible = true; StateHasChanged(); }
+    private void RestoreDefaultColumns()
+    {
+        var defaults = activeInnerTabId switch
+        {
+            "notice" => noticeDefaultMainColumns,
+            "wave" => waveDefaultMainColumns,
+            "pick-task" => pickTaskDefaultMainColumns,
+            _ => noticeDefaultMainColumns
+        };
+        var target = CurrentMainColumns;
+        for (int i = 0; i < target.Count && i < defaults.Count; i++)
+        { target[i].Visible = defaults[i].Visible; target[i].DisplayName = defaults[i].DisplayName; target[i].Width = defaults[i].Width; }
+        StateHasChanged();
+    }
+
+    // ====== 栏位配置对话框 - 明细表 ======
+    private List<ColumnConfig> FilteredDetailColumnConfigs =>
+        string.IsNullOrWhiteSpace(detailColumnSearchKeyword)
+            ? CurrentDetailColumns
+            : CurrentDetailColumns.Where(c => c.OriginalName.Contains(detailColumnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                               c.FieldKey.Contains(detailColumnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private void OpenDetailColumnSettings() { detailColumnSearchKeyword = ""; showDetailColumnSettingsDialog = true; StateHasChanged(); }
+    private void CloseDetailColumnSettings() { showDetailColumnSettingsDialog = false; StateHasChanged(); }
+    private void ConfirmDetailColumnSettings() { showDetailColumnSettingsDialog = false; StateHasChanged(); }
+    private void CancelDetailColumnSettings() { showDetailColumnSettingsDialog = false; StateHasChanged(); }
+    private void SelectAllDetailColumns() { foreach (var col in CurrentDetailColumns) col.Visible = true; StateHasChanged(); }
+    private void RestoreDefaultDetailColumns()
+    {
+        var defaults = activeInnerTabId switch
+        {
+            "notice" => noticeDefaultDetailColumns,
+            "wave" => waveDefaultDetailColumns,
+            "pick-task" => pickTaskDefaultDetailColumns,
+            _ => noticeDefaultDetailColumns
+        };
+        var target = CurrentDetailColumns;
+        for (int i = 0; i < target.Count && i < defaults.Count; i++)
+        { target[i].Visible = defaults[i].Visible; target[i].DisplayName = defaults[i].DisplayName; target[i].Width = defaults[i].Width; }
+        StateHasChanged();
+    }
+
+    // ====== 栏位配置类 ======
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+        public bool Sortable { get; set; } = false;
+    }
+
+    // API响应模型
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+}

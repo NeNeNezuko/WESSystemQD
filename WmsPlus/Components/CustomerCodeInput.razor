@@ -1,0 +1,289 @@
+@inject HttpClient Http
+@inject ILogger<CustomerCodeInput> _logger
+
+<style>
+/* ========== 客户选择器对话框 ========== */
+.cust-selector-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+}
+.cust-selector-dialog {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    width: 700px;
+    max-width: 92vw;
+    max-height: 80vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.cust-selector-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; font-weight: 500; color: #333333;
+}
+.cust-close-btn {
+    background: none; border: none;
+    font-size: 18px; color: #999999;
+    cursor: pointer; padding: 0 2px; line-height: 1;
+}
+.cust-close-btn:hover { color: #333333; }
+.cust-selector-body {
+    display: flex; flex: 1; overflow: hidden;
+    min-height: 380px;
+}
+.cust-left-panel {
+    width: 180px; min-width: 180px;
+    border-right: 1px solid #f0f0f0;
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    background-color: #fafafa;
+}
+.cust-filter-title {
+    font-size: 13px; font-weight: 500; color: #333333;
+    margin-bottom: 4px;
+}
+.cust-search-input {
+    height: 32px; padding: 0 8px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.cust-search-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.cust-query-btn {
+    height: 32px; background-color: #1890ff; color: #ffffff;
+    border: none; border-radius: 4px; font-size: 13px; cursor: pointer;
+    transition: background-color 0.2s;
+}
+.cust-query-btn:hover { background-color: #40a9ff; }
+.cust-right-panel {
+    flex: 1; overflow-y: auto;
+    padding: 8px 12px;
+    display: flex; flex-direction: column;
+}
+.cust-data-table {
+    width: 100%; border-collapse: collapse; table-layout: auto;
+}
+.cust-data-table th {
+    background-color: #fafafa;
+    padding: 8px 6px;
+    text-align: left;
+    font-size: 12px; font-weight: 500; color: #666666;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+}
+.cust-data-table td {
+    padding: 7px 6px;
+    font-size: 12px; color: #333333;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.cust-col-action { position: relative; white-space: nowrap; width: 70px !important; min-width: 70px !important; }
+.cust-select-btn {
+    background: none; border: 1px solid #d9d9d9; border-radius: 3px;
+    padding: 2px 10px; font-size: 12px; color: #1890ff; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+}
+.cust-select-btn:hover { border-color: #1890ff; color: #1890ff; background-color: #e6f7ff; }
+.cust-pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 4px 4px; margin-top: auto;
+}
+.cust-total-info { font-size: 12px; color: #888888; }
+.cust-page-controls { display: flex; align-items: center; gap: 4px; }
+.cust-page-btn {
+    width: 28px; height: 26px;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    background: #fff; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.cust-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.cust-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cust-page-input {
+    width: 44px; height: 26px; text-align: center;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    font-size: 13px; outline: none;
+}
+.cust-page-input:focus { border-color: #1890ff; }
+.cust-page-controls span { font-size: 12px; color: #666666; }
+.cust-selector-footer {
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 10px 18px; border-top: 1px solid #f0f0f0;
+}
+.cust-footer-cancel {
+    height: 30px; padding: 0 20px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #ffffff; font-size: 13px; color: #333333; cursor: pointer;
+}
+.cust-footer-cancel:hover { border-color: #1890ff; color: #1890ff; }
+</style>
+
+<!-- 客户代号输入框 -->
+<div class="form-item">
+    <label class="form-label">客户代号</label>
+    <div class="input-with-search">
+        <input type="text" class="form-input" placeholder="" @bind="Value" @bind:event="oninput" />
+        <button class="search-icon-btn" title="选择客户" @onclick="OpenCustomerSelector">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                <circle cx="7" cy="7" r="5"/>
+                <line x1="11" y1="11" x2="15" y2="15"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- 客户选择器对话框 -->
+@if (showCustomerDialog)
+{
+    <div class="cust-selector-overlay" @onclick="CloseCustomerSelector">
+        <div class="cust-selector-dialog" @onclick:stopPropagation>
+            <div class="cust-selector-header">
+                <span>客户(MF_CKTB)</span>
+                <button class="cust-close-btn" @onclick="CloseCustomerSelector">&times;</button>
+            </div>
+            <div class="cust-selector-body">
+                <div class="cust-left-panel">
+                    <div class="cust-filter-title">过滤</div>
+                    <input type="text" class="cust-search-input" placeholder="输入关键字查询" @bind="customerSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchCustomer(); })" />
+                    <button class="cust-query-btn" @onclick="@(() => _ = SearchCustomer())">查询</button>
+                </div>
+                <div class="cust-right-panel">
+                    <table class="cust-data-table">
+                        <thead>
+                            <tr>
+                                <th class="cust-col-action">操作</th>
+                                <th style="width:50px">项次</th>
+                                <th style="width:100px">客户代号</th>
+                                <th>客户名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (customerData.Count == 0)
+                            {
+                                <tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < customerData.Count; i++)
+                                {
+                                    var item = customerData[i];
+                                    var rowIdx = (customerPageIndex - 1) * customerPageSize + i + 1;
+                                    <tr>
+                                        <td><button class="cust-select-btn" @onclick="() => SelectCustomer(item)">选择</button></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.CUS_NO</td>
+                                        <td>@item.CUS_NAME</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="cust-pagination">
+                        <span class="cust-total-info">共 @customerTotalCount 笔记录</span>
+                        <div class="cust-page-controls">
+                            <button class="cust-page-btn" disabled="@(customerPageIndex <= 1)" @onclick="async () => await GoToCustomerPage(customerPageIndex - 1)">&lt;</button>
+                            <input type="number" class="cust-page-input" value="@customerPageIndex" min="1" max="@CustomerTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToCustomerPage(p); }" />
+                            <span>/ @CustomerTotalPages</span>
+                            <button class="cust-page-btn" disabled="@(customerPageIndex >= CustomerTotalPages)" @onclick="async () => await GoToCustomerPage(customerPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cust-selector-footer">
+                <button class="cust-footer-cancel" @onclick="CloseCustomerSelector">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ===== 参数 =====
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    // ===== 客户选择器状态 =====
+    private bool showCustomerDialog = false;
+    private string customerSearchKeyword = "";
+    private List<CustomerItem> customerData = new();
+    private int customerPageIndex = 1;
+    private int customerPageSize = 10;
+    private int customerTotalCount = 0;
+
+    // ===== 数据模型 =====
+    private class CustomerItem
+    {
+        public string CUS_NO { get; set; } = "";
+        public string CUS_NAME { get; set; } = "";
+    }
+
+    private class CustomerSearchResult
+    {
+        public List<CustomerItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    // ===== 客户选择器方法 =====
+    private async Task OpenCustomerSelector()
+    {
+        customerSearchKeyword = "";
+        customerPageIndex = 1;
+        await SearchCustomer();
+        showCustomerDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseCustomerSelector()
+    {
+        showCustomerDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchCustomer()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/customersearch?keyword={Uri.EscapeDataString(customerSearchKeyword ?? "")}&pageIndex={customerPageIndex}&pageSize={customerPageSize}";
+            var response = await Http.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<CustomerSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (result != null)
+                {
+                    customerData = result.Items ?? new List<CustomerItem>();
+                    customerTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "客户选择器查询失败");
+        }
+        StateHasChanged();
+    }
+
+    private async Task SelectCustomer(CustomerItem item)
+    {
+        Value = item.CUS_NO;
+        await ValueChanged.InvokeAsync(Value);
+        showCustomerDialog = false;
+        StateHasChanged();
+    }
+
+    private int CustomerTotalPages => customerPageSize > 0 ? (int)Math.Ceiling((double)customerTotalCount / customerPageSize) : 1;
+
+    private async Task GoToCustomerPage(int page)
+    {
+        if (page >= 1 && page <= CustomerTotalPages)
+        {
+            customerPageIndex = page;
+            await SearchCustomer();
+        }
+    }
+}

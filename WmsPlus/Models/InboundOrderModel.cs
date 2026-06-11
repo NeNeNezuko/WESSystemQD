@@ -17,6 +17,7 @@ namespace WmsPlus.Models
 
     public class InboundOrderQuery
     {
+        public string DateRange { get; set; } = "";
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         public string OrderNumber { get; set; } = "";

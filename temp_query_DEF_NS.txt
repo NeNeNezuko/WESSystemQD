@@ -1,0 +1,6 @@
+﻿output
+INC_UNI | 基础资料启用UNICODE
+INC_SYS | 包含系统字段否
+REM | 备注
+NAME | 名称
+NS_NO | NS代号

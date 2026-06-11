@@ -1,0 +1,1241 @@
+# 打印管理 - 功能开发规则
+
+## 功能概述
+
+打印管理是二级菜单下的三级菜单功能，一共要开发 **23 个选项卡**页面，全部连接 **db_gz01** 数据库（通过 `WarehouseDbContext` 访问），字段说明从 **wmssystem** 数据库的 `DICT_TAB` + `DICT_FLD` 表查询。
+
+### 23 个选项卡清单
+
+| # | 选项卡名称 | 选项卡ID | 分类 |
+|---|-----------|---------|------|
+| 1 | 货品条码编码规则设定 | barcode-rule-product | 编码规则类 |
+| 2 | 箱条码编码规则设定 | barcode-rule-box | 编码规则类 |
+| 3 | 序列号编码规则设定 | barcode-rule-serial | 编码规则类 |
+| 4 | 箱序列号编码规则设定 | barcode-rule-box-serial | 编码规则类 |
+| 5 | 物流容器编码规则设定 | barcode-rule-contain | 编码规则类 |
+| 6 | 批号编码规则设定 | barcode-rule-batch | 编码规则类 |
+| 7 | 包装码编码规则设定 | barcode-rule-package | 编码规则类 |
+| 8 | 入库条码拆码规则设定 | barcode-split-rule | 拆码规则类 |
+| 9 | 依供应商设置拆码规则 | barcode-split-supplier | 拆码规则类 |
+| 10 | 打印网点列表 | print-site-list | 打印网点类 |
+| 11 | 打印网点资料查询 | print-site-query | 打印网点类 |
+| 12 | 依货品设置条码打印套版 | barcode-template-product | 条码打印套版与标签类 |
+| 13 | 货品条码标签打印/查询 | barcode-print-product | 条码打印套版与标签类 |
+| 14 | 依来源单打印货品条码 | barcode-print-product-source | 条码打印套版与标签类 |
+| 15 | 箱条码标签打印/查询 | barcode-print-box | 条码打印套版与标签类 |
+| 16 | 依来源单打印箱条码 | barcode-print-box-source | 条码打印套版与标签类 |
+| 17 | 箱条码变动历史表 | barcode-box-history | 条码打印套版与标签类 |
+| 18 | 序列号标签打印/查询 | barcode-print-serial | 条码打印套版与标签类 |
+| 19 | 依来源单打印序列号 | barcode-print-serial-source | 条码打印套版与标签类 |
+| 20 | 物流容器条码标签打印/查询 | contain-barcode-print | 物流容器类 |
+| 21 | 物流容器类型设定 | contain-type-setting | 物流容器类 |
+| 22 | 物流容器变动历史查询 | contain-history-query | 物流容器类 |
+| 23 | 出库包装单 | outbound-package | 包装单类 |
+
+## 数据库信息
+
+### 连接数据库
+- **数据库名**: `db_gz01`（通过 `WarehouseDbContext` 访问）
+- **字段说明查询库**: `wmssystem`（通过 `DICT_TAB` + `DICT_FLD` 表查询）
+
+### 字段说明通用查询SQL模板
+```sql
+SELECT A.TAB_NAME, A.TAB_TITLE, B.FLD_NAME, B.Note 
+FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME = B.TAB_NAME 
+WHERE A.TAB_NAME = '{表名}.DB';
+```
+
+---
+
+## 一、编码规则设定类（7个页面共用 BARCODE_RULE + PSWD_PROP 表）
+
+### 共用表结构
+
+#### BARCODE_RULE — 条码编码规则表
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| RULE_ID | 规则ID | 主键 |
+| RULE_TYPE | 规则类型 | 区分不同编码规则(货品/箱/序列号/箱序列号/物流容器/批号/包装码) |
+| RULE_CODE | 规则代号 | 字符串 |
+| RULE_NAME | 规则名称 | 字符串 |
+| FLOW_LENGTH | 流水码长度 | 数字 |
+| SEPARATOR | 间隔符 | 字符串 |
+| PREFIX | 前缀 | 字符串 |
+
+#### PSWD_PROP — 条码属性表
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| PROP_TYPE | 属性类型 | 字符串 |
+| PROP_CODE | 属性代码 | 字符串 |
+| PROP_NAME | 属性名称 | 字符串 |
+| PROP_VALUE | 属性值 | 字符串 |
+
+> 通过 `RULE_TYPE` 字段区分7种不同的编码规则
+
+---
+
+### 1. 货品条码编码规则设定 (BarcodeRuleProduct)
+
+**选项卡ID**: `barcode-rule-product`
+**菜单路径**: 打印管理 > 编码规则 > 货品条码编码规则设定
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| BARCODE_RULE | 条码编码规则表 | RULE_ID | BarcodeRule.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**RULE_TYPE 过滤值**: 对应货品条码类型的规则
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 规则代号 | `<input>` text | `query.RuleCode` | 模糊查询 |
+| 规则名称 | `<input>` text | `query.RuleName` | 模糊查询 |
+
+**表格默认栏位**：规则代号、规则名称、间隔符、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=货品条码`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodeRuleProduct.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-rule-common.css`（7个编码规则共用）
+- 数据模型：`WmsPlus/Models/BarcodeRuleModel.cs`（7个编码规则共用）
+- API控制器：`WmsPlus.Api/Controllers/BarcodeRuleController.cs`（7个编码规则共用，通过 ruleType 参数区分）
+
+---
+
+### 2. 箱条码编码规则设定 (BarcodeRuleBox)
+
+**选项卡ID**: `barcode-rule-box`
+**菜单路径**: 打印管理 > 编码规则 > 箱条码编码规则设定
+
+**关联表信息**：同上 BARCODE_RULE + PSWD_PROP
+
+**RULE_TYPE 过滤值**: 对应箱条码类型的规则
+
+**查询表单字段**：同上（规则代号、规则名称）
+
+**表格默认栏位**：规则代号、规则名称、流水码长、间隔符、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=箱条码`
+
+**页面文件**：共用 BarcodeRuleProduct 的文件体系，仅选项卡ID和 ruleType 不同
+
+---
+
+### 3. 序列号编码规则设定 (BarcodeRuleSerial)
+
+**选项卡ID**: `barcode-rule-serial`
+**菜单路径**: 打印管理 > 编码规则 > 序列号编码规则设定
+
+**关联表信息**：同上 BARCODE_RULE + PSWD_PROP
+
+**RULE_TYPE 过滤值**: 对应序列号类型的规则
+
+**查询表单字段**：同上（规则代号、规则名称）
+
+**表格默认栏位**：规则代号、规则名称、流水码长、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=序列号`
+
+---
+
+### 4. 箱序列号编码规则设定 (BarcodeRuleBoxSerial)
+
+**选项卡ID**: `barcode-rule-box-serial`
+**菜单路径**: 打印管理 > 编码规则 > 箱序列号编码规则设定
+
+**关联表信息**：同上 BARCODE_RULE + PSWD_PROP
+
+**RULE_TYPE 过滤值**: 对应箱序列号类型的规则
+
+**查询表单字段**：同上（规则代号、规则名称）
+
+**表格默认栏位**：规则代号、规则名称、流水码长、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=箱序列号`
+
+---
+
+### 5. 物流容器编码规则设定 (BarcodeRuleContain)
+
+**选项卡ID**: `barcode-rule-contain`
+**菜单路径**: 打印管理 > 编码规则 > 物流容器编码规则设定
+
+**关联表信息**：同上 BARCODE_RULE + PSWD_PROP
+
+**RULE_TYPE 过滤值**: 对应物流容器类型的规则
+
+**查询表单字段**：同上（规则代号、规则名称）
+
+**表格默认栏位**：规则代号、规则名称、流水码长、间隔符、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=物流容器`
+
+---
+
+### 6. 批号编码规则设定 (BarcodeRuleBatch)
+
+**选项卡ID**: `barcode-rule-batch`
+**菜单路径**: 打印管理 > 编码规则 > 批号编码规则设定
+
+**关联表信息**：同上 BARCODE_RULE + PSWD_PROP
+
+**RULE_TYPE 过滤值**: 对应批号类型的规则
+
+**查询表单字段**：同上（规则代号、规则名称）
+
+**表格默认栏位**：规则代号、规则名称、流水码长、间隔符、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=批号`
+
+---
+
+### 7. 包装码编码规则设定 (BarcodeRulePackage)
+
+**选项卡ID**: `barcode-rule-package`
+**菜单路径**: 打印管理 > 编码规则 > 包装码编码规则设定
+
+**关联表信息**：同上 BARCODE_RULE + PSWD_PROP
+
+**RULE_TYPE 过滤值**: 对应包装码类型的规则
+
+**查询表单字段**：同上（规则代号、规则名称）
+
+**表格默认栏位**：规则代号、规则名称、流水码长、操作(编辑)
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeRuleProduct/search?ruleCode=&ruleName=&ruleType=包装码`
+
+---
+
+## 二、拆码规则类（2个页面）
+
+### 8. 入库条码拆码规则设定 (BarcodeSplitRule)
+
+**选项卡ID**: `barcode-split-rule`
+**菜单路径**: 打印管理 > 拆码规则 > 入库条码拆码规则设定
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| MF_REMVOE_RULE | 拆码规则表头 | RULE_ID | MfRemoveRule.cs |
+| TF_REMVOE_RULE | 拆码规则表身 | (RULE_ID, ITM) | TfRemoveRule.cs |
+
+**MF_REMVOE_RULE 表头核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| RULE_ID | 规则ID | 主键 |
+| RULE_CODE | 规则代号 | 字符串 |
+| RULE_NAME | 规则名称 | 字符串 |
+| BASE_BARCODE | 条码基准 | 字符串 |
+| ENCODING_METHOD | 编码方式 | 字符串 |
+| SEPARATOR | 分隔符 | 字符串 |
+| TOTAL_LENGTH | 总码长 | 数字 |
+| DEFAULT_FLAG | 默认规则标记 | Y/N |
+
+**TF_REMVOE_RULE 表身核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| RULE_ID | 规则ID | 外键→MF_REMVOE_RULE |
+| ITM | 项次 | 数字 |
+| FIELD_NAME | 字段名 | 字符串 |
+| FIELD_POS | 字段位置 | 数字 |
+| FIELD_LEN | 字段长度 | 数字 |
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 规则代号 | `<input>` text | `query.RuleCode` | 模糊查询 |
+| 规则名称 | `<input>` text | `query.RuleName` | 模糊查询 |
+
+**表格默认栏位**：规则代号、规则名称、条码基准、编码方式、分隔符、总码长、默认规则、操作
+
+**右上角按钮**：新增
+
+**后端API**：`GET /api/BarcodeSplitRule/search?ruleCode=&ruleName=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodeSplitRule.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-split-rule.css`
+- 数据模型：`WmsPlus/Models/BarcodeSplitRuleModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodeSplitRuleController.cs`
+
+---
+
+### 9. 依供应商设置拆码规则 (BarcodeSplitSupplier)
+
+**选项卡ID**: `barcode-split-supplier`
+**菜单路径**: 打印管理 > 拆码规则 > 依供应商设置拆码规则
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| CUS_REMVOE_RULE | 供应商拆码规则表 | ID | CusRemoveRule.cs |
+
+**CUS_REMVOE_RULE 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| SEQ_NO | 坯次 | 数字 |
+| CUS_NO | 供应商代号 | 关联客户/厂商表 |
+| CUS_NAME | 供应商名称 | 字符串 |
+| RULE_CODE | 规则代号 | 字符串 |
+| RULE_NAME | 规则名称 | 字符串 |
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 供应商代号 | `<input>` text + 搜索弹窗 | `query.CusNo` | 模糊查询+视窗选择 |
+
+**表格默认栏位**：☑复选框、坯次、供应商代号、供应商名称、规则代号、规则名称
+
+**右上角按钮**：批次新增、删除
+
+**特点**：有复选列 + 批量操作按钮
+
+**后端API**：`GET /api/BarcodeSplitSupplier/search?cusNo=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodeSplitSupplier.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-split-supplier.css`
+- 数据模型：`WmsPlus/Models/BarcodeSplitSupplierModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodeSplitSupplierController.cs`
+
+---
+
+## 三、打印网点类（2个页面，均有内层选项卡）
+
+### 10. 打印网点列表 (PrintSiteList)
+
+**选项卡ID**: `print-site-list`
+**菜单路径**: 打印管理 > 打印网点 > 打印网点列表
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| PRINT_SET | 打印网点设置表 | SITE_ID | PrintSet.cs |
+
+**PRINT_SET 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| SITE_ID | 网点ID | 主键 |
+| SITE_NAME | 网点名称 | 字符串 |
+| MACHINE_IP | 机器IP | 字符串 |
+| MACHINE_NAME | 机器名称 | 字符串 |
+| STOP_FLAG | 停用否 | Y/N |
+| STOP_DATE | 停用日期 | 日期 |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`明细表` | `统计表`
+- 切换选项卡时重新加载数据
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 网点名称 | `<input>` text | `query.SiteName` | 模糊查询 |
+| 机器IP | `<input>` text | `query.MachineIp` | 模糊查询 |
+| 停用否 | checkbox | `query.StopFlag` | 是否停用 |
+
+**表格默认栏位（明细表）**：坯次、网点名称、机器IP、机器名称、停用否、停用日期、操作
+
+**右上角按钮**：类型、导出Excel、打印、类别设计
+
+**后端API**：`GET /api/PrintSiteList/search?siteName=&machineIp=&stopFlag=&tabType=detail`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/PrintSiteList.razor`
+- 样式文件：`WmsPlus/wwwroot/css/print-site.css`（打印网点2个页面共用）
+- 数据模型：`WmsPlus/Models/PrintSiteListModel.cs`（打印网点2个页面共用）
+- API控制器：`WmsPlus.Api/Controllers/PrintSiteController.cs`（打印网点2个页面共用）
+
+---
+
+### 11. 打印网点资料查询 (PrintSiteQuery)
+
+**选项卡ID**: `print-site-query`
+**菜单路径**: 打印管理 > 打印网点 > 打印网点资料查询
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| PRINT_SER_TASK | 打印网点任务表 | TASK_ID | PrintSerTask.cs |
+
+**PRINT_SER_TASK 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| TASK_ID | 任务ID | 主键 |
+| PRINT_TIME | 打印时间 | 日期时间 |
+| VERSION_CODE | 版套代号 | 字符串 |
+| PRINTER_USER | 打印人员 | 字符串 |
+| SITE_NAME | 网点名称 | 字符串 |
+| PROGRAM_CODE | 程序代号 | 字符串 |
+| TEMPLATE_CODE | 模版代号 | 字符串 |
+| PRINT_STATUS | 打印状态 | 字符串 |
+| FAIL_COUNT | 失败次数 | 数字 |
+| FAIL_REASON | 失败原因 | 字符串 |
+| PRINT_NO | 打印单号/版码 | 字符串 |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`明细表` | `统计表`
+- 底部分组统计栏位选择器
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 列表日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 版套代号 | `<input>` text | `query.VersionCode` | 模糊查询 |
+| 打印人员 | `<input>` text | `query.PrinterUser` | 模糊查询 |
+| 网点名称 | `<input>` text | `query.SiteName` | 模糊查询 |
+
+**表格默认栏位（明细表）**：坯次、打印时间、版套代号、打印人员、网点名称、程序代号、模版代号、打印状态、失败次数、失败原因、打印单号/版码
+
+**右上角按钮**：类型、导出Excel、打印、类别设计
+
+**后端API**：`GET /api/PrintSiteQuery/search?dateFrom=&dateTo=&versionCode=&printerUser=&siteName=&tabType=detail`
+
+**页面文件**：共用 PrintSiteList 的文件体系
+
+---
+
+## 四、条码打印套版与标签类（8个页面）
+
+### 12. 依货品设置条码打印套版 (BarcodeTemplateProduct)
+
+**选项卡ID**: `barcode-template-product`
+**菜单路径**: 打印管理 > 条码打印 > 依货品设置条码打印套版
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| PRDT_BAR_RPT | 货品条码打印套版表 | ID | PrdtBarRpt.cs |
+
+**PRDT_BAR_RPT 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| BAR_TYPE | 条码类型 | 字符串 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| MID_CLASS_NO | 中类代号 | 字符串 |
+| MID_CLASS_NAME | 中类名称 | 字符串 |
+| TEMPLATE_CODE | 套版代号 | 字符串 |
+| TEMPLATE_NAME | 套版名称 | 字符串 |
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 条码类型 | `<select>` 下拉框 | `query.BarType` | 下拉选择 |
+
+**表格默认栏位**：☑复选框、条码类型、货品代号、货品名称、中类代号、中类名称、套版代号、套版名称
+
+**右上角按钮**：批次新增、删除
+
+**特点**：有复选列 + 批量操作按钮
+
+**后端API**：`GET /api/BarcodeTemplateProduct/search?barType=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodeTemplateProduct.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-template-product.css`
+- 数据模型：`WmsPlus/Models/BarcodeTemplateProductModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodeTemplateProductController.cs`
+
+---
+
+### 13. 货品条码标签打印/查询 (BarcodePrintProduct)
+
+**选项卡ID**: `barcode-print-product`
+**菜单路径**: 打印管理 > 条码打印 > 货品条码标签打印/查询
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| PRDT_BARCODE | 货品条码表 | ID | PrdtBarcode.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**PRDT_BARCODE 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| SCAN_CODE | 扫描码 | 字符串 |
+| BARCODE | 条码 | 字符串 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| BAT_NO | 批号 | 字符串 |
+| SOURCE_NO | 来源单号 | 字符串 |
+| SOURCE_DOC | 来源单据交 | 字符串 |
+| VALID_DATE | 有效期 | 日期 |
+| LAST_PRINT_TIME | 最近打印时间 | 日期时间 |
+| QTY | 数量 | 数字 |
+| PRINTED_QTY | 已打印数量 | 数字 |
+| LABEL_COUNT | 标签个数 | 数字 |
+| CUS_NO | 客户代号 | 字符串 |
+| SO_NO | 受订单号 | 字符串 |
+| USR | 制单人 | 字符串 |
+| INPUT_BATCH | 录入批次 | 字符串 |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 打印日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 最近打印时间 | `DateRangeInput` 组件 | `query.LastPrintTimeRange` | 日期范围选择器 |
+| 来源单号 | `<input>` text | `query.SourceNo` | 模糊查询 |
+| 货品代号 | `<input>` text + 搜索弹窗 | `query.PrdNo` | 模糊查询+视窗选择 |
+| 批号 | `<input>` text | `query.BatNo` | 模糊查询 |
+| 录入人 | `<input>` text + 搜索弹窗 | `query.InputUser` | 模糊查询+视窗选择 |
+| 录入批次 | `<input>` text | `query.InputBatch` | 模糊查询 |
+| 客户代号 | `<input>` text | `query.CusNo` | 模糊查询 |
+| 条码起 | `<input>` text | `query.BarcodeFrom` | 条码范围起始 |
+| 条码止 | `<input>` text | `query.BarcodeTo` | 条码范围结束 |
+
+**表格默认栏位**：☑复选框、扫描码、条码、货品代号、货品名称、批号、来源单号、来源单据交、有效期、最近打印时间
+
+**右上角按钮**：新增、批次打印、删除、依模版导入、导出Excel
+
+**后端API**：`GET /api/BarcodePrintProduct/search?dateFrom=&dateTo=&lastPrintTimeFrom=&lastPrintTimeTo=&sourceNo=&prdNo=&batNo=&inputUser=&inputBatch=&cusNo=&barcodeFrom=&barcodeTo=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodePrintProduct.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-print-product.css`
+- 数据模型：`WmsPlus/Models/BarcodePrintProductModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodePrintProductController.cs`
+
+---
+
+### 14. 依来源单打印货品条码 (BarcodePrintProductSource)
+
+**选项卡ID**: `barcode-print-product-source`
+**菜单路径**: 打印管理 > 条码打印 > 依来源单打印货品条码
+
+**关联表信息**：同上 PRDT_BARCODE + PSWD_PROP
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 来源单据 | `<select>` 下拉框 | `query.SourceDoc` | 入库通知单等 |
+| 来源单号 | `<input>` text | `query.SourceNo` | 模糊查询 |
+| 货品代号 | `<input>` text + 搜索弹窗 | `query.PrdNo` | 模糊查询+视窗选择 |
+| 客户名称 | `<input>` text | `query.CusName` | 模糊查询 |
+
+**表格默认栏位**：☑复选框、坯次、货品代号、货品名称、批号、原单数量、已打印数量、标签个数、打印条码、客户代号、受订单号、操作
+
+**右上角按钮**：批次打印、查询
+
+**后端API**：`GET /api/BarcodePrintProductSource/search?sourceDoc=&sourceNo=&prdNo=&cusName=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodePrintProductSource.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-print-product-source.css`
+- 数据模型：`WmsPlus/Models/BarcodePrintProductSourceModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodePrintProductSourceController.cs`
+
+---
+
+### 15. 箱条码标签打印/查询 (BarcodePrintBox)
+
+**选项卡ID**: `barcode-print-box`
+**菜单路径**: 打印管理 > 条码打印 > 箱条码标签打印/查询
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| PRDT_BARCODE_BOX | 箱条码表 | ID | PrdtBarcodeBox.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**PRDT_BARCODE_BOX 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| SCAN_CODE | 扫描码 | 字符串 |
+| BOX_BARCODE | 箱条码 | 字符串 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| BAT_NO | 批号 | 字符串 |
+| QTY | 数量 | 数字 |
+| SOURCE_NO | 来源单号 | 字符串 |
+| SOURCE_ITM | 来源单据次 | 数字 |
+| VALID_DATE | 有效期 | 日期 |
+| CHANGE_HISTORY | 变动历史 | 字符串 |
+| LAST_PRINT_TIME | 最近打印时间 | 日期时间 |
+| OUTER_BOX_FLAG | 外箱装嵌状态 | 字符串 |
+| SPECIAL_INSPECT | 特殊检验码标记 | Y/N |
+| INVENTORY_DATE | 盘点日期 | 日期 |
+| SHOW_EMPTY_ONLY | 盘点为空列示 | boolean |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 打印日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 最近打印时间 | `DateRangeInput` 组件 | `query.LastPrintTimeRange` | 日期范围选择器 |
+| 来源单号 | `<input>` text | `query.SourceNo` | 模糊查询 |
+| 货品代号 | `<input>` text + 搜索弹窗 | `query.PrdNo` | 模糊查询+视窗选择 |
+| 批号 | `<input>` text | `query.BatNo` | 模糊查询 |
+| 录入人 | `<input>` text + 搜索弹窗 | `query.InputUser` | 模糊查询+视窗选择 |
+| 客户代号 | `<input>` text | `query.CusNo` | 模糊查询 |
+| 箱条码起 | `<input>` text | `query.BoxBarcodeFrom` | 箱条码范围起始 |
+| 箱条码止 | `<input>` text | `query.BoxBarcodeTo` | 箱条码范围结束 |
+| 盘点日期 | `DateRangeInput` 组件 | `query.InventoryDateRange` | 日期范围选择器 |
+| 盘点为空列示 | toggle switch | `query.ShowEmptyOnly` | 开关控件 |
+| 特殊检验码列示 | toggle switch | `query.ShowSpecialInspect` | 开关控件 |
+| 外箱装嵌状态 | `<select>` 下拉框 | `query.OuterBoxFlag` | 全部等选项 |
+
+**表格默认栏位**：☑复选框、扫描码、箱条码、货品代号、货品名称、批号、数量、来源单号、来源单据次、有效期、变动历史...
+
+**右上角按钮**：新增、批次打印、删除、依模版导入、导出Excel、产生外箱
+
+**后端API**：`GET /api/BarcodePrintBox/search?dateFrom=&dateTo=&sourceNo=&prdNo=&batNo=&inputUser=&cusNo=&boxBarcodeFrom=&boxBarcodeTo=&inventoryDateFrom=&inventoryDateTo=&showEmptyOnly=&showSpecialInspect=&outerBoxFlag=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodePrintBox.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-print-box.css`
+- 数据模型：`WmsPlus/Models/BarcodePrintBoxModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodePrintBoxController.cs`
+
+---
+
+### 16. 依来源单打印箱条码 (BarcodePrintBoxSource)
+
+**选项卡ID**: `barcode-print-box-source`
+**菜单路径**: 打印管理 > 条码打印 > 依来源单打印箱条码
+
+**关联表信息**：同上 PRDT_BARCODE_BOX + PSWD_PROP
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 来源单据 | `<select>` 下拉框 | `query.SourceDoc` | 入库通知单等 |
+| 来源单号 | `<input>` text | `query.SourceNo` | 模糊查询 |
+| 货品代号 | `<input>` text + 搜索弹窗 | `query.PrdNo` | 模糊查询+视窗选择 |
+| 客户名称 | `<input>` text | `query.CusName` | 模糊查询 |
+
+**表格默认栏位**：☑复选框、坯次、货品代号、货品名称、批号、原单数量、已打印数量、本次打印数量、标准箱数量、尾箱数量、标签个数、操作
+
+**右上角按钮**：批次打印、查询
+
+**后端API**：`GET /api/BarcodePrintBoxSource/search?sourceDoc=&sourceNo=&prdNo=&cusName=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodePrintBoxSource.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-print-box-source.css`
+- 数据模型：`WmsPlus/Models/BarcodePrintBoxSourceModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodePrintBoxSourceController.cs`
+
+---
+
+### 17. 箱条码变动历史表 (BarcodeBoxHistory)
+
+**选项卡ID**: `barcode-box-history`
+**菜单路径**: 打印管理 > 条码打印 > 箱条码变动历史表
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| BAR_BOX_CHANGE | 箱条码变动历史表 | ID | BarBoxChange.cs |
+
+**BAR_BOX_CHANGE 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| SEQ_NO | 坯次 | 数字 |
+| CHANGE_TIME | 变更时间 | 日期时间 |
+| BOX_BARCODE | 箱条码 | 字符串 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| BAT_NO | 批号 | 字符串 |
+| SOURCE_DOC_TYPE | 来源单据别 | 字符串 |
+| DOC_NAME | 单据名称 | 字符串 |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`明细表` | `统计表`
+- 底部分组统计栏位选择器
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 变更日期 | `DateRangeInput` 组件 | `query.ChangeDateRange` | 日期范围选择器 |
+| 货品代号 | `<input>` text | `query.PrdNo` | 模糊查询 |
+| 箱条码起 | `<input>` text | `query.BoxBarcodeFrom` | 箱条码范围起始 |
+| 箱条码止 | `<input>` text | `query.BoxBarcodeTo` | 箱条码范围结束 |
+
+**表格默认栏位（明细表）**：坯次、变更时间、箱条码、货品代号、货品名称、批号、来源单据别、单据名称
+
+**右上角按钮**：类型、导出Excel、打印、类别设计
+
+**后端API**：`GET /api/BarcodeBoxHistory/search?changeDateFrom=&changeDateTo=&prdNo=&boxBarcodeFrom=&boxBarcodeTo=&tabType=detail`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodeBoxHistory.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-box-history.css`
+- 数据模型：`WmsPlus/Models/BarcodeBoxHistoryModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodeBoxHistoryController.cs`
+
+---
+
+### 18. 序列号标签打印/查询 (BarcodePrintSerial)
+
+**选项卡ID**: `barcode-print-serial`
+**菜单路径**: 打印管理 > 条码打印 > 序列号标签打印/查询
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| BAR_REC | 序列号记录表 | ID | BarRec.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**BAR_REC 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| ID | ID | 主键 |
+| SCAN_CODE | 扫描码 | 字符串 |
+| SERIAL_NO | 序列号 | 字符串 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| BAT_NO | 批号 | 字符串 |
+| SOURCE_NO | 来源单号 | 字符串 |
+| SOURCE_ITM | 来源单据次 | 数字 |
+| VALID_DATE | 有效期 | 日期 |
+| LAST_PRINT_TIME | 最近打印时间 | 日期时间 |
+| SERIAL_FROM | 序列号起 | 字符串 |
+| SERIAL_TO | 序列号止 | 字符串 |
+| INVENTORY_DATE | 盘点日期 | 日期 |
+| SHOW_EMPTY_ONLY | 盘点为空列示 | boolean |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 打印日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 最近打印时间 | `DateRangeInput` 组件 | `query.LastPrintTimeRange` | 日期范围选择器 |
+| 来源单号 | `<input>` text | `query.SourceNo` | 模糊查询 |
+| 货品代号 | `<input>` text + 搜索弹窗 | `query.PrdNo` | 模糊查询+视窗选择 |
+| 批号 | `<input>` text | `query.BatNo` | 模糊查询 |
+| 录入人 | `<input>` text + 搜索弹窗 | `query.InputUser` | 模糊查询+视窗选择 |
+| 客户代号 | `<input>` text | `query.CusNo` | 模糊查询 |
+| 序列号起 | `<input>` text | `query.SerialFrom` | 序列号范围起始 |
+| 序列号止 | `<input>` text | `query.SerialTo` | 序列号范围结束 |
+| 盘点日期 | `DateRangeInput` 组件 | `query.InventoryDateRange` | 日期范围选择器 |
+| 盘点为空列示 | toggle switch | `query.ShowEmptyOnly` | 开关控件 |
+
+**表格默认栏位**：☑复选框、扫描码、序列号、货品代号、货品名称、批号、来源单号、来源单据次、有效期、最近打印时间
+
+**右上角按钮**：新增、批次打印、删除、依模版导入、导出Excel
+
+**后端API**：`GET /api/BarcodePrintSerial/search?dateFrom=&dateTo=&lastPrintTimeFrom=&lastPrintTimeTo=&sourceNo=&prdNo=&batNo=&inputUser=&cusNo=&serialFrom=&serialTo=&inventoryDateFrom=&inventoryDateTo=&showEmptyOnly=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodePrintSerial.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-print-serial.css`
+- 数据模型：`WmsPlus/Models/BarcodePrintSerialModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodePrintSerialController.cs`
+
+---
+
+### 19. 依来源单打印序列号 (BarcodePrintSerialSource)
+
+**选项卡ID**: `barcode-print-serial-source`
+**菜单路径**: 打印管理 > 条码打印 > 依来源单打印序列号
+
+**关联表信息**：同上 BAR_REC + PSWD_PROP
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 来源单据 | `<select>` 下拉框 | `query.SourceDoc` | 入库通知单等 |
+| 来源单号 | `<input>` text | `query.SourceNo` | 模糊查询 |
+| 货品代号 | `<input>` text + 搜索弹窗 | `query.PrdNo` | 模糊查询+视窗选择 |
+| 客户名称 | `<input>` text | `query.CusName` | 模糊查询 |
+
+**表格默认栏位**：☑复选框、坯次、货品代号、货品名称、批号、原单数量、已打印数量、标签个数、打印条码、客户代号、受订单号、操作
+
+**右上角按钮**：批次打印、查询
+
+**后端API**：`GET /api/BarcodePrintSerialSource/search?sourceDoc=&sourceNo=&prdNo=&cusName=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/BarcodePrintSerialSource.razor`
+- 样式文件：`WmsPlus/wwwroot/css/barcode-print-serial-source.css`
+- 数据模型：`WmsPlus/Models/BarcodePrintSerialSourceModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/BarcodePrintSerialSourceController.cs`
+
+---
+
+## 五、物流容器类（3个页面）
+
+### 20. 物流容器条码标签打印/查询 (ContainBarcodePrint)
+
+**选项卡ID**: `contain-barcode-print`
+**菜单路径**: 打印管理 > 物流容器 > 物流容器条码标签打印/查询
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| MF_CONTAIN | 物流容器表头 | CONTAIN_ID | MfContain.cs |
+| TF_CONTAIN | 物流容器表身 | (CONTAIN_ID, ITM) | TfContain.cs |
+| MF_CONTAIN_HIS | 物流容器历史表头 | HIS_ID | MfContainHis.cs |
+| TF_CONTAIN_HIS | 物流容器历史表身 | (HIS_ID, ITM) | TfContainHis.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**MF_CONTAIN 表头核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| CONTAIN_ID | 容器ID | 主键 |
+| CONTAIN_CODE | 容器条码 | 字符串 |
+| CONTAIN_TYPE | 容器类型 | 关联CONTAIN_SET |
+| CONTAIN_STATUS | 容器状态 | 字符串 |
+| WH_NO | 所在仓库 | 关联MY_WH |
+| CHUW | 储位代号 | 字符串 |
+| CHUW_POS | 储位位置 | 字符串 |
+| TRANSIT_FLAG | 在途标记 | Y/N |
+| INSPECT_FLAG | 述检标记 | Y/N |
+| REM | 容器明细 | 字符串 |
+| MODIFY_HISTORY | 变动历史 | 字符串 |
+
+**TF_CONTAIN 表身核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| CONTAIN_ID | 容器ID | 外键→MF_CONTAIN |
+| ITM | 项次 | 数字 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| QTY | 数量 | 数字 |
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`打印&查询` | `参数设定`
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 打印日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 合单代号 | `<input>` text | `query.CombineNo` | 模糊查询 |
+| 储位代号 | `<input>` text + 搜索弹窗 | `query.Chuw` | 模糊查询+视窗选择 |
+| 容器类型代号 | `<input>` text + 搜索弹窗 | `query.ContainType` | 模糊查询+视窗选择 |
+| 容器状态 | `<select>` 下拉框 | `query.ContainStatus` | 全部/在库/在途等 |
+| 在途标记 | `<select>` 下拉框 | `query.TransitFlag` | 全部/在途/不在途 |
+| 述检标记 | `<select>` 下拉框 | `query.InspectFlag` | 全部/已述检/未述检 |
+| 容器条码起 | `<input>` text | `query.ContainCodeFrom` | 容器条码范围起始 |
+| 容器条码止 | `<input>` text | `query.ContainCodeTo` | 容器条码范围结束 |
+| 盘点日期 | `DateRangeInput` 组件 | `query.InventoryDateRange` | 日期范围选择器 |
+| 盘点为空列示 | toggle switch | `query.ShowEmptyOnly` | 开关控件 |
+
+**表格默认栏位**：☑复选框、扫描码、容器条码、容器类型、容器状态、仓库名称、储位名称、储位位置、在途标记、述检标记、容器明细、变动历史
+
+**右上角按钮**：新增、批次打印、删除、导出Excel
+
+**后端API**：`GET /api/ContainBarcodePrint/search?dateFrom=&dateTo=&combineNo=&chuw=&containType=&containStatus=&transitFlag=&inspectFlag=&containCodeFrom=&containCodeTo=&inventoryDateFrom=&inventoryDateTo=&showEmptyOnly=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/ContainBarcodePrint.razor`
+- 样式文件：`WmsPlus/wwwroot/css/contain-barcode-print.css`
+- 数据模型：`WmsPlus/Models/ContainBarcodePrintModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/ContainBarcodePrintController.cs`
+
+---
+
+### 21. 物流容器类型设定 (ContainTypeSetting)
+
+**选项卡ID**: `contain-type-setting`
+**菜单路径**: 打印管理 > 物流容器 > 物流容器类型设定
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| CONTAIN_SET | 容器类型设置表 | TYPE_ID | ContainSet.cs |
+| CONTAIN_FQ | 容器分区表 | FQ_ID | ContainFq.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**CONTAIN_SET 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| TYPE_ID | 类型ID | 主键 |
+| TYPE_CODE | 类型代号 | 字符串 |
+| TYPE_NAME | 类型名称 | 字符串 |
+| CODE_PREFIX | 编码前缀 | 字符串 |
+| STOP_FLAG | 停用否 | Y/N |
+| IS_SYSTEM | 是系统标准框 | T/F |
+| RCS_TYPE | RCS容器类型 | 字符串 |
+
+**CONTAIN_FQ 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| FQ_ID | 分区ID | 主键 |
+| TYPE_ID | 类型ID | 外键→CONTAIN_SET |
+| FQ_NAME | 分区名称 | 字符串 |
+| FQ_DESC | 分区描述 | 字符串 |
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 类型代号 | `<input>` text | `query.TypeCode` | 模糊查询 |
+| 类型名称 | `<input>` text | `query.TypeName` | 模糊查询 |
+
+**表格默认栏位**：#序号、类型代号、类型名称、编码前缀、停用否、是系统标准框、RCS容器类型、操作(编辑/设定储存范围/设定储存顺序)
+
+**右上角按钮**：新增
+
+**特点**：操作列有多个子按钮（编辑、设定储存范围、设定储存顺序）
+
+**后端API**：`GET /api/ContainTypeSetting/search?typeCode=&typeName=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/ContainTypeSetting.razor`
+- 样式文件：`WmsPlus/wwwroot/css/contain-type-setting.css`
+- 数据模型：`WmsPlus/Models/ContainTypeSettingModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/ContainTypeSettingController.cs`
+
+---
+
+### 22. 物流容器变动历史查询 (ContainHistoryQuery)
+
+**选项卡ID**: `contain-history-query`
+**菜单路径**: 打印管理 > 物流容器 > 物流容器变动历史查询
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| MF_CONTAIN_HIS | 容器历史表头 | HIS_ID | MfContainHis.cs |
+| TF_CONTAIN_HIS | 容器历史表身 | (HIS_ID, ITM) | TfContainHis.cs |
+| PSWD_PROP | 条码属性表 | ID | PswdProp.cs |
+
+**MF_CONTAIN_HIS 核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| HIS_ID | 历史ID | 主键 |
+| CONTAIN_CODE | 容器条码 | 字符串 |
+| CONTAIN_STATUS | 容器状态 | 字符串 |
+| CONTAIN_TYPE | 容器类型 | 字符串 |
+| WH_NO | 所在仓库 | 字符串 |
+| TRANSIT_FLAG | 在途标记 | Y/N |
+| INSPECT_FLAG | 述检标记 | Y/N |
+| CHANGE_DOC_NAME | 变动单据别名 | 字符串 |
+| CHANGE_NO | 变动单号 | 字符串 |
+| CHANGE_MAN | 变动人 | 字符串 |
+| CHANGE_TIME | 变动时间 | 日期时间 |
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 变动时间 | `DateRangeInput` 组件 | `query.ChangeTimeRange` | 日期范围选择器 |
+| 容器条码 | `<input>` text | `query.ContainCode` | 模糊查询 |
+
+**表格默认栏位**：容器条码、容器状态、容器类型、所在仓库、在途标记、述检标记、变动单据别名、变动单号、变动人、变动时间...
+
+**右上角按钮**：（无特殊按钮）
+
+**后端API**：`GET /api/ContainHistoryQuery/search?changeTimeFrom=&changeTimeTo=&containCode=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/ContainHistoryQuery.razor`
+- 样式文件：`WmsPlus/wwwroot/css/contain-history-query.css`
+- 数据模型：`WmsPlus/Models/ContainHistoryQueryModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/ContainHistoryQueryController.cs`
+
+---
+
+## 六、包装单类（1个页面）
+
+### 23. 出库包装单 (OutboundPackage)
+
+**选项卡ID**: `outbound-package`
+**菜单路径**: 打印管理 > 出库包装单
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 对应实体类 |
+|------|------|------|-----------|
+| MF_PACKAGE | 出库包装单表头 | PACKAGE_ID | MfPackage.cs |
+| TF_PACKAGE | 出库包装单表身 | (PACKAGE_ID, ITM) | TfPackage.cs |
+
+**MF_PACKAGE 表头核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| PACKAGE_ID | 包裹ID | 主键 |
+| PACKAGE_NO | 包装箱码 | 字符串 |
+| PACKAGE_DATE | 包装日期 | 日期 |
+| BUSINESS_TYPE | 业务类型 | 字符串 |
+| BUSINESS_TYPE_NAME | 业务类型名称 | 字符串 |
+| PACKAGER | 包装人员 | 字符串 |
+| PACKAGER_NAME | 包装人员名称 | 字符串 |
+| PACK_TIME | 包装时间 | 日期时间 |
+| OUT_BIL_NO | 出库业务单号 | 字符串 |
+| CUS_NO | 客户代号 | 字符串 |
+| OUT_STATUS | 出库状态 | 字符串 |
+
+**TF_PACKAGE 表身核心字段**：
+
+| 字段名 | 字段说明 | 类型说明 |
+|--------|---------|---------|
+| PACKAGE_ID | 包裹ID | 外键→MF_PACKAGE |
+| ITM | 项次 | 数字 |
+| PRD_NO | 货品代号 | 字符串 |
+| PRD_NAME | 货品名称 | 字符串 |
+| QTY | 数量 | 数字 |
+| UNIT | 单位 | 字符串 |
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 包装日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 包装箱码 | `<input>` text | `query.PackageNo` | 模糊查询 |
+| 出库业务单号 | `<input>` text | `query.OutBilNo` | 模糊查询 |
+| 出库状态 | `<select>` 下拉框 | `query.OutStatus` | 全部等选项 |
+
+**表格默认栏位**：坯次、包装箱、包装日期、业务类型、业务类型名称、包装人员、包装人员名称、包装时间、出库业务单号、客户代号、操作
+
+**右上角按钮**：集包导出
+
+**后端API**：`GET /api/OutboundPackage/search?dateFrom=&dateTo=&packageNo=&outBilNo=&outStatus=`
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/OutboundPackage.razor`
+- 样式文件：`WmsPlus/wwwroot/css/outbound-package.css`
+- 数据模型：`WmsPlus/Models/OutboundPackageModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/OutboundPackageController.cs`
+
+---
+
+## 通用字段说明查询SQL汇总
+
+```sql
+-- 条码编码规则
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='BARCODE_RULE.DB';
+-- 条码属性
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PSWD_PROP.DB';
+-- 入库拆码规则表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_REMVOE_RULE.DB';
+-- 入库拆码规则表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_REMVOE_RULE.DB';
+-- 供应商拆码规则
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='CUS_REMVOE_RULE.DB';
+-- 打印网点设置
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PRINT_SET.DB';
+-- 打印网点任务
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PRINT_SER_TASK.DB';
+-- 货品条码打印套版
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PRDT_BAR_RPT.DB';
+-- 货品条码表
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PRDT_BARCODE.DB';
+-- 箱条码表
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PRDT_BARCODE_BOX.DB';
+-- 箱条码变动历史
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='BAR_BOX_CHANGE.DB';
+-- 序列号记录
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='BAR_REC.DB';
+-- 物流容器表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_CONTAIN.DB';
+-- 物流容器表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_CONTAIN.DB';
+-- 物流容器历史表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_CONTAIN_HIS.DB';
+-- 物流容器历史表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_CONTAIN_HIS.DB';
+-- 容器类型设置
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='CONTAIN_SET.DB';
+-- 容器分区
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='CONTAIN_FQ.DB';
+-- 出库包装单表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_PACKAGE.DB';
+-- 出库包装单表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_PACKAGE.DB';
+```
+
+## 文件清单总览
+
+### 需要新建的前端页面文件 (.razor) — 23个
+
+| 文件路径 | 选项卡 |
+|---------|-------|
+| WmsPlus/Pages/BarcodeRuleProduct.razor | 货品条码编码规则设定 |
+| WmsPlus/Pages/BarcodeRuleBox.razor | 箱条码编码规则设定 |
+| WmsPlus/Pages/BarcodeRuleSerial.razor | 序列号编码规则设定 |
+| WmsPlus/Pages/BarcodeRuleBoxSerial.razor | 箱序列号编码规则设定 |
+| WmsPlus/Pages/BarcodeRuleContain.razor | 物流容器编码规则设定 |
+| WmsPlus/Pages/BarcodeRuleBatch.razor | 批号编码规则设定 |
+| WmsPlus/Pages/BarcodeRulePackage.razor | 包装码编码规则设定 |
+| WmsPlus/Pages/BarcodeSplitRule.razor | 入库条码拆码规则设定 |
+| WmsPlus/Pages/BarcodeSplitSupplier.razor | 依供应商设置拆码规则 |
+| WmsPlus/Pages/PrintSiteList.razor | 打印网点列表 |
+| WmsPlus/Pages/PrintSiteQuery.razor | 打印网点资料查询 |
+| WmsPlus/Pages/BarcodeTemplateProduct.razor | 依货品设置条码打印套版 |
+| WmsPlus/Pages/BarcodePrintProduct.razor | 货品条码标签打印/查询 |
+| WmsPlus/Pages/BarcodePrintProductSource.razor | 依来源单打印货品条码 |
+| WmsPlus/Pages/BarcodePrintBox.razor | 箱条码标签打印/查询 |
+| WmsPlus/Pages/BarcodePrintBoxSource.razor | 依来源单打印箱条码 |
+| WmsPlus/Pages/BarcodeBoxHistory.razor | 箱条码变动历史表 |
+| WmsPlus/Pages/BarcodePrintSerial.razor | 序列号标签打印/查询 |
+| WmsPlus/Pages/BarcodePrintSerialSource.razor | 依来源单打印序列号 |
+| WmsPlus/Pages/ContainBarcodePrint.razor | 物流容器条码标签打印/查询 |
+| WmsPlus/Pages/ContainTypeSetting.razor | 物流容器类型设定 |
+| WmsPlus/Pages/ContainHistoryQuery.razor | 物流容器变动历史查询 |
+| WmsPlus/Pages/OutboundPackage.razor | 出库包装单 |
+
+### 需要新建的样式文件 (.css) — 约18个（部分共用）
+
+| 文件路径 | 说明 |
+|---------|------|
+| WmsPlus/wwwroot/css/barcode-rule-common.css | 7个编码规则页面共用 |
+| WmsPlus/wwwroot/css/barcode-split-rule.css | 入库条码拆码规则 |
+| WmsPlus/wwwroot/css/barcode-split-supplier.css | 依供应商设置拆码规则 |
+| WmsPlus/wwwroot/css/print-site.css | 2个打印网点页面共用 |
+| WmsPlus/wwwroot/css/barcode-template-product.css | 依货品设置条码打印套版 |
+| WmsPlus/wwwroot/css/barcode-print-product.css | 货品条码标签打印/查询 |
+| WmsPlus/wwwroot/css/barcode-print-product-source.css | 依来源单打印货品条码 |
+| WmsPlus/wwwroot/css/barcode-print-box.css | 箱条码标签打印/查询 |
+| WmsPlus/wwwroot/css/barcode-print-box-source.css | 依来源单打印箱条码 |
+| WmsPlus/wwwroot/css/barcode-box-history.css | 箱条码变动历史表 |
+| WmsPlus/wwwroot/css/barcode-print-serial.css | 序列号标签打印/查询 |
+| WmsPlus/wwwroot/css/barcode-print-serial-source.css | 依来源单打印序列号 |
+| WmsPlus/wwwroot/css/contain-barcode-print.css | 物流容器条码标签打印/查询 |
+| WmsPlus/wwwroot/css/contain-type-setting.css | 物流容器类型设定 |
+| WmsPlus/wwwroot/css/contain-history-query.css | 物流容器变动历史查询 |
+| WmsPlus/wwwroot/css/outbound-package.css | 出库包装单 |
+
+### 需要新建的数据模型文件 (.cs) — 约20个（部分共用）
+
+| 文件路径 | 说明 |
+|---------|------|
+| WmsPlus/Models/BarcodeRuleModel.cs | 7个编码规则共用 |
+| WmsPlus/Models/BarcodeSplitRuleModel.cs | 入库条码拆码规则 |
+| WmsPlus/Models/BarcodeSplitSupplierModel.cs | 依供应商设置拆码规则 |
+| WmsPlus/Models/PrintSiteListModel.cs | 2个打印网点共用 |
+| WmsPlus/Models/BarcodeTemplateProductModel.cs | 依货品设置条码打印套版 |
+| WmsPlus/Models/BarcodePrintProductModel.cs | 货品条码标签打印/查询 |
+| WmsPlus/Models/BarcodePrintProductSourceModel.cs | 依来源单打印货品条码 |
+| WmsPlus/Models/BarcodePrintBoxModel.cs | 箱条码标签打印/查询 |
+| WmsPlus/Models/BarcodePrintBoxSourceModel.cs | 依来源单打印箱条码 |
+| WmsPlus/Models/BarcodeBoxHistoryModel.cs | 箱条码变动历史表 |
+| WmsPlus/Models/BarcodePrintSerialModel.cs | 序列号标签打印/查询 |
+| WmsPlus/Models/BarcodePrintSerialSourceModel.cs | 依来源单打印序列号 |
+| WmsPlus/Models/ContainBarcodePrintModel.cs | 物流容器条码标签打印/查询 |
+| WmsPlus/Models/ContainTypeSettingModel.cs | 物流容器类型设定 |
+| WmsPlus/Models/ContainHistoryQueryModel.cs | 物流容器变动历史查询 |
+| WmsPlus/Models/OutboundPackageModel.cs | 出库包装单 |
+
+### 需要新建的后端控制器文件 (.cs) — 约20个（部分共用）
+
+| 文件路径 | 说明 |
+|---------|------|
+| WmsPlus.Api/Controllers/BarcodeRuleController.cs | 7个编码规则共用 |
+| WmsPlus.Api/Controllers/BarcodeSplitRuleController.cs | 入库条码拆码规则 |
+| WmsPlus.Api/Controllers/BarcodeSplitSupplierController.cs | 依供应商设置拆码规则 |
+| WmsPlus.Api/Controllers/PrintSiteController.cs | 2个打印网点共用 |
+| WmsPlus.Api/Controllers/BarcodeTemplateProductController.cs | 依货品设置条码打印套版 |
+| WmsPlus.Api/Controllers/BarcodePrintProductController.cs | 货品条码标签打印/查询 |
+| WmsPlus.Api/Controllers/BarcodePrintProductSourceController.cs | 依来源单打印货品条码 |
+| WmsPlus.Api/Controllers/BarcodePrintBoxController.cs | 箱条码标签打印/查询 |
+| WmsPlus.Api/Controllers/BarcodePrintBoxSourceController.cs | 依来源单打印箱条码 |
+| WmsPlus.Api/Controllers/BarcodeBoxHistoryController.cs | 箱条码变动历史表 |
+| WmsPlus.Api/Controllers/BarcodePrintSerialController.cs | 序列号标签打印/查询 |
+| WmsPlus.Api/Controllers/BarcodePrintSerialSourceController.cs | 依来源单打印序列号 |
+| WmsPlus.Api/Controllers/ContainBarcodePrintController.cs | 物流容器条码标签打印/查询 |
+| WmsPlus.Api/Controllers/ContainTypeSettingController.cs | 物流容器类型设定 |
+| WmsPlus.Api/Controllers/ContainHistoryQueryController.cs | 物流容器变动历史查询 |
+| WmsPlus.Api/Controllers/OutboundPackageController.cs | 出库包装单 |
+
+## 开发规范要点
+
+### 整体布局
+- 参照入库通知单（InboundNotice）的左右分栏布局风格
+- 内层选项卡参照出库任务分配作业（OutboundTaskAssignment）的 inner-tab-bar 模式
+- 使用项目通用组件：DateRangeInput、WarehouseCodeInput、BizTypeInput、DeptCodeInput、CustomerCodeInput
+
+### 功能实现原则
+- **样式优先**：右上角按钮先做 UI 样式占位，不实现实际功能逻辑
+- **查询功能完整**：每个页面的查询表单和 API 查询接口必须完整可用
+- **数据库连接**：统一使用 db_gz01（WarehouseDbContext）
+- **字段说明**：通过 wmssystem.DICT_TAB + DICT_FLD 查询获取
+
+### 内层选项卡页面
+以下页面包含内层选项卡（明细表/统计表 或 打印&查询/参数设定）：
+- 打印网点列表（明细表 | 统计表）
+- 打印网点资料查询（明细表 | 统计表）
+- 货品条码标签打印/查询（打印&查询 | 参数设定）
+- 依来源单打印货品条码（打印&查询 | 参数设定）
+- 箱条码标签打印/查询（打印&查询 | 参数设定）
+- 依来源单打印箱条码（打印&查询 | 参数设定）
+- 箱条码变动历史表（明细表 | 统计表）
+- 序列号标签打印/查询（打印&查询 | 参数设定）
+- 依来源单打印序列号（打印&查询 | 参数设定）
+- 物流容器条码标签打印/查询（打印&查询 | 参数设定）
+
+> 内层选项卡需保持存活状态（不随切换销毁），通过 CSS display 属性控制显隐以保留表单输入数据

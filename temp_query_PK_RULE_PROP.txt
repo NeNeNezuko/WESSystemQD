@@ -1,0 +1,5 @@
+﻿output
+REM | 备注
+VALUE | 参数值
+PROP_NO | 参数名
+RULE_ID | 拣货策略代号

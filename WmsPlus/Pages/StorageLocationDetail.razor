@@ -1,0 +1,565 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<StorageLocationDetail> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/storage-location-detail.css" />
+
+<div class="storage-location-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">储位明细</span>
+        </div>
+        <div class="header-right">
+            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 主内容区域 -->
+    <div class="page-content">
+        <!-- 左侧查询区域 -->
+        <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+            <div class="query-header">
+                <span class="query-title">查询</span>
+                <button class="query-settings-btn" title="设置" @onclick="ToggleSettingsMenu">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999999" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+                @if (showSettingsMenu)
+                {
+                    <div class="settings-dropdown" @onclick:stopPropagation>
+                        <div class="settings-dropdown-item" @onclick="BatchAddCondition">批次添加条件</div>
+                        <div class="settings-dropdown-item" @onclick="AddSingleCondition">添加单一条件</div>
+                        <div class="settings-dropdown-item" @onclick="CustomCondition">自定义条件</div>
+                        <div class="settings-dropdown-item" @onclick="RemoveCondition">移除条件</div>
+                        <div class="settings-dropdown-item" @onclick="SaveConditionValues">保存条件值</div>
+                    </div>
+                }
+            </div>
+
+            <div class="query-form">
+                <!-- 储位代号 -->
+                <div class="form-item">
+                    <label class="form-label">储位代号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.Chuw" />
+                </div>
+
+                <!-- 仓库代号 -->
+                <WarehouseCodeInput @bind-Value="query.Wh" />
+
+                <!-- 储位状态 -->
+                <div class="form-item">
+                    <label class="form-label">储位状态</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.CwStatus">
+                            <option value="全部">全部</option>
+                            <option value="正常">正常</option>
+                            <option value="故障">故障</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="form-item query-btn-wrapper">
+                    <button class="query-submit-btn" @onclick="HandleSearch">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
+                            <circle cx="7" cy="7" r="5"/>
+                            <line x1="11" y1="11" x2="15" y2="15"/>
+                        </svg>
+                        <span>查询</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧数据表格区域 -->
+        <div class="table-panel">
+            <!-- 工具栏 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>新增</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                        <span>导出</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            @foreach (var col in columnConfigs.Where(c => c.Visible))
+                            {
+                                var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                if (col.Sortable)
+                                {
+                                    <th style="@widthStyle" class="sortable">
+                                        @col.DisplayName
+                                        <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                            <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                            <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                        </svg>
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                            }
+                            <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                <span>操作</span>
+                                <button class="column-settings-btn" title="栏位设置" @onclick="OpenColumnSettings">
+                                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                        <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                    </svg>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (dataSource.Count == 0)
+                        {
+                            <tr><td colspan="@(VisibleColumnCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in dataSource)
+                            {
+                                <tr>
+                                    @foreach (var col in columnConfigs.Where(c => c.Visible))
+                                    {
+                                        var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                    }
+                                    <td><button class="action-btn" title="编辑" @onclick="() => HandleEdit(item)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><path d="M11 3l3 3m0 0l-7 7H4v-3l7-7z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导出对话框 -->
+@if (showExportDialog)
+{
+    <div class="export-dialog-overlay" @onclick="CancelExport">
+        <div class="export-dialog" @onclick:stopPropagation>
+            <div class="export-dialog-header">
+                <span>导出 Excel</span>
+                <button class="export-dialog-close" @onclick="CancelExport">&times;</button>
+            </div>
+            <div class="export-dialog-body">
+                <label class="export-label">文件名</label>
+                <input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput" />
+            </div>
+            <div class="export-dialog-footer">
+                <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
+                <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 栏位设计对话框 -->
+@if (showColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredColumnConfigs[i];
+                            var idx = columnConfigs.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    private const string FAVORITE_KEY = "wms_favorite_storage_location_detail";
+    private const string COLUMN_SETTINGS_KEY = "wms_column_settings_storage_location_detail";
+
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showSettingsMenu = false;
+    private bool showExportDialog = false;
+    private string exportFileName = "";
+    private bool showColumnSettingsDialog = false;
+    private string columnSearchKeyword = "";
+    private List<ColumnConfig> columnConfigs = new();
+    private List<ColumnConfig> defaultColumnConfigs = new();
+    private StorageLocationDetailQuery query = new();
+    private List<StorageLocationDetailModel> dataSource = new();
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitDefaultColumnConfigs();
+        await LoadColumnSettings();
+        await LoadFavoriteStatus();
+        await LoadData();
+    }
+
+    private void ToggleCollapse()
+    {
+        isCollapsed = !isCollapsed;
+        StateHasChanged();
+    }
+
+    private void ToggleSettingsMenu()
+    {
+        showSettingsMenu = !showSettingsMenu;
+        StateHasChanged();
+    }
+
+    private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void RemoveCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void SaveConditionValues() { showSettingsMenu = false; StateHasChanged(); }
+
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", FAVORITE_KEY); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", FAVORITE_KEY, isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleSearch() { await LoadData(); }
+    private void HandleAddNew() { }
+    private void HandleEdit(StorageLocationDetailModel item) { }
+
+    private async Task HandleExport()
+    {
+        if (dataSource.Count == 0) { await JS.InvokeVoidAsync("alert", "暂无数据可导出"); return; }
+        exportFileName = $"储位明细_{DateTime.Now:yyyyMMddHHmmss}";
+        showExportDialog = true;
+        StateHasChanged();
+    }
+
+    private void CancelExport()
+    {
+        showExportDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmExport()
+    {
+        showExportDialog = false;
+        try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var url = "http://localhost:5102/api/StorageLocationDetail/search?";
+            if (!string.IsNullOrWhiteSpace(query.Chuw))
+                url += $"chuw={Uri.EscapeDataString(query.Chuw)}&";
+            if (!string.IsNullOrWhiteSpace(query.Wh))
+                url += $"wh={Uri.EscapeDataString(query.Wh)}&";
+            if (!string.IsNullOrWhiteSpace(query.CwStatus) && query.CwStatus != "全部")
+                url += $"cwStatus={Uri.EscapeDataString(query.CwStatus)}&";
+            url = url.TrimEnd('&');
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<StorageLocationDetailModel>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                dataSource = response.Data;
+            }
+            else
+            {
+                dataSource = new List<StorageLocationDetailModel>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载储位明细数据失败");
+            dataSource = new List<StorageLocationDetailModel>();
+        }
+        StateHasChanged();
+    }
+
+    private async Task ExportToExcel()
+    {
+        var visibleCols = columnConfigs.Where(c => c.Visible).ToList();
+        var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+        var rows = new List<object[]>();
+        rows.Add(headers);
+        foreach (var item in dataSource)
+        {
+            var row = new object[visibleCols.Count];
+            for (int i = 0; i < visibleCols.Count; i++)
+                row[i] = GetCellValue(item, visibleCols[i].FieldKey);
+            rows.Add(row);
+        }
+        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"储位明细_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+        if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+        await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
+    }
+
+    // ===== 栏位配置 =====
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 120;
+        public int DefaultWidth { get; set; } = 120;
+        public bool Sortable { get; set; } = true;
+    }
+
+    private void InitDefaultColumnConfigs()
+    {
+        defaultColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "Chuw", OriginalName = "储位代号", DisplayName = "储位代号", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "Name", OriginalName = "储位名称", DisplayName = "储位名称", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+            new() { FieldKey = "Wh", OriginalName = "仓库", DisplayName = "仓库", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "Gs", OriginalName = "排", DisplayName = "排", Visible = true, Width = 60, DefaultWidth = 60, Sortable = false },
+            new() { FieldKey = "Gl", OriginalName = "列", DisplayName = "列", Visible = true, Width = 60, DefaultWidth = 60, Sortable = false },
+            new() { FieldKey = "Layer", OriginalName = "层", DisplayName = "层", Visible = true, Width = 60, DefaultWidth = 60, Sortable = false },
+            new() { FieldKey = "CwStatus", OriginalName = "储位状态", DisplayName = "储位状态", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+            new() { FieldKey = "LockCw", OriginalName = "锁定状态", DisplayName = "锁定状态", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+            new() { FieldKey = "AreaId", OriginalName = "区域代号", DisplayName = "区域代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true }
+        };
+        columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth,
+            Sortable = c.Sortable
+        }).ToList();
+    }
+
+    private async Task LoadColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", COLUMN_SETTINGS_KEY);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in columnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(columnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", COLUMN_SETTINGS_KEY, json);
+        }
+        catch { }
+    }
+
+    private void OpenColumnSettings()
+    {
+        columnSearchKeyword = "";
+        showColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = SaveColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = LoadColumnSettings();
+        StateHasChanged();
+    }
+
+    private void SelectAllColumns()
+    {
+        foreach (var col in columnConfigs)
+            col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreDefaultColumns()
+    {
+        for (int i = 0; i < columnConfigs.Count && i < defaultColumnConfigs.Count; i++)
+        {
+            columnConfigs[i].Visible = defaultColumnConfigs[i].Visible;
+            columnConfigs[i].DisplayName = defaultColumnConfigs[i].DisplayName;
+            columnConfigs[i].Width = defaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredColumnConfigs =>
+        string.IsNullOrWhiteSpace(columnSearchKeyword)
+            ? columnConfigs
+            : columnConfigs.Where(c => c.OriginalName.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                       c.FieldKey.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int VisibleColumnCount => columnConfigs.Count(c => c.Visible);
+
+    private object GetCellValue(StorageLocationDetailModel item, string fieldKey) => fieldKey switch
+    {
+        "Chuw" => item.Chuw,
+        "Name" => item.Name,
+        "Wh" => item.Wh,
+        "Gs" => item.Gs,
+        "Gl" => item.Gl,
+        "Layer" => item.Layer,
+        "CwStatus" => item.CwStatus,
+        "LockCw" => item.LockCw,
+        "AreaId" => item.AreaId,
+        _ => ""
+    };
+
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+}

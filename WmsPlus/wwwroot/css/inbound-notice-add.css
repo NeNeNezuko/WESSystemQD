@@ -1,0 +1,336 @@
+/* ===== 入库通知单*新增 页面样式 ===== */
+
+.inbound-notice-add-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* ===== 顶部工具栏 ===== */
+.page-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 6px 12px;
+    gap: 6px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #fafafa;
+    min-height: 38px;
+}
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background: #fff;
+    color: #333333;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+.toolbar-btn.primary-btn {
+    background: #1890ff;
+    border-color: #1890ff;
+    color: #ffffff;
+}
+
+.toolbar-btn.primary-btn:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+    color: #ffffff;
+}
+
+/* ===== 表单区域 - 3列网格布局 ===== */
+.form-area {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #ffffff;
+}
+
+.form-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px 24px;
+}
+
+.form-item-add {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
+}
+
+.form-label-add {
+    display: flex;
+    align-items: center;
+    min-width: 100px;
+    max-width: 120px;
+    height: 100%;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #666666;
+    background: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.form-label-add .required-mark {
+    color: #ff4d4f;
+    margin-right: 2px;
+}
+
+.form-input-add {
+    flex: 1;
+    width: 0;
+    height: 100%;
+    padding: 0 6px;
+    font-size: 12px;
+    border: none;
+    outline: none;
+    color: #333333;
+    background: transparent;
+}
+
+.form-input-add:read-only {
+    background: #f5f5f5;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+.form-input-add[readonly] {
+    background: #f5f5f5;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+/* 搜索图标按钮 */
+.input-search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 100%;
+    cursor: pointer;
+    border-left: 1px solid #e8e8e8;
+    color: #999999;
+    flex-shrink: 0;
+}
+
+.input-search-icon:hover {
+    color: #1890ff;
+}
+
+/* 备注多行文本 */
+.form-textarea-wrapper {
+    display: flex;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
+}
+
+.form-textarea-wrapper .form-label-add {
+    align-items: flex-start;
+    padding-top: 6px;
+}
+
+.form-textarea-add {
+    flex: 1;
+    width: 0;
+    padding: 4px 6px;
+    font-size: 12px;
+    border: none;
+    outline: none;
+    resize: vertical;
+    min-height: 50px;
+    line-height: 1.6;
+}
+
+/* Checkbox 样式 */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    margin-right: 4px;
+    accent-color: #1890ff;
+}
+
+.checkbox-wrapper label {
+    font-size: 12px;
+    color: #333333;
+    cursor: pointer;
+}
+
+/* 下拉框 */
+.select-wrapper-add {
+    position: relative;
+    flex: 1;
+    height: 100%;
+}
+
+.select-wrapper-add .form-select-add {
+    width: 100%;
+    height: 100%;
+    padding: 0 22px 0 6px;
+    font-size: 12px;
+    border: none;
+    outline: none;
+    appearance: none;
+    background: transparent;
+    color: #333333;
+    cursor: pointer;
+}
+
+.select-arrow-add {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* ===== 底部操作栏 ===== */
+.action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 4px 16px;
+    gap: 6px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #fafafa;
+    min-height: 34px;
+}
+
+.action-bar .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background: #fff;
+    color: #333333;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.action-bar .action-btn:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+/* ===== 明细区域 ===== */
+.detail-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 横向选项卡 */
+.detail-tabs {
+    display: flex;
+    align-items: center;
+    background: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+    padding-left: 12px;
+    user-select: none;
+}
+
+.detail-tab-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 14px;
+    font-size: 12px;
+    color: #666666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.detail-tab-item:hover {
+    color: #1890ff;
+}
+
+.detail-tab-item.active {
+    color: #1890ff;
+    font-weight: 500;
+    border-bottom-color: #1890ff;
+}
+
+.detail-tab-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* 明细表格容器 */
+.detail-table-container {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+}
+
+/* 新增行按钮 */
+.add-row-btn-cell {
+    text-align: left !important;
+    padding: 4px 8px !important;
+}
+
+.add-row-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #1890ff;
+    background: none;
+    border: 1px dashed #91d5ff;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-row-btn:hover {
+    background: #e6f7ff;
+    border-color: #1890ff;
+}
+
+/* 操作列按钮 */
+.row-action-btn {
+    padding: 2px 6px;
+    font-size: 11px;
+    color: #ff4d4f;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.row-action-btn:hover {
+    text-decoration: underline;
+}

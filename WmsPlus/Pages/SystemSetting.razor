@@ -1,0 +1,1020 @@
+@page "/system-setting"
+@using Microsoft.AspNetCore.Components.Web
+@using System.Net.Http
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+
+<link rel="stylesheet" href="css/system-setting.css" />
+
+<div class="system-setting-page">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                @(isFavorited ? "★" : "☆")
+            </button>
+            <span class="page-title">系统设定</span>
+        </div>
+        <div class="header-right">
+            <button class="save-btn" @onclick="HandleSave">保存</button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    <div class="toast @(showToast ? "show" : "")">收藏成功</div>
+
+    <!-- 主内容区：左侧导航 + 右侧设置内容 -->
+    <div class="page-body">
+        <!-- 左侧导航栏 -->
+        <div class="nav-sidebar">
+            <div class="nav-title">导航</div>
+            @foreach (var nav in NavItems)
+            {
+                <div class="nav-item @(activeNavId == nav.Id ? "active" : "")"
+                     @onclick="() => ScrollToSection(nav.Id)">
+                    @nav.Title
+                </div>
+            }
+        </div>
+
+        <!-- 右侧内容区（滚动） -->
+        <div class="content-area" @onscroll="HandleContentScroll" @ref="contentRef">
+
+            <!-- ====== Section 1: 公司资料 ====== -->
+            <div class="setting-section" id="sec-company" data-nav="company">
+                <div class="section-title">公司资料</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">公司代号</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="formData.CompanyCode" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">公司名称</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="formData.CompanyName" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">英文名称</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="formData.CompanyEnName" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">公司地址</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="formData.CompanyAddress" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">电话</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="formData.Phone" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">开始日期</span>
+                    <div class="row-input-wrap">
+                        <input type="date" @bind="formData.StartDate" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">日期格式</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="dateFormat" placeholder="yyyy-MM-dd" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">小数位</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="decimalPlaces" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">数位后加0不显示</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="hideTrailingZero" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ====== Section 2: 密码策略 ====== -->
+            <div class="setting-section" id="sec-password" data-nav="password">
+                <div class="section-title">密码策略</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">有效期</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="pwdValidDays" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">内容限制</span>
+                    <div class="row-input-wrap">
+                        <select @bind="pwdContentLimit">
+                            <option value="">无限制</option>
+                            <option value="1">必须包含数字</option>
+                            <option value="2">必须包含字母</option>
+                            <option value="3">必须包含特殊字符</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">最小长度</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="pwdMinLength" placeholder="[已输入至1前(数字)]" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 3: 系统设定 ====== -->
+            <div class="setting-section" id="sec-system" data-nav="system">
+                <div class="section-title">系统设定</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">货品使用序列号</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="useSerialNo" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">已出库序号允许重复使用</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="allowReuseSerial" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">默认出库业务类型</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="defaultCkBizType" placeholder="" readonly />
+                        <button class="input-action" title="search">&#128269;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">入库时不对影响输入入库目的业务类型</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="rkIgnoreBizType" placeholder="" />
+                        <button class="input-action" title="search">&#128269;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">不影响输入入库日期的来源</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="rkDateSource" placeholder="" />
+                        <button class="input-action" title="search">&#128269;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">批业类型设定默认优先级</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="bizTypePriority" placeholder="" />
+                        <button class="input-action" title="search">&#128269;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">检查来设备</span>
+                    <div class="row-input-wrap">
+                        <select @bind="checkDeviceMode">
+                            <option value="">在WMS系统检验</option>
+                            <option value="1">跳过检验</option>
+                            <option value="2">在PDA端检验</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">系统表头后缀SUNLIKE系统</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="sunlikeSuffix" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">系统表头后缀日期和数量</span>
+                    <div class="row-input-wrap">
+                        <select @bind="suffixDateQty">
+                            <option value="">当前系统日期</option>
+                            <option value="1">单据日期</option>
+                            <option value="2">不添加后缀</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">货品打印标签频值次序</span>
+                    <div class="row-input-wrap">
+                        <select @bind="printLabelOrder">
+                            <option value="">货品</option>
+                            <option value="1">批号</option>
+                            <option value="2">储位</option>
+                        </select>
+                        <button class="input-action" title="展开">...</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 4: 货品特征 ====== -->
+            <div class="setting-section" id="sec-product-mark" data-nav="product-mark">
+                <div class="section-title">货品特征</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">货品启用特征</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableProductMark" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">特征含</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="markInclude" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">特征输入受位置编码控制</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="markPositionControl" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">特征分段说明定义方式</span>
+                    <div class="row-input-wrap">
+                        <select @bind="markDefineMethod">
+                            <option value="">单相固定长度的分段方式</option>
+                            <option value="1">可变长度分段</option>
+                            <option value="2">分隔符分段</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">特征分段分隔符</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="markSeparator" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">按货品启用特征</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableMarkByProduct" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ====== Section 5: 电子标签 ====== -->
+            <div class="setting-section" id="sec-rfid" data-nav="rfid">
+                <div class="section-title">电子标签</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">RFID 就采时长（秒）</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="rfidReadTime" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">RFID采集货品条码时长（秒）</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="rfidBarcodeTime" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="sub-section-title">其他标签</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">已出库箱码允许重复使用</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="allowReuseBoxCode" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ====== Section 6: 应用储位管理 ====== -->
+            <div class="setting-section" id="sec-storage-location" data-nav="storage-location">
+                <div class="section-title">应用储位管理</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">启用储位管理</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableStorageLocation" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">货品储位管理的依据</span>
+                    <div class="row-input-wrap">
+                        <select @bind="storageBasis">
+                            <option value="2" selected>2.依货品设定(储存性质)</option>
+                            <option value="1">1.依中类设定</option>
+                            <option value="3">3.依储存性设定</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">储存顺序依据</span>
+                    <div class="row-input-wrap">
+                        <select @bind="storageOrder">
+                            <option value="2" selected>2.中类依据排序/依储性属性与顺序</option>
+                            <option value="1">1.依货品编码顺序</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 7: 扫描设定 ====== -->
+            <div class="setting-section" id="sec-scan" data-nav="scan">
+                <div class="section-title">扫描设定</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">扫描时输入货品有效规则</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="scanProductRule" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">条列模式切换快捷键设置</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="scanHotkey" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 8: 集整库存服务 ====== -->
+            <div class="setting-section" id="sec-inventory-service" data-nav="inventory-service">
+                <div class="section-title">集整库存服务</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">排定执行时间点</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="inventoryExecTime" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">计算间隔天数</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="inventoryInterval" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 9: 前端设定 ====== -->
+            <div class="setting-section" id="sec-frontend" data-nav="frontend">
+                <div class="section-title">前端设定</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">未使用前端的利系默认类型</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[0]" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">前置码</span>
+                    <div class="row-input-wrap">
+                        <input type="text" value="@(prefixLabel)" readonly style="background:#fafafa;color:#8c8c8s;" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">仓库代号前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[1]" placeholder="@@WMS" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">储位代号前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[2]" placeholder="@@BCW" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">工作台前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[3]" placeholder="@@BCZF" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">客户/厂商代号前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[4]" placeholder="@@BCUS" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">业务代号前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[5]" placeholder="@@B4AL" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">部门代号前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[6]" placeholder="@@BDEP" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">物流备前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[7]" placeholder="@@BHQ" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">条码前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[8]" placeholder="@@BBG" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">序列号前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[9]" placeholder="@@BSB" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">库存区分前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[10]" placeholder="@@BSY" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">器器分区前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[11]" placeholder="@@BPQG" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">包装码前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[12]" placeholder="@@BPAG" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">架装货位前缀</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="prefixItems[13]" placeholder="@@BHJ" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 10: 货品二维码组成 ====== -->
+            <div class="setting-section" id="sec-qrcode" data-nav="qrcode">
+                <div class="section-title">货品二维码组成</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">启用货品二维码(外部条码)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableQrCode" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">二维码分段的间隔符</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="qrSeparator" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">条码信息所在分段</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="qrBarcodeSegment" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">出库业务单据所在分段</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="qrCkDocSegment" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">出库业务单据次所在分段</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="qrCkItmSegment" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">入库业务单据所在分段</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="qrRkDocSegment" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">数据所在分段</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="qrDataSegment" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">解析号码信息无规则时默认以条码类型</span>
+                    <div class="row-input-wrap">
+                        <select @bind="qrDefaultParse">
+                            <option value="">依[前置设定]</option>
+                            <option value="1">仅解析批号</option>
+                            <option value="2">仅解析储位</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 11: 信息加密处理 ====== -->
+            <div class="setting-section" id="sec-encrypt" data-nav="encrypt">
+                <div class="section-title">信息加密处理</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">信息加密处理</span>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" @bind="encCustomerName" /> 客户名称</label>
+                        <label><input type="checkbox" @bind="encVendorName" /> 厂商名称</label>
+                        <label><input type="checkbox" @bind="encReceiveInfo" /> 收货信息</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 12: 对接ERP系统 ====== -->
+            <div class="setting-section" id="sec-erp" data-nav="erp">
+                <div class="section-title">对接ERP系统</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">启用ERP系统对接</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableErpConnect" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">AI WMS PLUS接口Url</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="erpApiUrl" placeholder="http://xxx/ERP/xxx/WMS" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="sub-section-title">Sunlike系统</div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">启用Sunlike ERP API</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableSunlikeApi" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">接口Url</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="sunlikeUrl" placeholder="" />
+                        <button class="test-btn" @onclick="() => {}">测试</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">Sunlike帐套代号</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="sunlikeAccount" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">集团公司</span>
+                    <div class="row-input-wrap">
+                        <input type="text" @bind="sunlikeCompany" placeholder="" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">避即单产生方式</span>
+                    <div class="row-input-wrap">
+                        <select @bind="sunlikeOrderMode">
+                            <option value="">ERP推送进销存</option>
+                            <option value="1">WMS主动拉取</option>
+                            <option value="2">双向同步</option>
+                        </select>
+                        <button class="input-action" title="展开">&#9660;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">启用日期</span>
+                    <div class="row-input-wrap">
+                        <input type="date" @bind="sunlikeStartDate" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="row-marker"></div>
+                    <span class="row-label">允许往日获取申请单的天数</span>
+                    <div class="row-input-wrap">
+                        <input type="number" @bind="sunlikePastDays" />
+                        <button class="input-action" title="清空">&#8857;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Section 13-17: 占位区域 ====== -->
+            <div class="setting-section" id="sec-other-system" data-nav="other-system">
+                <div class="section-title">与其他系统对接</div>
+                <div class="placeholder-section">
+                    <span class="placeholder-text">即将开发 - 与其他系统对接设置项</span>
+                </div>
+            </div>
+
+            <div class="setting-section" id="sec-api-setting" data-nav="api-setting">
+                <div class="section-title">API接口设置</div>
+                <div class="placeholder-section">
+                    <span class="placeholder-text">即将开发 - API接口配置项</span>
+                </div>
+            </div>
+
+            <div class="setting-section" id="sec-visual-params" data-nav="visual-params">
+                <div class="section-title">可视化仓储视图参数</div>
+                <div class="placeholder-section">
+                    <span class="placeholder-text">即将开发 - 可视化仓储视图参数配置</span>
+                </div>
+            </div>
+
+            <div class="setting-section" id="sec-no-restrict" data-nav="no-restrict">
+                <div class="section-title">无忌接入送单服务</div>
+                <div class="placeholder-section">
+                    <span class="placeholder-text">即将开发 - 无忌接入送单服务配置</span>
+                </div>
+            </div>
+
+            <div class="setting-section" id="sec-auto-generate" data-nav="auto-generate">
+                <div class="section-title">自动生成或次单</div>
+                <div class="placeholder-section">
+                    <span class="placeholder-text">即将开发 - 自动生成或次单配置</span>
+                </div>
+            </div>
+
+            <div class="setting-section" id="sec-auto-storage-task" data-nav="auto-storage-task">
+                <div class="section-title">自动生成直接储任务单</div>
+                <div class="placeholder-section">
+                    <span class="placeholder-text">即将开发 - 自动生成直接储任务单配置</span>
+                </div>
+            </div>
+
+            <!-- 底部留白 -->
+            <div style="height: 40px;"></div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // ========== 内部模型类 ==========
+    public record NavItem(string Id, string Title);
+
+    public class SystemFormData
+    {
+        public string CompanyCode { get; set; } = "GZD1";
+        public string CompanyName { get; set; } = "天津渤海化学试剂测试账套";
+        public string? CompanyEnName { get; set; }
+        public string? CompanyAddress { get; set; }
+        public string? Phone { get; set; }
+        public DateTime? StartDate { get; set; } = new DateTime(2024, 1, 1);
+    }
+
+    // ========== 收藏功能 ==========
+    private const string FAVORITE_KEY = "wms_favorite_system_setting";
+    private bool isFavorited = false;
+    private bool showToast = false;
+
+    // ========== 导航相关 ==========
+    private string activeNavId = "company";
+    private ElementReference contentRef;
+
+    // ========== 表单数据 ==========
+    private SystemFormData formData = new();
+
+    // --- 公司资料 ---
+    private string dateFormat = "yyyy-MM-dd";
+    private int decimalPlaces = 2;
+    private bool hideTrailingZero = false;
+
+    // --- 密码策略 ---
+    private string pwdValidDays = "";
+    private string pwdContentLimit = "";
+    private string pwdMinLength = "";
+
+    // --- 系统设定 ---
+    private bool useSerialNo = true;
+    private bool allowReuseSerial = false;
+    private string defaultCkBizType = "";
+    private string rkIgnoreBizType = "";
+    private string rkDateSource = "";
+    private string bizTypePriority = "";
+    private string checkDeviceMode = "";
+    private string sunlikeSuffix = "";
+    private string suffixDateQty = "";
+    private string printLabelOrder = "";
+
+    // --- 货品特征 ---
+    private bool enableProductMark = false;
+    private string markInclude = "";
+    private bool markPositionControl = true;
+    private string markDefineMethod = "";
+    private string markSeparator = "";
+    private bool enableMarkByProduct = false;
+
+    // --- 电子标签 ---
+    private int rfidReadTime = 3;
+    private int rfidBarcodeTime = 10;
+    private bool allowReuseBoxCode = false;
+
+    // --- 应用储位管理 ---
+    private bool enableStorageLocation = true;
+    private string storageBasis = "2";
+    private string storageOrder = "2";
+
+    // --- 扫描设定 ---
+    private bool scanProductRule = false;
+    private int scanHotkey = 3;
+
+    // --- 集整库存服务 ---
+    private int inventoryExecTime = 3;
+    private int inventoryInterval = 45;
+
+    // --- 前端设定（前缀参数）---
+    private string prefixLabel = "前缀码";
+    private string[] prefixItems = new string[20];
+
+    // --- 货品二维码组成 ---
+    private bool enableQrCode = false;
+    private string qrSeparator = "";
+    private string qrBarcodeSegment = "";
+    private string qrCkDocSegment = "";
+    private string qrCkItmSegment = "";
+    private string qrRkDocSegment = "";
+    private string qrDataSegment = "";
+    private string qrDefaultParse = "";
+
+    // --- 信息加密处理 ---
+    private bool encCustomerName = true;
+    private bool encVendorName = true;
+    private bool encReceiveInfo = false;
+
+    // --- 对接ERP系统 ---
+    private bool enableErpConnect = false;
+    private string erpApiUrl = "";
+    private bool enableSunlikeApi = false;
+    private string sunlikeUrl = "";
+    private string sunlikeAccount = "";
+    private string sunlikeCompany = "";
+    private string sunlikeOrderMode = "";
+    private DateTime? sunlikeStartDate = new DateTime(2024, 1, 1);
+    private int sunlikePastDays = 0;
+
+    // ========== 导航项定义 ==========
+    private List<NavItem> NavItems => new()
+    {
+        new("company", "公司资料"),
+        new("password", "密码策略"),
+        new("system", "系统设定"),
+        new("product-mark", "货品特征"),
+        new("rfid", "电子标签"),
+        new("storage-location", "应用储位管理"),
+        new("scan", "扫描设定"),
+        new("inventory-service", "集整库存服务"),
+        new("frontend", "前端设定"),
+        new("qrcode", "货品二维码组成"),
+        new("encrypt", "信息加密处理"),
+        new("erp", "对接ERP系统"),
+        new("other-system", "与其他系统对接"),
+        new("api-setting", "API接口设置"),
+        new("visual-params", "可视化仓储视图参数"),
+        new("no-restrict", "无忌接入送单服务"),
+        new("auto-generate", "自动生成或次单"),
+        new("auto-storage-task", "自动生成直接储任务单"),
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFavoriteStatus();
+        await LoadSettings();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SetupScrollObserver();
+        }
+    }
+
+    // ========== 收藏功能 ==========
+    private async Task LoadFavoriteStatus()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<string>("localStorage.getItem", FAVORITE_KEY);
+            isFavorited = result == "true";
+        }
+        catch { }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", FAVORITE_KEY, isFavorited.ToString().ToLower());
+        }
+        catch { }
+
+        if (isFavorited)
+        {
+            showToast = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            showToast = false;
+            StateHasChanged();
+        }
+    }
+
+    // ========== 数据加载 ==========
+    private async Task LoadSettings()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient();
+            var token = await GetToken();
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"http://localhost:5102/api/SystemSetting/all");
+            if (!string.IsNullOrEmpty(token))
+                request.Headers.Add("Authorization", $"Bearer {token}");
+
+            var response = await http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                // 解析并填充表单数据（后续对接实际数据）
+            }
+        }
+        catch { /* 静默处理 */ }
+    }
+
+    private async Task<string?> GetToken()
+    {
+        try
+        {
+            return await JSRuntime.InvokeAsync<string>("localStorage.getItem", "wms_token");
+        }
+        catch { return null; }
+    }
+
+    // ========== 导航滚动 ==========
+    private async Task ScrollToSection(string navId)
+    {
+        activeNavId = navId;
+        StateHasChanged();
+        await Task.Delay(50);
+        await JSRuntime.InvokeVoidAsync("eval",
+            $"document.getElementById('sec-{navId}')?.scrollIntoView({{ behavior: 'smooth', block: 'start' }})");
+    }
+
+    private async void HandleContentScroll(EventArgs e)
+    {
+        _ = SetupScrollObserver();
+    }
+
+    private async Task SetupScrollObserver()
+    {
+        try
+        {
+            var sectionIds = string.Join(",", NavItems.Select(n => $"'sec-{n.Id}'"));
+            var dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("eval", $@"
+                (function() {{
+                    const dotNet = {dotNetRef};
+                    const observer = new IntersectionObserver((entries) => {{
+                        entries.forEach(entry => {{
+                            if (entry.isIntersecting) {{
+                                const navId = entry.target.getAttribute('data-nav');
+                                if (navId) {{
+                                    dotNet.invokeMethodAsync('UpdateActiveNav', navId);
+                                }}
+                            }}
+                        }});
+                    }}, {{ rootMargin: '-80px 0px -60% 0px', threshold: 0 }});
+                    [{sectionIds}].forEach(id => {{
+                        const el = document.getElementById(id);
+                        if (el) observer.observe(el);
+                    }});
+                }})();
+            ");
+        }
+        catch { }
+    }
+
+    [JSInvokable]
+    public async Task UpdateActiveNav(string navId)
+    {
+        if (activeNavId != navId)
+        {
+            activeNavId = navId;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // ========== 保存（UI占位）==========
+    private async Task HandleSave()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "保存功能开发中...");
+    }
+}

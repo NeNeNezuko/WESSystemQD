@@ -1,0 +1,378 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<SystemRegistration> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/system-registration.css" />
+
+<div class="system-registration-page">
+    <!-- 页面标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">注册信息</span>
+        </div>
+        <div class="header-right">
+            <button class="tab-close-btn" @onclick="CloseTab" title="关闭">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <path d="M4 4l8 8M12 4l-8 8" stroke="#999999" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 表单主体区域 -->
+    <div class="form-body">
+        <!-- 模拟用户 分组 -->
+        <div class="form-section">
+            <div class="section-title">模拟用户</div>
+            <div class="section-content">
+                <div class="form-row">
+                    <label class="field-label">用户名</label>
+                    <div class="field-input-wrap">
+                        <input type="text" class="field-input" @bind="model.UserName" @bind:event="oninput" placeholder="" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="field-label">密码</label>
+                    <div class="field-input-wrap field-input-with-action">
+                        <input type="@passwordInputType" class="field-input" @bind="model.Password" @bind:event="oninput" placeholder="" />
+                        <button class="input-action-btn" @onclick="TogglePasswordVisibility" type="button">
+                            @if (showPassword)
+                            {
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                    <path d="M8 3C5 3 2.5 5 1 8c1.5 3 4 5 7 5s5.5-2 7-5c-1.5-3-4-5-7-5z" fill="none" stroke="#999999" stroke-width="1.2"/>
+                                    <circle cx="8" cy="8" r="2" fill="#999999"/>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                    <path d="M8 3C5 3 2.5 5 1 8c1.5 3 4 5 7 5s5.5-2 7-5c-1.5-3-4-5-7-5z" fill="none" stroke="#999999" stroke-width="1.2"/>
+                                    <circle cx="8" cy="8" r="2" fill="none" stroke="#999999" stroke-width="1.2"/>
+                                    <line x1="2" y1="14" x2="14" y2="2" stroke="#999999" stroke-width="1.2"/>
+                                </svg>
+                            }
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="field-label">域名</label>
+                    <div class="field-input-wrap">
+                        <input type="text" class="field-input" @bind="model.Domain" @bind:event="oninput" placeholder="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品注册信息 分组 -->
+        <div class="form-section">
+            <div class="section-title">AI-WMS PLUS 产品注册 V2.0(Concurrency Version)</div>
+            <div class="section-content">
+                <div class="form-row">
+                    <label class="field-label">原注册号</label>
+                    <div class="field-input-wrap">
+                        <span class="field-readonly">@model.OriginalRegNo</span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="field-label">注册号</label>
+                    <div class="field-input-wrap field-input-with-action">
+                        <input type="text" class="field-input" @bind="model.RegNo" @bind:event="oninput" placeholder="" />
+                        <button class="input-action-btn" @onclick="ClearRegNo" type="button" title="清除">
+                            <svg viewBox="0 0 16 16" width="12" height="12" fill="#cccccc">
+                                <circle cx="8" cy="8" r="7" stroke="#cccccc" stroke-width="1" fill="none"/>
+                                <line x1="5" y1="5" x2="11" y2="11" stroke="#cccccc" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="field-label">稳模信息</label>
+                    <div class="field-input-wrap">
+                        <input type="text" class="field-input" @bind="model.StableInfo" @bind:event="oninput" placeholder="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 代理服务器 分组（可折叠） -->
+        <div class="form-section @(proxyExpanded ? "expanded" : "collapsed")">
+            <div class="section-title collapsible" @onclick="ToggleProxySection">
+                <svg class="collapse-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#666666">
+                    <path d="M4 2l4 4-4 4" fill="none" stroke="#666666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>代理服务器</span>
+            </div>
+            @if (proxyExpanded)
+            {
+                <div class="section-content">
+                    <div class="form-row">
+                        <label class="field-label">代理地址</label>
+                        <div class="field-input-wrap">
+                            <input type="text" class="field-input" @bind="model.ProxyServer" @bind:event="oninput" placeholder="" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="field-label">代理端口</label>
+                        <div class="field-input-wrap">
+                            <input type="text" class="field-input" @bind="model.ProxyPort" @bind:event="oninput" placeholder="" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 底部按钮区域 -->
+    <div class="form-footer">
+        <button class="footer-btn primary-footer-btn" @onclick="HandleRegister">
+            注册
+        </button>
+        <button class="footer-btn default-footer-btn" @onclick="HandleClear">
+            清除注册记录
+        </button>
+        <button class="footer-btn default-footer-btn" @onclick="HandleReset">
+            重新出厂
+        </button>
+    </div>
+</div>
+
+
+@code {
+    // ===== 状态变量 =====
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool showPassword = false;
+    private bool proxyExpanded = false;
+    private SystemRegistrationModel model = new();
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "CloseTabAction")] public Action? CloseTabAction { get; set; }
+
+    private string passwordInputType => showPassword ? "text" : "password";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFavoriteStatus();
+        await LoadRegistrationData();
+    }
+
+    // ===== 收藏功能 =====
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_system_registration"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_system_registration", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    // ===== 关闭标签页 =====
+    private void CloseTab() => CloseTabAction?.Invoke();
+
+    // ===== 密码显示/隐藏切换 =====
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        StateHasChanged();
+    }
+
+    // ===== 清除注册号 =====
+    private void ClearRegNo()
+    {
+        model.RegNo = "";
+        StateHasChanged();
+    }
+
+    // ===== 代理服务器折叠/展开 =====
+    private void ToggleProxySection()
+    {
+        proxyExpanded = !proxyExpanded;
+        StateHasChanged();
+    }
+
+    // ===== 数据加载 =====
+    private async Task LoadRegistrationData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/SystemRegistration/info";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<SystemRegistrationDto>>(jsonOptions);
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                var data = response.Data;
+                model.UserName = data.UserName ?? "";
+                model.Domain = data.Domain ?? "";
+                model.OriginalRegNo = data.OriginalRegNo ?? "GZ001";
+                model.RegNo = data.RegNo ?? "GZ001";
+                model.StableInfo = data.StableInfo ?? "";
+                model.ProxyServer = data.ProxyServer ?? "";
+                model.ProxyPort = data.ProxyPort ?? "";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载系统注册信息失败");
+        }
+        StateHasChanged();
+    }
+
+    // ===== 底部按钮操作（占位，仅样式） =====
+    private async Task HandleRegister()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/SystemRegistration/register";
+
+            var dto = new SystemRegistrationDto
+            {
+                UserName = model.UserName,
+                Domain = model.Domain,
+                RegNo = model.RegNo,
+                StableInfo = model.StableInfo,
+                ProxyServer = model.ProxyServer,
+                ProxyPort = model.ProxyPort
+            };
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post, url, TokenProvider.Token);
+            request.Content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(dto),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", "注册成功");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", response?.Message ?? "注册失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "系统注册失败");
+            await JS.InvokeVoidAsync("alert", $"注册失败: {ex.Message}");
+        }
+    }
+
+    private async Task HandleClear()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/SystemRegistration/clear";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", "清除成功");
+                await LoadRegistrationData();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", response?.Message ?? "清除失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "清除注册记录失败");
+            await JS.InvokeVoidAsync("alert", $"清除失败: {ex.Message}");
+        }
+    }
+
+    private async Task HandleReset()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/SystemRegistration/reset";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", "重置成功");
+                await LoadRegistrationData();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", response?.Message ?? "重置失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "重新出厂失败");
+            await JS.InvokeVoidAsync("alert", $"重置失败: {ex.Message}");
+        }
+    }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+
+    /// <summary>系统注册DTO（用于API交互）</summary>
+    private class SystemRegistrationDto
+    {
+        public string UserName { get; set; } = "";
+        public string Domain { get; set; } = "";
+        public string OriginalRegNo { get; set; } = "GZ001";
+        public string RegNo { get; set; } = "GZ001";
+        public string StableInfo { get; set; } = "";
+        public string ProxyServer { get; set; } = "";
+        public string ProxyPort { get; set; } = "";
+    }
+}

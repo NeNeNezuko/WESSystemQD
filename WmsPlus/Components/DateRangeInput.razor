@@ -1,0 +1,599 @@
+@inject IJSRuntime JS
+@inject ILogger<DateRangeInput> _logger
+
+<div class="form-item">
+    <label class="form-label">单据日期</label>
+    <div class="date-picker-trigger" @onclick="ToggleDatePicker" @ref="datePickerTriggerRef">
+        <span class="date-display-text">@DateDisplayText</span>
+        <svg class="date-picker-icon" viewBox="0 0 16 16" width="12" height="12" fill="#999999">
+            <rect x="2" y="3" width="12" height="11" rx="2" stroke="#999999" stroke-width="1.2" fill="none"/>
+            <line x1="2" y1="6" x2="14" y2="6" stroke="#999999" stroke-width="1.2"/>
+            <line x1="5" y1="1" x2="5" y2="4" stroke="#999999" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="11" y1="1" x2="11" y2="4" stroke="#999999" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    @if (ShowCalendar)
+    {
+        <div class="datepicker-dropdown" @onclick:stopPropagation @ref="datePickerDropdownRef">
+            <div class="datepicker-popup-dual">
+                <!-- 头部导航：年 + 月切换 + 关闭按钮 -->
+                <div class="dp-header-dual">
+                    <button class="dp-nav" @onclick="GoPrevYear" title="上一年">&#171;</button>
+                    <button class="dp-nav" @onclick="GoPrevMonth" title="上一月">&#8249;</button>
+                    <span class="dp-title-dual">@ViewYear 年 @ViewMonth 月</span>
+                    <span class="dp-title-sep"></span>
+                    @{
+                        var nextM = ViewMonth + 1;
+                        var nextY = ViewYear;
+                        if (nextM > 12) { nextM = 1; nextY++; }
+                    }
+                    <span class="dp-title-dual">@nextY 年 @nextM 月</span>
+                    <button class="dp-nav" @onclick="GoNextMonth" title="下一月">&#8250;</button>
+                    <button class="dp-nav" @onclick="GoNextYear" title="下一年">&#187;</button>
+                    <button class="dp-close-btn" @onclick="ClosePicker" title="关闭">&times;</button>
+                </div>
+
+                <!-- 双月并排区域 -->
+                <div class="dp-months-row">
+                    <div class="dp-month-block">
+                        <div class="dp-week-row">
+                            <span class="dp-week">一</span><span class="dp-week">二</span><span class="dp-week">三</span><span class="dp-week">四</span><span class="dp-week">五</span><span class="dp-week">六</span><span class="dp-week">日</span>
+                        </div>
+                        <div class="dp-grid">
+                            @for (int idx = 0; idx < LeftCalendarCells.Count; idx++)
+                            {
+                                var cell = LeftCalendarCells[idx];
+                                <button class="dp-cell @(cell.IsSelected ? "dp-sel" : "") @(cell.IsInRange ? "dp-range" : "") @(cell.IsToday && !cell.IsSelected ? "dp-today" : "") @(!cell.IsCurrentMonth ? "dp-gray" : "")"
+                                        @onclick="@(() => PickDate(cell.Year, cell.Month, cell.Day))">
+                                    @cell.Day
+                                </button>
+                            }
+                        </div>
+                    </div>
+                    <div class="dp-month-block">
+                        <div class="dp-week-row">
+                            <span class="dp-week">一</span><span class="dp-week">二</span><span class="dp-week">三</span><span class="dp-week">四</span><span class="dp-week">五</span><span class="dp-week">六</span><span class="dp-week">日</span>
+                        </div>
+                        <div class="dp-grid">
+                            @for (int idx = 0; idx < RightCalendarCells.Count; idx++)
+                            {
+                                var cell = RightCalendarCells[idx];
+                                <button class="dp-cell @(cell.IsSelected ? "dp-sel" : "") @(cell.IsInRange ? "dp-range" : "") @(cell.IsToday && !cell.IsSelected ? "dp-today" : "") @(!cell.IsCurrentMonth ? "dp-gray" : "")"
+                                        @onclick="@(() => PickDate(cell.Year, cell.Month, cell.Day))">
+                                    @cell.Day
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快捷按钮 - 两行 -->
+                <div class="dp-shortcuts-row">
+                    <button class="dp-qbtn" @onclick="QYesterday">昨天</button>
+                    <button class="dp-qbtn" @onclick="QLastWeek">上周</button>
+                    <button class="dp-qbtn" @onclick="QLastMonth">上月</button>
+                    <button class="dp-qbtn" @onclick="QLastYear">上年</button>
+                </div>
+                <div class="dp-shortcuts-row">
+                    <button class="dp-qbtn dp-qbtn-primary" @onclick="QToday">今日</button>
+                    <button class="dp-qbtn" @onclick="QThisWeek">本周</button>
+                    <button class="dp-qbtn" @onclick="QThisMonth">本月</button>
+                    <button class="dp-qbtn" @onclick="QThisQuarter">本季</button>
+                    <button class="dp-qbtn" @onclick="QThisYear">本年</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+/* ========== 日期范围选择器样式 ========== */
+
+.date-picker-trigger {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    cursor: pointer;
+}
+
+.date-display-text {
+    font-size: 12px;
+    color: #333333;
+}
+
+.date-picker-icon {
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+/* 弹出层外容器 */
+.datepicker-dropdown {
+    position: fixed;
+    z-index: 99999;
+}
+
+/* 双月弹出层 */
+.datepicker-popup-dual {
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    width: 560px;
+    padding: 8px 10px;
+}
+
+/* 头部导航 */
+.dp-header-dual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0 8px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 6px;
+    gap: 4px;
+}
+
+.dp-nav {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666666;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+}
+
+.dp-nav:hover {
+    color: #1890ff;
+    background-color: #f0f0f0;
+}
+
+.dp-close-btn {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #999999;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    margin-left: auto;
+}
+
+.dp-close-btn:hover {
+    color: #ff4d4f;
+    background-color: #fff1f0;
+}
+
+.dp-title-dual {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333333;
+    white-space: nowrap;
+    min-width: 100px;
+    text-align: center;
+}
+
+.dp-title-sep { width: 20px; }
+
+/* 双月并排区域 */
+.dp-months-row { display: flex; gap: 16px; }
+.dp-month-block { flex: 1; min-width: 0; }
+
+/* 星期行 */
+.dp-week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.dp-week {
+    font-size: 11px;
+    color: #999999;
+    line-height: 22px;
+    font-weight: 500;
+}
+
+/* 日期网格 */
+.dp-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+
+.dp-cell {
+    width: 100%;
+    height: 26px;
+    border: none;
+    background: none;
+    font-size: 11px;
+    color: #333333;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.15s;
+}
+
+.dp-cell:hover:not(.dp-gray) {
+    background-color: #e6f7ff;
+    color: #1890ff;
+}
+
+/* 选中日期 */
+.dp-sel {
+    background-color: #1890ff !important;
+    color: #ffffff !important;
+    border-radius: 2px;
+}
+
+.dp-sel:hover {
+    background-color: #40a9ff !important;
+}
+
+/* 范围内 */
+.dp-range {
+    background-color: #bae7ff;
+    color: #333333;
+    border-radius: 0;
+}
+
+.dp-range:hover {
+    background-color: #91d5ff;
+}
+
+/* 今天标记（非选中时） */
+.dp-today:not(.dp-sel) {
+    border: 1px solid #1890ff;
+    font-weight: 600;
+}
+
+/* 非当月日期 */
+.dp-gray {
+    color: #cccccc;
+    cursor: default;
+}
+
+.dp-gray:hover {
+    background: none;
+    color: #cccccc;
+}
+
+/* 快捷按钮 - 两行 */
+.dp-shortcuts-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #f0f0f0;
+    justify-content: flex-start;
+}
+
+.dp-qbtn {
+    height: 24px;
+    padding: 0 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    font-size: 11px;
+    color: #666666;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.dp-qbtn:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+.dp-qbtn-primary {
+    background: #1890ff !important;
+    color: #fff !important;
+    border-color: #1890ff !important;
+}
+</style>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    // ===== 日历状态 =====
+    private bool ShowCalendar = false;
+    private int ViewYear;
+    private int ViewMonth;
+    private DateTime? SelectedStart;
+    private DateTime? SelectedEnd;
+    private bool PickingEnd = false;
+    private ElementReference datePickerTriggerRef;
+    private ElementReference datePickerDropdownRef;
+
+    // ===== 计算属性 =====
+    private string DateDisplayText
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Value))
+                return Value;
+            return "请选择日期";
+        }
+    }
+
+    private List<CalCell> LeftCalendarCells => BuildCalendar(ViewYear, ViewMonth);
+
+    private List<CalCell> RightCalendarCells
+    {
+        get
+        {
+            var m = ViewMonth + 1;
+            var y = ViewYear;
+            if (m > 12) { m = 1; y++; }
+            return BuildCalendar(y, m);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        ParseValue();
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ParseValue();
+        base.OnParametersSet();
+    }
+
+    /// <summary>
+    /// 从 Value 字符串解析到内部状态
+    /// </summary>
+    private void ParseValue()
+    {
+        if (!string.IsNullOrWhiteSpace(Value) && Value.Contains("→"))
+        {
+            try
+            {
+                var parts = Value.Split("→", StringSplitOptions.TrimEntries);
+                if (parts.Length == 2 &&
+                    DateTime.TryParseExact(parts[0], "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var start) &&
+                    DateTime.TryParseExact(parts[1], "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var end))
+                {
+                    SelectedStart = start;
+                    SelectedEnd = end;
+                    ViewYear = start.Year;
+                    ViewMonth = start.Month;
+                    return;
+                }
+            }
+            catch { }
+        }
+        // 默认值：今天
+        var today = DateTime.Today;
+        if (!SelectedStart.HasValue)
+        {
+            SelectedStart = today;
+            SelectedEnd = today;
+            ViewYear = today.Year;
+            ViewMonth = today.Month;
+            Value = $"{today:yyyy-MM-dd} → {today:yyyy-MM-dd}";
+        }
+    }
+
+    /// <summary>
+    /// 更新绑定值并通知父组件
+    /// </summary>
+    private async Task UpdateValue()
+    {
+        if (SelectedStart.HasValue && SelectedEnd.HasValue)
+        {
+            Value = $"{SelectedStart.Value:yyyy-MM-dd} → {SelectedEnd.Value:yyyy-MM-dd}";
+        }
+        else if (SelectedStart.HasValue)
+        {
+            Value = $"{SelectedStart.Value:yyyy-MM-dd}";
+        }
+        else
+        {
+            Value = "";
+        }
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    // ===== 日历方法 =====
+
+    private async Task ToggleDatePicker()
+    {
+        ShowCalendar = !ShowCalendar;
+        if (ShowCalendar && SelectedStart.HasValue)
+        {
+            ViewYear = SelectedStart.Value.Year;
+            ViewMonth = SelectedStart.Value.Month;
+        }
+        PickingEnd = false;
+        if (ShowCalendar)
+        {
+            await JS.InvokeVoidAsync("eval", @"(function(){
+                var trigger = arguments[0];
+                var dropdown = arguments[1];
+                var rect = trigger.getBoundingClientRect();
+                dropdown.style.left = rect.left + 'px';
+                dropdown.style.top = (rect.bottom + 4) + 'px';
+                // 点击外部自动关闭
+                document._dateRangeCloseHandler = function(e){
+                    var d = arguments[1];
+                    var t = arguments[0];
+                    if (!d.contains(e.target) && !t.contains(e.target)) {
+                        setTimeout(function(){}, 0);
+                    }
+                };
+                setTimeout(function(){
+                    document.addEventListener('mousedown', function handler(e){
+                        var dp = document.querySelector('.datepicker-dropdown');
+                        var tr = document.querySelector('.date-picker-trigger');
+                        if (dp && tr && !dp.contains(e.target) && !tr.contains(e.target)) {
+                            document.removeEventListener('mousedown', handler);
+                            dp.remove();
+                        }
+                    });
+                }, 50);
+            })()", datePickerTriggerRef, datePickerDropdownRef);
+        }
+        StateHasChanged();
+    }
+
+    private void ClosePicker()
+    {
+        ShowCalendar = false;
+        StateHasChanged();
+    }
+
+    private void QYesterday() => QuickSet("yesterday");
+    private void QLastWeek() => QuickSet("lastWeek");
+    private void QLastMonth() => QuickSet("lastMonth");
+    private void QLastYear() => QuickSet("lastYear");
+    private void QToday() => QuickSet("today");
+    private void QThisWeek() => QuickSet("thisWeek");
+    private void QThisMonth() => QuickSet("thisMonth");
+    private void QThisQuarter() => QuickSet("thisQuarter");
+    private void QThisYear() => QuickSet("thisYear");
+
+    private void GoPrevYear()
+    {
+        ViewYear--;
+        StateHasChanged();
+    }
+
+    private void GoNextYear()
+    {
+        ViewYear++;
+        StateHasChanged();
+    }
+
+    private void GoPrevMonth()
+    {
+        ViewMonth--;
+        if (ViewMonth < 1) { ViewMonth = 12; ViewYear--; }
+        StateHasChanged();
+    }
+
+    private void GoNextMonth()
+    {
+        ViewMonth++;
+        if (ViewMonth > 12) { ViewMonth = 1; ViewYear++; }
+        StateHasChanged();
+    }
+
+    private async Task PickDate(int year, int month, int day)
+    {
+        var dt = new DateTime(year, month, day);
+        DoPick(dt);
+    }
+
+    private async void DoPick(DateTime dt)
+    {
+        if (!PickingEnd || !SelectedStart.HasValue || (SelectedStart.HasValue && SelectedEnd.HasValue))
+        {
+            SelectedStart = dt;
+            SelectedEnd = null;
+            PickingEnd = true;
+        }
+        else
+        {
+            if (dt >= SelectedStart.Value) SelectedEnd = dt;
+            else { SelectedEnd = SelectedStart; SelectedStart = dt; }
+        }
+        await UpdateValue();
+
+        if (SelectedStart.HasValue && SelectedEnd.HasValue) ShowCalendar = false;
+        StateHasChanged();
+    }
+
+    private async void QuickSet(string type)
+    {
+        var t = DateTime.Today;
+        switch (type)
+        {
+            case "yesterday": SelectedStart = t.AddDays(-1); SelectedEnd = t.AddDays(-1); break;
+            case "lastWeek": var lm = t.AddDays(-(int)t.DayOfWeek - 6); SelectedStart = lm; SelectedEnd = lm.AddDays(6); break;
+            case "lastMonth": SelectedStart = new DateTime(t.Year, t.Month, 1).AddMonths(-1); SelectedEnd = new DateTime(t.Year, t.Month, 1).AddDays(-1); break;
+            case "lastYear": SelectedStart = new DateTime(t.Year - 1, 1, 1); SelectedEnd = new DateTime(t.Year - 1, 12, 31); break;
+            case "today": SelectedStart = t; SelectedEnd = t; break;
+            case "thisWeek": var tw = t.AddDays(-(int)t.DayOfWeek); SelectedStart = tw; SelectedEnd = tw.AddDays(6); break;
+            case "thisMonth": SelectedStart = new DateTime(t.Year, t.Month, 1); SelectedEnd = new DateTime(t.Year, t.Month, DateTime.DaysInMonth(t.Year, t.Month)); break;
+            case "thisQuarter":
+                var tq = (t.Month - 1) / 3 + 1;
+                SelectedStart = new DateTime(t.Year, (tq - 1) * 3 + 1, 1);
+                SelectedEnd = new DateTime(t.Year, tq * 3, DateTime.DaysInMonth(t.Year, tq * 3)); break;
+            case "thisYear": SelectedStart = new DateTime(t.Year, 1, 1); SelectedEnd = new DateTime(t.Year, 12, 31); break;
+        }
+        ViewYear = SelectedStart.Value.Year;
+        ViewMonth = SelectedStart.Value.Month;
+        ShowCalendar = false;
+        await UpdateValue();
+        StateHasChanged();
+    }
+
+    // ===== 日历数据构建（周一为第一天，6行42格）======
+    private List<CalCell> BuildCalendar(int year, int month)
+    {
+        var list = new List<CalCell>();
+        var first = new DateTime(year, month, 1);
+        int dow = ((int)first.DayOfWeek + 6) % 7;
+        for (int i = dow - 1; i >= 0; i--)
+        {
+            var d = first.AddDays(-(i + 1));
+            list.Add(new CalCell(d.Year, d.Month, d.Day, false));
+        }
+        int dim = DateTime.DaysInMonth(year, month);
+        for (int d = 1; d <= dim; d++)
+            list.Add(new CalCell(year, month, d, true));
+        while (list.Count < 42)
+        {
+            var last = list[list.Count - 1];
+            var nd = new DateTime(last.Year, last.Month, last.Day).AddDays(1);
+            list.Add(new CalCell(nd.Year, nd.Month, nd.Day, false));
+        }
+        for (int i = 0; i < list.Count; i++)
+        {
+            var c = list[i];
+            var cDate = new DateTime(c.Year, c.Month, c.Day);
+            c.IsSelected = (SelectedStart.HasValue && cDate == SelectedStart.Value.Date)
+                         || (SelectedEnd.HasValue && cDate == SelectedEnd.Value.Date);
+            c.IsToday = cDate == DateTime.Today;
+            c.IsInRange = SelectedStart.HasValue && SelectedEnd.HasValue
+                           && cDate > SelectedStart.Value.Date && cDate < SelectedEnd.Value.Date;
+        }
+        return list;
+    }
+
+    // ===== 日历单元格数据类 =====
+    private class CalCell
+    {
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public int Day { get; set; }
+        public bool IsCurrentMonth { get; set; }
+        public bool IsSelected { get; set; }
+        public bool IsToday { get; set; }
+        public bool IsInRange { get; set; }
+        public CalCell(int y, int m, int d, bool cur) { Year = y; Month = m; Day = d; IsCurrentMonth = cur; }
+    }
+}

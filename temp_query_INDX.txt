@@ -1,0 +1,11 @@
+﻿output
+TP_ID | 第三方标志
+SYS_DATE | 输单日期
+USR | 制单人
+UP_DD | 上次更新时间
+REM | 备注
+STOP_DD | 停用日期
+IDX_UP | 上层中类
+NAME | 名称
+IDX_NO | 中类代号
+CON_NO | 货主编码

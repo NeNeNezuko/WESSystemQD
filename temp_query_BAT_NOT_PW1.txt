@@ -1,0 +1,5 @@
+﻿output
+GUID | 唯一ID
+BIL_ITM | 单据项次
+BIL_NO | 单据号码
+BIL_ID | 单据别

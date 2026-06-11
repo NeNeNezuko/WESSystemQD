@@ -1,0 +1,554 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<RegistrationInfo> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/registration-info.css" />
+
+<div class="registration-info-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">注册信息 V2.0(Concurrency Version)</span>
+        </div>
+        <div class="header-right">
+            <button class="tab-close-btn" @onclick="CloseTab" title="关闭">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <path d="M4 4l8 8M12 4l-8 8" stroke="#999999" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 主内容区域（左右分栏） -->
+    <div class="page-content">
+        <!-- 左侧查询区域 -->
+        <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+            <div class="query-header">
+                <span class="query-title">查询</span>
+                <button class="collapse-btn-inline @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                    <svg viewBox="0 0 12 12" width="10" height="10" fill="#666666">
+                        <path d="M4 2l4 4-4 4" fill="none" stroke="#666666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 网格布局查询表单 -->
+            <div class="query-grid-form">
+                <!-- 第1行：序列号 | 应用日期 | 注册按钮 | 客户代号 -->
+                <div class="grid-item">
+                    <label class="grid-label">序列号</label>
+                    <input type="text" class="grid-input" @bind="query.SerialNo" @bind:event="oninput" />
+                </div>
+                <div class="grid-item">
+                    <label class="grid-label">应用日期</label>
+                    <input type="date" class="grid-input" @bind="query.ApplyDate" />
+                </div>
+                <div class="grid-item grid-item-btn">
+                    <button class="register-action-btn" @onclick="HandleRegister" type="button">注册</button>
+                </div>
+                <div class="grid-item">
+                    <label class="grid-label">客户代号</label>
+                    <input type="text" class="grid-input grid-input-readonly" value="@query.CustomerCode" readonly />
+                </div>
+
+                <!-- 第2行：客户名称 | 版本 | 合同到期日 | 停用日 -->
+                <div class="grid-item">
+                    <label class="grid-label">客户名称</label>
+                    <input type="text" class="grid-input grid-input-readonly" value="@query.CustomerName" readonly />
+                </div>
+                <div class="grid-item">
+                    <label class="grid-label">版本</label>
+                    <select class="grid-select" @bind="query.Version">
+                        <option value="02.WMVC版">02.WMVC版</option>
+                        <option value="03.WEB版">03.WEB版</option>
+                        <option value="04.CS版">04.CS版</option>
+                    </select>
+                </div>
+                <div class="grid-item">
+                    <label class="grid-label">合同到期日</label>
+                    <input type="date" class="grid-input" @bind="query.ContractExpireDate" />
+                </div>
+                <div class="grid-item">
+                    <label class="grid-label grid-label-danger">停用日</label>
+                    <input type="date" class="grid-input grid-input-danger" @bind="query.StopDate" />
+                </div>
+
+                <!-- 第3行：停用否 | 可用模组基数 | 空 | 空 -->
+                <div class="grid-item">
+                    <label class="grid-label">停用否</label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" @bind="query.StopFlag" />
+                        <span class="checkbox-custom"></span>
+                    </label>
+                </div>
+                <div class="grid-item">
+                    <label class="grid-label">可用模组基数</label>
+                    <input type="number" class="grid-input" @bind="query.AvailableModuleBase" />
+                </div>
+                <div class="grid-item grid-item-empty"></div>
+                <div class="grid-item grid-item-empty"></div>
+            </div>
+        </div>
+
+        <!-- 右侧数据表格区域 -->
+        <div class="table-panel">
+            <!-- 内层标签栏：模块列表 / 模块列表二 / 模块列表三 / 其他 -->
+            <div class="inner-tab-bar">
+                <div class="inner-tab-item @(activeInnerTab == "module-list" ? "active" : "")" @onclick="() => SwitchInnerTab('module-list')">
+                    模块列表
+                </div>
+                <div class="inner-tab-item @(activeInnerTab == "module-list-two" ? "active" : "")" @onclick="() => SwitchInnerTab('module-list-two')">
+                    模块列表二
+                </div>
+                <div class="inner-tab-item @(activeInnerTab == "module-list-three" ? "active" : "")" @onclick="() => SwitchInnerTab('module-list-three')">
+                    模块列表三
+                </div>
+                <div class="inner-tab-item @(activeInnerTab == "other" ? "active" : "")" @onclick="() => SwitchInnerTab('other')">
+                    其他
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                        <span>导出</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            @foreach (var col in columnConfigs.Where(c => c.Visible))
+                            {
+                                var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                if (col.Sortable)
+                                {
+                                    <th style="@widthStyle" class="sortable">
+                                        @col.DisplayName
+                                        <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                            <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                            <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                        </svg>
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                            }
+                            <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                <span>操作</span>
+                                <button class="column-settings-btn" title="栏位设置" @onclick="OpenColumnSettings">
+                                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                        <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                    </svg>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (dataSource.Count == 0)
+                        {
+                            <tr><td colspan="@(VisibleColumnCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in dataSource)
+                            {
+                                <tr>
+                                    @foreach (var col in columnConfigs.Where(c => c.Visible))
+                                    {
+                                        var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                    }
+                                    <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导出对话框 -->
+@if (showExportDialog)
+{
+    <div class="export-dialog-overlay" @onclick="CancelExport">
+        <div class="export-dialog" @onclick:stopPropagation>
+            <div class="export-dialog-header">
+                <span>导出 Excel</span>
+                <button class="export-dialog-close" @onclick="CancelExport">&times;</button>
+            </div>
+            <div class="export-dialog-body">
+                <label class="export-label">文件名</label>
+                <input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput" />
+            </div>
+            <div class="export-dialog-footer">
+                <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
+                <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 栏位设计对话框 -->
+@if (showColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredColumnConfigs.Count; i++)
+                        {
+                            var col = FilteredColumnConfigs[i];
+                            var idx = columnConfigs.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreDefaultColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    // ===== 状态变量 =====
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showExportDialog = false;
+    private string exportFileName = "";
+    private bool showColumnSettingsDialog = false;
+    private string columnSearchKeyword = "";
+    private string activeInnerTab = "module-list";
+    private List<ColumnConfig> columnConfigs = new();
+    private List<ColumnConfig> defaultColumnConfigs = new();
+    private RegistrationInfoQuery query = new();
+    private List<RegistrationInfoModel> dataSource = new();
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "CloseTabAction")] public Action? CloseTabAction { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitDefaultColumnConfigs();
+        await LoadColumnSettings();
+        await LoadFavoriteStatus();
+        await LoadData();
+    }
+
+    // ===== 内层选项卡切换 =====
+    private void SwitchInnerTab(string tab)
+    {
+        activeInnerTab = tab;
+        _ = LoadData();
+        StateHasChanged();
+    }
+
+    // ===== 折叠/展开 =====
+    private void ToggleCollapse()
+    {
+        isCollapsed = !isCollapsed;
+        StateHasChanged();
+    }
+
+    // ===== 收藏功能 =====
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_registration_info"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_registration_info", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    // ===== 关闭标签页 =====
+    private void CloseTab() => CloseTabAction?.Invoke();
+
+    // ===== 注册按钮（占位） =====
+    private void HandleRegister()
+    {
+        /* TODO: 实现注册逻辑 */
+    }
+
+    // ===== 查询操作 =====
+    private async Task HandleSearch() { await LoadData(); }
+
+    // ===== 导出 =====
+    private async Task HandleExport()
+    {
+        if (dataSource.Count == 0) { await JS.InvokeVoidAsync("alert", "暂无数据可导出"); return; }
+        exportFileName = $"注册信息_{DateTime.Now:yyyyMMddHHmmss}";
+        showExportDialog = true;
+        StateHasChanged();
+    }
+
+    private void CancelExport() { showExportDialog = false; StateHasChanged(); }
+
+    private async Task ConfirmExport()
+    {
+        showExportDialog = false;
+        try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
+    }
+
+    // ===== 数据加载 =====
+    private async Task LoadData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/RegistrationInfo/search?serialNo={Uri.EscapeDataString(query.SerialNo)}&applyDate={Uri.EscapeDataString(query.ApplyDate)}&version={Uri.EscapeDataString(query.Version)}&contractExpireDate={Uri.EscapeDataString(query.ContractExpireDate)}&stopDate={Uri.EscapeDataString(query.StopDate)}&stopFlag={query.StopFlag}&moduleTab={activeInnerTab}";
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<RegistrationInfoModel>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                dataSource = response.Data;
+            }
+            else
+            {
+                dataSource = new List<RegistrationInfoModel>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载注册信息数据失败");
+            dataSource = new List<RegistrationInfoModel>();
+        }
+        StateHasChanged();
+    }
+
+    // ===== Excel导出 =====
+    private async Task ExportToExcel()
+    {
+        var visibleCols = columnConfigs.Where(c => c.Visible).ToList();
+        var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+        var rows = new List<object[]>();
+        rows.Add(headers);
+        foreach (var item in dataSource)
+        {
+            var row = new object[visibleCols.Count];
+            for (int i = 0; i < visibleCols.Count; i++)
+                row[i] = GetCellValue(item, visibleCols[i].FieldKey);
+            rows.Add(row);
+        }
+        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"注册信息_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+        if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+        await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
+    }
+
+    // ===== 栏位配置 =====
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+        public bool Sortable { get; set; } = false;
+    }
+
+    private const string COLUMN_SETTINGS_KEY = "wms_column_settings_registration_info";
+
+    private void InitDefaultColumnConfigs()
+    {
+        defaultColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "ModuleCode", OriginalName = "主模块代号", DisplayName = "主模块代号", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+            new() { FieldKey = "ModuleName", OriginalName = "主模块名称", DisplayName = "主模块名称", Visible = true, Width = 200, DefaultWidth = 200 },
+            new() { FieldKey = "MaxUsers", OriginalName = "最大用户数", DisplayName = "最大用户数", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "UserCount", OriginalName = "用户数", DisplayName = "用户数", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true }
+        };
+        columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth,
+            Sortable = c.Sortable
+        }).ToList();
+    }
+
+    private async Task LoadColumnSettings()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", COLUMN_SETTINGS_KEY);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, options);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in columnConfigs)
+                    {
+                        var savedCol = saved.FirstOrDefault(s => s.FieldKey == col.FieldKey);
+                        if (savedCol != null)
+                        {
+                            col.Visible = savedCol.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(savedCol.DisplayName) ? savedCol.DisplayName : col.OriginalName;
+                            col.Width = savedCol.Width >= 0 ? savedCol.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveColumnSettings()
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(columnConfigs);
+            await JS.InvokeVoidAsync("localStorage.setItem", COLUMN_SETTINGS_KEY, json);
+        }
+        catch { }
+    }
+
+    private void OpenColumnSettings()
+    {
+        columnSearchKeyword = "";
+        showColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseColumnSettings() { showColumnSettingsDialog = false; StateHasChanged(); }
+
+    private void ConfirmColumnSettings() { showColumnSettingsDialog = false; _ = SaveColumnSettings(); StateHasChanged(); }
+
+    private void CancelColumnSettings() { showColumnSettingsDialog = false; _ = LoadColumnSettings(); StateHasChanged(); }
+
+    private void SelectAllColumns() { foreach (var col in columnConfigs) col.Visible = true; StateHasChanged(); }
+
+    private void RestoreDefaultColumns()
+    {
+        for (int i = 0; i < columnConfigs.Count && i < defaultColumnConfigs.Count; i++)
+        {
+            columnConfigs[i].Visible = defaultColumnConfigs[i].Visible;
+            columnConfigs[i].DisplayName = defaultColumnConfigs[i].DisplayName;
+            columnConfigs[i].Width = defaultColumnConfigs[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    private List<ColumnConfig> FilteredColumnConfigs =>
+        string.IsNullOrWhiteSpace(columnSearchKeyword)
+            ? columnConfigs
+            : columnConfigs.Where(c => c.OriginalName.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                       c.FieldKey.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private int VisibleColumnCount => columnConfigs.Count(c => c.Visible);
+
+    private object GetCellValue(RegistrationInfoModel item, string fieldKey) => fieldKey switch
+    {
+        "ModuleCode" => item.ModuleCode,
+        "ModuleName" => item.ModuleName,
+        "MaxUsers" => item.MaxUsers,
+        "UserCount" => item.UserCount,
+        _ => ""
+    };
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+}

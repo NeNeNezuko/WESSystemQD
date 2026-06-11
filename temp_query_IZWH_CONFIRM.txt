@@ -1,0 +1,8 @@
+﻿output
+DEP | 部门
+MODIFY_MAN | 修改人
+USR | 制单人
+MODIFY_DD | 修改时间
+SYS_DATE | 制单时间
+WH_IN | 入货仓库
+WH_OUT | 出货仓库

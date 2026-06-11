@@ -1,0 +1,29 @@
+﻿output
+AREA_NO | 站点
+BEARING | 储位承重(Kg)
+HEIGHT | 储位高度(mm)
+PTL_STATUS | PTL亮灯状态
+TUNNEL_LABEL | 巷道灯电子标签ID
+PTL_LABEL | PTL电子标签ID
+HW_NO | 设备代号
+PT_NO | 打印编号
+AREA_ID | 区域代号
+TUNNEL_NO | 巷道号
+PASSAGE | 通道
+REM | 备注
+PD_DD | 盘点日期
+CW_UNMATCH | 不可配位标记(T/F)
+LKHJ_TYPE | 储位位置(1.单深位 2.双深位外侧(靠近) 3.双深位里侧(远离) 4.三深位外侧 5.三深位中间 6.三深位里侧)
+TP_ID | 第三方标记
+LAYER_PROP | 层属性(0、空 1、低层 2、中层 3、高层)
+LOCK_CW | 锁定状态(1、正常 2、锁定 3、异常)
+CW_STATUS | 储位状态(1、正常  2、故障)
+GL | 列
+LAYER | 层
+GS | 排
+GS_PAT | 货架编码
+UP_DD | 更新时间
+WH | 仓库
+CWWZ | 储位位置（作废）
+NAME | 储位名称
+CHUW | 储位

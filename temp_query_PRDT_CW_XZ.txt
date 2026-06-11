@@ -1,0 +1,14 @@
+﻿output
+CON_NO | 货主编码
+ZONE_ID | 区域代号
+LAYER | 层
+GL | 列
+GS | 排
+WH | 仓库代号
+UP_DD | 时间戳
+REM | 备注
+CHUW | 储位代号
+CWXZ_NO | 储存性质代号
+PRD_NO | 货品代号
+DEP | 集团分公司
+GUID | 唯一值

@@ -1,0 +1,289 @@
+@inject HttpClient Http
+@inject ILogger<DeptCodeInput> _logger
+
+<style>
+/* ========== 部门选择器对话框 ========== */
+.dept-selector-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+}
+.dept-selector-dialog {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    width: 700px;
+    max-width: 92vw;
+    max-height: 80vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.dept-selector-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; font-weight: 500; color: #333333;
+}
+.dept-close-btn {
+    background: none; border: none;
+    font-size: 18px; color: #999999;
+    cursor: pointer; padding: 0 2px; line-height: 1;
+}
+.dept-close-btn:hover { color: #333333; }
+.dept-selector-body {
+    display: flex; flex: 1; overflow: hidden;
+    min-height: 380px;
+}
+.dept-left-panel {
+    width: 180px; min-width: 180px;
+    border-right: 1px solid #f0f0f0;
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    background-color: #fafafa;
+}
+.dept-filter-title {
+    font-size: 13px; font-weight: 500; color: #333333;
+    margin-bottom: 4px;
+}
+.dept-search-input {
+    height: 32px; padding: 0 8px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.dept-search-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.dept-query-btn {
+    height: 32px; background-color: #1890ff; color: #ffffff;
+    border: none; border-radius: 4px; font-size: 13px; cursor: pointer;
+    transition: background-color 0.2s;
+}
+.dept-query-btn:hover { background-color: #40a9ff; }
+.dept-right-panel {
+    flex: 1; overflow-y: auto;
+    padding: 8px 12px;
+    display: flex; flex-direction: column;
+}
+.dept-data-table {
+    width: 100%; border-collapse: collapse; table-layout: auto;
+}
+.dept-data-table th {
+    background-color: #fafafa;
+    padding: 8px 6px;
+    text-align: left;
+    font-size: 12px; font-weight: 500; color: #666666;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+}
+.dept-data-table td {
+    padding: 7px 6px;
+    font-size: 12px; color: #333333;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.dept-col-action { position: relative; white-space: nowrap; width: 70px !important; min-width: 70px !important; }
+.dept-select-btn {
+    background: none; border: 1px solid #d9d9d9; border-radius: 3px;
+    padding: 2px 10px; font-size: 12px; color: #1890ff; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+}
+.dept-select-btn:hover { border-color: #1890ff; color: #1890ff; background-color: #e6f7ff; }
+.dept-pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 4px 4px; margin-top: auto;
+}
+.dept-total-info { font-size: 12px; color: #888888; }
+.dept-page-controls { display: flex; align-items: center; gap: 4px; }
+.dept-page-btn {
+    width: 28px; height: 26px;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    background: #fff; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.dept-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.dept-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.dept-page-input {
+    width: 44px; height: 26px; text-align: center;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    font-size: 13px; outline: none;
+}
+.dept-page-input:focus { border-color: #1890ff; }
+.dept-page-controls span { font-size: 12px; color: #666666; }
+.dept-selector-footer {
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 10px 18px; border-top: 1px solid #f0f0f0;
+}
+.dept-footer-cancel {
+    height: 30px; padding: 0 20px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #ffffff; font-size: 13px; color: #333333; cursor: pointer;
+}
+.dept-footer-cancel:hover { border-color: #1890ff; color: #1890ff; }
+</style>
+
+<!-- 部门代号输入框 -->
+<div class="form-item">
+    <label class="form-label">部门代号</label>
+    <div class="input-with-search">
+        <input type="text" class="form-input" placeholder="" @bind="Value" @bind:event="oninput" />
+        <button class="search-icon-btn" title="选择部门" @onclick="OpenDeptSelector">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                <circle cx="7" cy="7" r="5"/>
+                <line x1="11" y1="11" x2="15" y2="15"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- 部门选择器对话框 -->
+@if (showDeptDialog)
+{
+    <div class="dept-selector-overlay" @onclick="CloseDeptSelector">
+        <div class="dept-selector-dialog" @onclick:stopPropagation>
+            <div class="dept-selector-header">
+                <span>部门(DEPT)</span>
+                <button class="dept-close-btn" @onclick="CloseDeptSelector">&times;</button>
+            </div>
+            <div class="dept-selector-body">
+                <div class="dept-left-panel">
+                    <div class="dept-filter-title">过滤</div>
+                    <input type="text" class="dept-search-input" placeholder="输入关键字查询" @bind="deptSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchDept(); })" />
+                    <button class="dept-query-btn" @onclick="@(() => _ = SearchDept())">查询</button>
+                </div>
+                <div class="dept-right-panel">
+                    <table class="dept-data-table">
+                        <thead>
+                            <tr>
+                                <th class="dept-col-action">操作</th>
+                                <th style="width:50px">项次</th>
+                                <th style="width:100px">部门代号</th>
+                                <th>部门名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (deptData.Count == 0)
+                            {
+                                <tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < deptData.Count; i++)
+                                {
+                                    var item = deptData[i];
+                                    var rowIdx = (deptPageIndex - 1) * deptPageSize + i + 1;
+                                    <tr>
+                                        <td><button class="dept-select-btn" @onclick="() => SelectDept(item)">选择</button></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.dEP</td>
+                                        <td>@item.nAME</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="dept-pagination">
+                        <span class="dept-total-info">共 @deptTotalCount 笔记录</span>
+                        <div class="dept-page-controls">
+                            <button class="dept-page-btn" disabled="@(deptPageIndex <= 1)" @onclick="async () => await GoToDeptPage(deptPageIndex - 1)">&lt;</button>
+                            <input type="number" class="dept-page-input" value="@deptPageIndex" min="1" max="@DeptTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToDeptPage(p); }" />
+                            <span>/ @DeptTotalPages</span>
+                            <button class="dept-page-btn" disabled="@(deptPageIndex >= DeptTotalPages)" @onclick="async () => await GoToDeptPage(deptPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-selector-footer">
+                <button class="dept-footer-cancel" @onclick="CloseDeptSelector">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ===== 参数 =====
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    // ===== 部门选择器状态 =====
+    private bool showDeptDialog = false;
+    private string deptSearchKeyword = "";
+    private List<DeptItem> deptData = new();
+    private int deptPageIndex = 1;
+    private int deptPageSize = 10;
+    private int deptTotalCount = 0;
+
+    // ===== 数据模型 =====
+    private class DeptItem
+    {
+        public string dEP { get; set; } = "";
+        public string nAME { get; set; } = "";
+    }
+
+    private class DeptSearchResult
+    {
+        public List<DeptItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    // ===== 部门选择器方法 =====
+    private async Task OpenDeptSelector()
+    {
+        deptSearchKeyword = "";
+        deptPageIndex = 1;
+        await SearchDept();
+        showDeptDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseDeptSelector()
+    {
+        showDeptDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchDept()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/deptsearch?keyword={Uri.EscapeDataString(deptSearchKeyword ?? "")}&pageIndex={deptPageIndex}&pageSize={deptPageSize}";
+            var response = await Http.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<DeptSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (result != null)
+                {
+                    deptData = result.Items ?? new List<DeptItem>();
+                    deptTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "部门选择器查询失败");
+        }
+        StateHasChanged();
+    }
+
+    private async Task SelectDept(DeptItem item)
+    {
+        Value = item.dEP;
+        await ValueChanged.InvokeAsync(Value);
+        showDeptDialog = false;
+        StateHasChanged();
+    }
+
+    private int DeptTotalPages => deptPageSize > 0 ? (int)Math.Ceiling((double)deptTotalCount / deptPageSize) : 1;
+
+    private async Task GoToDeptPage(int page)
+    {
+        if (page >= 1 && page <= DeptTotalPages)
+        {
+            deptPageIndex = page;
+            await SearchDept();
+        }
+    }
+}

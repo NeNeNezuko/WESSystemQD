@@ -8,4 +8,6 @@ public class MyWh
     public string? ATTRIB { get; set; }
     public string? DEP { get; set; }
     public string? INVALID { get; set; }
+    public string? CW_FLAG { get; set; }
+    public DateTime? STOP_DD { get; set; }
 }

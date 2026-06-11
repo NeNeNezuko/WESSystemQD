@@ -22,6 +22,7 @@ namespace WmsPlus.Models
 
     public class InboundNoticeQuery
     {
+        public string DateRange { get; set; } = "";
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         public string DocumentNumber { get; set; } = "";

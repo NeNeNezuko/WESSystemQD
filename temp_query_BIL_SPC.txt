@@ -1,0 +1,5 @@
+﻿output
+REM | 备注
+NAME | 名称
+SPC_NO | 单据类别代号
+SPC_ID | 类别(RK：入库、CK：出库、IC：调拨、PD：盘点)

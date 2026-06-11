@@ -1,0 +1,10 @@
+﻿output
+REM | 备注
+SYS_DATE | 制单时间
+USR | 制单人
+BAT_NO | 批号
+PRD_MARK | 货品特征
+PRD_NO | 货品代号
+WH | 仓库代号
+CON_NO | 货主编码
+GUID | 唯一ID

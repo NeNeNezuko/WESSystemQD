@@ -1,0 +1,10 @@
+﻿output
+SYS_DATE | 制单时间
+USR | 制单人
+STOP_ID | 停用否
+SEND_TYPE | 接受方式
+SEND_USRS | 接受用户
+SEND_OBJ | 发送对象
+WH | 仓库
+TYPE_ID | 通知项目
+SET_NO | 代号

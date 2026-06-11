@@ -1,0 +1,441 @@
+@inject HttpClient Http
+
+<style>
+/* ========== 出库业务类型选择器对话框 ========== */
+.ck-type-selector-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+}
+.ck-type-selector-dialog {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    width: 680px;
+    max-width: 92vw;
+    max-height: 78vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.ck-type-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; font-weight: 500; color: #333333;
+}
+.ck-type-close-btn {
+    background: none; border: none;
+    font-size: 18px; color: #999999;
+    cursor: pointer; padding: 0 2px; line-height: 1;
+}
+.ck-type-close-btn:hover { color: #333333; }
+.ck-type-body {
+    display: flex; flex: 1; overflow: hidden;
+    min-height: 340px;
+}
+.ck-type-left-panel {
+    width: 160px; min-width: 160px;
+    border-right: 1px solid #f0f0f0;
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    background-color: #fafafa;
+}
+.ck-type-filter-title { font-size: 13px; font-weight: 500; color: #333333; margin-bottom: 4px; }
+.ck-type-search-input {
+    height: 32px; padding: 0 8px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    font-size: 13px; outline: none;
+    transition: border-color 0.2s; box-sizing: border-box;
+}
+.ck-type-search-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.ck-type-query-btn {
+    height: 32px; background-color: #1890ff; color: #ffffff;
+    border: none; border-radius: 4px; font-size: 13px; cursor: pointer;
+    transition: background-color 0.2s;
+}
+.ck-type-query-btn:hover { background-color: #40a9ff; }
+.ck-type-right-panel {
+    flex: 1; overflow-y: auto;
+    padding: 8px 12px;
+    display: flex; flex-direction: column;
+}
+.ck-type-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+.ck-type-table th {
+    background-color: #fafafa; padding: 8px 6px;
+    text-align: left; font-size: 12px; font-weight: 500; color: #666666;
+    border-bottom: 1px solid #e8e8e8; white-space: nowrap;
+}
+.ck-type-table td {
+    padding: 7px 6px; font-size: 12px; color: #333333;
+    border-bottom: 1px solid #f5f5f5; vertical-align: middle; white-space: nowrap;
+}
+.ck-type-col-check { width: 40px; text-align: center; }
+.ck-type-col-seq { width: 50px; text-align: center; }
+.ck-type-col-code { width: 70px; }
+
+/* 已选标签区域 */
+.ck-type-tags-area {
+    margin-top: 4px;
+    min-height: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+.ck-type-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    padding: 0 6px 0 8px;
+    background-color: #e6f7ff;
+    border: 1px solid #91d5ff;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #1890ff;
+}
+.ck-type-tag-close {
+    background: none; border: none;
+    cursor: pointer; padding: 0;
+    font-size: 14px; line-height: 1;
+    color: #1890ff; opacity: 0.6;
+    display: flex; align-items: center;
+}
+.ck-type-tag-close:hover { opacity: 1; }
+
+/* 分页 */
+.ck-type-pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 4px 4px; margin-top: auto;
+}
+.ck-type-total-info { font-size: 12px; color: #888888; }
+.ck-type-page-controls { display: flex; align-items: center; gap: 4px; }
+.ck-type-page-btn {
+    width: 28px; height: 26px;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    background: #fff; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.ck-type-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.ck-type-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ck-type-page-input {
+    width: 44px; height: 26px; text-align: center;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    font-size: 13px; outline: none;
+}
+.ck-type-page-input:focus { border-color: #1890ff; }
+.ck-type-page-controls span { font-size: 12px; color: #666666; }
+
+/* 底部操作栏 */
+.ck-type-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 18px; border-top: 1px solid #f0f0f0;
+}
+.ck-type-footer-left { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333333; }
+.ck-type-select-all-check {
+    width: 15px; height: 15px;
+    cursor: pointer; accent-color: #1890ff;
+}
+.ck-type-footer-right { display: flex; gap: 8px; }
+.ck-type-btn-clear {
+    height: 30px; padding: 0 20px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #ffffff; font-size: 13px; color: #333333; cursor: pointer;
+}
+.ck-type-btn-clear:hover { border-color: #1890ff; color: #1890ff; }
+.ck-type-btn-confirm {
+    height: 30px; padding: 0 20px;
+    border: 1px solid #1890ff; border-radius: 4px;
+    background-color: #1890ff; font-size: 13px; color: #ffffff; cursor: pointer;
+}
+.ck-type-btn-confirm:hover { background-color: #40a9ff; }
+</style>
+
+<!-- 出库业务类型输入框 -->
+<div class="form-item" style="flex-direction:column;align-items:stretch;height:auto;padding-bottom:4px;">
+    <div style="display:flex;flex-direction:row;align-items:stretch;height:30px;">
+        <label class="form-label" style="border-radius:2px 0 0 2px;">业务类型</label>
+        <div class="input-with-search" style="flex:1;">
+            <input type="text" class="form-input" placeholder="" value="@Value" readonly />
+            <button class="search-icon-btn" title="选择出库业务类型" @onclick="OpenCkTypeSelector">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                    <circle cx="7" cy="7" r="5"/>
+                    <line x1="11" y1="11" x2="15" y2="15"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    @if (selectedCkTypes.Count > 0)
+    {
+        <div class="ck-type-tags-area">
+            @foreach (var tag in selectedCkTypes)
+            {
+                <span class="ck-type-tag">@tag.tYPE_ID @tag.nAME<button class="ck-type-tag-close" @onclick="() => RemoveCkTypeTag(tag.tYPE_ID)">&times;</button></span>
+            }
+        </div>
+    }
+</div>
+
+<!-- 出库业务类型选择器对话框 -->
+@if (showCkTypeDialog)
+{
+    <div class="ck-type-selector-overlay" @onclick="CloseCkTypeSelector">
+        <div class="ck-type-selector-dialog" @onclick:stopPropagation>
+            <!-- 头部 -->
+            <div class="ck-type-header">
+                <span>出库业务类型(CK_TYPE_SET)</span>
+                <button class="ck-type-close-btn" @onclick="CloseCkTypeSelector">&times;</button>
+            </div>
+            <!-- 主体：左右分栏 -->
+            <div class="ck-type-body">
+                <!-- 左侧面板：过滤区 -->
+                <div class="ck-type-left-panel">
+                    <div class="ck-type-filter-title">过滤</div>
+                    <input type="text" class="ck-type-search-input" placeholder="输入关键字查询" @bind="ckTypeSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchCkType(); })" />
+                    <button class="ck-type-query-btn" @onclick="@(() => _ = SearchCkType())">查询</button>
+                </div>
+                <!-- 右侧区域：数据表格 -->
+                <div class="ck-type-right-panel">
+                    <table class="ck-type-table">
+                        <thead>
+                            <tr>
+                                <th class="ck-type-col-check"></th>
+                                <th style="width:50px">项次</th>
+                                <th class="ck-type-col-code">代码</th>
+                                <th>名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ckTypeData.Count == 0)
+                            {
+                                <tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < ckTypeData.Count; i++)
+                                {
+                                    var item = ckTypeData[i];
+                                    var rowIdx = (ckTypePageIndex - 1) * ckTypePageSize + i + 1;
+                                    var isChecked = selectedCkTypes.Any(s => s.tYPE_ID == item.tYPE_ID);
+                                    <tr>
+                                        <td class="ck-type-col-check"><input type="checkbox" checked="@isChecked" @onchange="() => ToggleCkTypeSelect(item)" /></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.tYPE_ID</td>
+                                        <td>@item.nAME</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <!-- 分页 -->
+                    <div class="ck-type-pagination">
+                        <span class="ck-type-total-info">共 @ckTypeTotalCount 笔记录</span>
+                        <div class="ck-type-page-controls">
+                            <button class="ck-type-page-btn" disabled="@(ckTypePageIndex <= 1)" @onclick="async () => await GoToCkTypePage(ckTypePageIndex - 1)">&lt;</button>
+                            <input type="number" class="ck-type-page-input" value="@ckTypePageIndex" min="1" max="@CkTypeTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToCkTypePage(p); }" />
+                            <span>/ @CkTypeTotalPages</span>
+                            <button class="ck-type-page-btn" disabled="@(ckTypePageIndex >= CkTypeTotalPages)" @onclick="async () => await GoToCkTypePage(ckTypePageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部 -->
+            <div class="ck-type-footer">
+                <div class="ck-type-footer-left">
+                    <input type="checkbox" class="ck-type-select-all-check" id="ct-select-all" checked="@isAllCkTypeSelected" @onchange="SelectAllCkType" />
+                    <label for="ct-select-all">选全部</label>
+                </div>
+                <div class="ck-type-footer-right">
+                    <button class="ck-type-btn-clear" @onclick="ClearCkTypeSelection">清空</button>
+                    <button class="ck-type-btn-confirm" @onclick="ConfirmCkTypeSelection">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ===== 参数 =====
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    // ===== 出库业务类型选择器状态 =====
+    private bool showCkTypeDialog = false;
+    private List<CkTypeItem> ckTypeData = new();
+    private List<CkTypeItem> selectedCkTypes = new();
+    private string ckTypeSearchKeyword = "";
+    private int ckTypePageIndex = 1;
+    private int ckTypePageSize = 10;
+    private int ckTypeTotalCount = 0;
+
+    // ===== 数据模型 =====
+    private class CkTypeItem
+    {
+        public string tYPE_ID { get; set; } = "";
+        public string nAME { get; set; } = "";
+    }
+
+    private class CkTypeSearchResult
+    {
+        public List<CkTypeItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    // ===== 计算属性 =====
+    private bool isAllCkTypeSelected => ckTypeData.Count > 0 && ckTypeData.All(item => selectedCkTypes.Any(s => s.tYPE_ID == item.tYPE_ID));
+    private int CkTypeTotalPages => ckTypePageSize > 0 ? (int)Math.Ceiling((double)ckTypeTotalCount / ckTypePageSize) : 1;
+
+    // ===== 初始化：从 Value 解析已选项 =====
+    protected override void OnInitialized()
+    {
+        ParseValueToSelection();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ParseValueToSelection();
+    }
+
+    private void ParseValueToSelection()
+    {
+        if (!string.IsNullOrWhiteSpace(Value))
+        {
+            if (selectedCkTypes.Count == 0)
+            {
+                var codes = Value.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var code in codes)
+                {
+                    if (!selectedCkTypes.Any(s => s.tYPE_ID == code))
+                    {
+                        selectedCkTypes.Add(new CkTypeItem { tYPE_ID = code, nAME = "" });
+                    }
+                }
+            }
+        }
+    }
+
+    // ===== 弹窗方法 =====
+    private async Task OpenCkTypeSelector()
+    {
+        ckTypeSearchKeyword = "";
+        ckTypePageIndex = 1;
+        await SearchCkType();
+        showCkTypeDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseCkTypeSelector()
+    {
+        showCkTypeDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchCkType()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/cktypesearch?keyword={Uri.EscapeDataString(ckTypeSearchKeyword ?? "")}&pageIndex={ckTypePageIndex}&pageSize={ckTypePageSize}";
+
+            var response = await Http.GetAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<CkTypeSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (result != null)
+                {
+                    ckTypeData = result.Items ?? new List<CkTypeItem>();
+                    ckTypeTotalCount = result.TotalCount;
+
+                    // 补充已选项的名称
+                    foreach (var sel in selectedCkTypes.ToList())
+                    {
+                        var found = ckTypeData.FirstOrDefault(b => b.tYPE_ID == sel.tYPE_ID);
+                        if (found != null && string.IsNullOrEmpty(sel.nAME))
+                        {
+                            sel.nAME = found.nAME;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+        StateHasChanged();
+    }
+
+    // ===== 多选方法 =====
+    private void ToggleCkTypeSelect(CkTypeItem item)
+    {
+        var existing = selectedCkTypes.FirstOrDefault(s => s.tYPE_ID == item.tYPE_ID);
+        if (existing != null)
+        {
+            selectedCkTypes.Remove(existing);
+        }
+        else
+        {
+            selectedCkTypes.Add(new CkTypeItem { tYPE_ID = item.tYPE_ID, nAME = item.nAME });
+        }
+        StateHasChanged();
+    }
+
+    private void SelectAllCkType(ChangeEventArgs e)
+    {
+        bool selectAll = (bool)e.Value!;
+        if (selectAll)
+        {
+            foreach (var item in ckTypeData)
+            {
+                if (!selectedCkTypes.Any(s => s.tYPE_ID == item.tYPE_ID))
+                {
+                    selectedCkTypes.Add(new CkTypeItem { tYPE_ID = item.tYPE_ID, nAME = item.nAME });
+                }
+            }
+        }
+        else
+        {
+            foreach (var item in ckTypeData)
+            {
+                selectedCkTypes.RemoveAll(s => s.tYPE_ID == item.tYPE_ID);
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void RemoveCkTypeTag(string ckType)
+    {
+        selectedCkTypes.RemoveAll(s => s.tYPE_ID == ckType);
+        SyncValueFromSelection();
+        StateHasChanged();
+    }
+
+    private void ClearCkTypeSelection()
+    {
+        selectedCkTypes.Clear();
+        SyncValueFromSelection();
+        StateHasChanged();
+    }
+
+    private void ConfirmCkTypeSelection()
+    {
+        SyncValueFromSelection();
+        showCkTypeDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task GoToCkTypePage(int page)
+    {
+        if (page < 1 || page > CkTypeTotalPages) return;
+        ckTypePageIndex = page;
+        await SearchCkType();
+    }
+
+    // ===== 同步值到父组件 =====
+    private void SyncValueFromSelection()
+    {
+        Value = string.Join(",", selectedCkTypes.Select(s => s.tYPE_ID));
+        _ = ValueChanged.InvokeAsync(Value);
+    }
+}

@@ -42,7 +42,7 @@
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<string> OnItemClick { get; set; }
 
-    private bool ShouldRender => MenuData != null;
+    private new bool ShouldRender => MenuData != null;
 
     // 将Children按分类标题分组
     private Dictionary<string, List<ThirdLevelMenuItem>> GroupByCategory(List<ThirdLevelMenuItem> items)

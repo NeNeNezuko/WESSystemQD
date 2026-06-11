@@ -1,0 +1,557 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<EnvironmentSetting> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/environment-setting.css" />
+
+<div class="env-setting-page">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">环境设定</span>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 向导步骤条 -->
+    <div class="wizard-steps">
+        @for (int i = 0; i < stepTitles.Length; i++)
+        {
+            var stepIndex = i;
+            var isCompleted = currentStep > stepIndex;
+            var isActive = currentStep == stepIndex;
+            <div class="wizard-step-item @(isActive ? "active" : "") @(isCompleted ? "completed" : "")">
+                <div class="step-circle">
+                    @if (isCompleted)
+                    {
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="white" stroke-width="2">
+                            <path d="M3 8l3.5 3.5L13 5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    }
+                    else
+                    {
+                        <span>@(i + 1)</span>
+                    }
+                </div>
+                <span class="step-title">@stepTitles[i]</span>
+            </div>
+            if (i < stepTitles.Length - 1)
+            {
+                <div class="step-connector @(currentStep > i ? "completed" : "")"></div>
+            }
+        }
+    </div>
+
+    <!-- 步骤内容区域 -->
+    <div class="wizard-content">
+
+        <!-- ===== 第1步：设定模拟用户 ===== -->
+        @if (currentStep == 0)
+        {
+            <div class="step-panel step1-panel">
+                <div class="form-card">
+                    <div class="form-row">
+                        <label class="form-label">用户</label>
+                        <div class="form-input-wrap">
+                            <input type="text" class="form-input" placeholder="" @bind="simUser" />
+                            <span class="input-suffix-icon">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5">
+                                    <circle cx="8" cy="5" r="3.5"/><path d="M1.5 15c0-3.5 3-6.5 6.5-6.5s6.5 3 6.5 6.5"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">密码</label>
+                        <div class="form-input-wrap">
+                            <input type="password" class="form-input" placeholder="" @bind="simPassword" />
+                            <span class="input-suffix-icon">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5">
+                                    <rect x="2.5" y="7" width="11" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">姓名</label>
+                        <div class="form-input-wrap">
+                            <input type="text" class="form-input" placeholder="模拟用户测试" @bind="simName" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="btn btn-help" @onclick="ShowHelp">帮助</button>
+                    <div class="action-right">
+                        <button class="btn btn-primary" @onclick="GoNext">下一步</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ===== 第2步：连接SQL数据库 ===== -->
+        @if (currentStep == 1)
+        {
+            <div class="step-panel step2-panel">
+                <div class="form-card">
+                    <div class="form-row">
+                        <label class="form-label">服务器名</label>
+                        <div class="form-input-wrap">
+                            <input type="text" class="form-input" placeholder="" @bind="serverName" />
+                            <span class="input-suffix-icon">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5">
+                                    <rect x="2" y="4" width="12" height="9" rx="1"/><path d="M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">数据库名</label>
+                        <div class="form-input-wrap">
+                            <input type="text" class="form-input" placeholder="" @bind="databaseName" />
+                            <span class="input-suffix-icon">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5">
+                                    <ellipse cx="8" cy="5" rx="6" ry="3"/><path d="M2 5v6c0 1.657 2.686 3 6 3s6-1.343 6-3V5"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">用户</label>
+                        <div class="form-input-wrap">
+                            <input type="text" class="form-input" placeholder="" @bind="dbUser" />
+                            <span class="input-suffix-icon">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5">
+                                    <circle cx="8" cy="5" r="3.5"/><path d="M1.5 15c0-3.5 3-6.5 6.5-6.5s6.5 3 6.5 6.5"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">密码</label>
+                        <div class="form-input-wrap">
+                            <input type="password" class="form-input" placeholder="" @bind="dbPassword" />
+                            <span class="input-suffix-icon">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5">
+                                    <rect x="2.5" y="7" width="11" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(connectionTestMsg))
+                {
+                    <div class="test-result-msg @(connectionTestSuccess ? "success" : "error")">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="@(connectionTestSuccess ? "#52C41A" : "#FF4D4F")" stroke-width="2">
+                            @if (connectionTestSuccess)
+                            {
+                                <path d="M3 8l3.5 3.5L13 5" stroke-linecap="round" stroke-linejoin="round"/>
+                            }
+                            else
+                            {
+                                <path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/>
+                            }
+                        </svg>
+                        <span>@connectionTestMsg</span>
+                    </div>
+                }
+
+                <div class="wizard-actions">
+                    <button class="btn btn-help" @onclick="ShowHelp">帮助</button>
+                    <div class="action-right">
+                        <button class="btn btn-default" @onclick="GoPrev">上一步</button>
+                        <button class="btn btn-primary" @onclick="TestConnection">连接测试</button>
+                        <button class="btn btn-primary" @onclick="GoNext">下一步</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ===== 第3步：帐套显示选择 ===== -->
+        @if (currentStep == 2)
+        {
+            <div class="step-panel step3-panel">
+                <div class="account-table-wrapper">
+                    <table class="account-table">
+                        <thead>
+                            <tr>
+                                <th class="col-checkbox"></th>
+                                <th class="col-code">帐套代号</th>
+                                <th class="col-name">帐套名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var account in accountSets)
+                            {
+                                var acc = account;
+                                var isChecked = selectedAccountSets.Contains(acc.CompNo);
+                                <tr class="@((selectedAccountSets.Count == 0 || isChecked) ? "" : "disabled")">
+                                    <td class="col-checkbox">
+                                        <input type="checkbox" checked="@isChecked"
+                                               @onchange="(e) => ToggleAccountSet(acc.CompNo, e.Value is bool b && b)" />
+                                    </td>
+                                    <td class="col-code">@acc.CompNo</td>
+                                    <td class="col-name">@acc.CompName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="default-setting-row">
+                    <span class="default-label">增册设定</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" @bind="enableAddAccount" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="btn btn-default" @onclick="GoPrev">上一步</button>
+                    <button class="btn btn-primary" @onclick="GoNext">下一步</button>
+                </div>
+            </div>
+        }
+
+        <!-- ===== 第4步：进阶设定 ===== -->
+        @if (currentStep == 3)
+        {
+            <div class="step-panel step4-panel">
+                <div class="form-card">
+                    <div class="form-row">
+                        <label class="form-label">日志级别</label>
+                        <div class="form-input-wrap">
+                            <select class="form-input form-select" @bind="logLevel">
+                                <option value="Info">Info</option>
+                                <option value="Debug">Debug</option>
+                                <option value="Warning">Warning</option>
+                                <option value="Error">Error</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">会话超时(分钟)</label>
+                        <div class="form-input-wrap">
+                            <input type="number" class="form-input" @bind="sessionTimeout" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">默认语言</label>
+                        <div class="form-input-wrap">
+                            <select class="form-input form-select" @bind="defaultLanguage">
+                                <option value="zh-CN">简体中文</option>
+                                <option value="en-US">English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="btn btn-help" @onclick="ShowHelp">帮助</button>
+                    <div class="action-right">
+                        <button class="btn btn-default" @onclick="GoPrev">上一步</button>
+                        <button class="btn btn-primary" @onclick="GoNext">下一步</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ===== 第5步：设定完成 ===== -->
+        @if (currentStep == 4)
+        {
+            <div class="step-panel step5-panel">
+                <div class="complete-content">
+                    <div class="complete-icon">
+                        <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+                            <circle cx="32" cy="32" r="30" stroke="#1890ff" stroke-width="3"/>
+                            <path d="M20 32l10 10 16-18" stroke="#1890ff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p class="complete-text">完成配置,请点击保存,站点将重启启动</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(saveMessage))
+                {
+                    <div class="save-result-msg @(saveSuccess ? "success" : "error")">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="@(saveSuccess ? "#52C41A" : "#FF4D4F")" stroke-width="2">
+                            @if (saveSuccess)
+                            {
+                                <path d="M3 8l3.5 3.5L13 5" stroke-linecap="round" stroke-linejoin="round"/>
+                            }
+                            else
+                            {
+                                <path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/>
+                            }
+                        </svg>
+                        <span>@saveMessage</span>
+                    </div>
+                }
+
+                <div class="wizard-actions">
+                    <button class="btn btn-help" @onclick="ShowHelp">帮助</button>
+                    <div class="action-right">
+                        <button class="btn btn-default" @onclick="GoPrev">上一步</button>
+                        <button class="btn btn-primary" @onclick="SaveSettings" disabled@(isSaving ? "true" : null)">
+                            @(isSaving ? "保存中..." : "保存")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>账套项（前端展示用）</summary>
+    public class AccountSetItem
+    {
+        public string CompNo { get; set; } = "";
+        public string CompName { get; set; } = "";
+    }
+
+    /// <summary>通用API响应包装</summary>
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+
+    // ===== 步骤定义 =====
+    private string[] stepTitles = new[]
+    {
+        "设定模拟用户",
+        "连接SQL数据库",
+        "帐套显示选择",
+        "进阶设定",
+        "设定完成"
+    };
+
+    private int currentStep = 0;
+
+    // ===== 第1步：模拟用户 =====
+    private string simUser = "administrator";
+    private string simPassword = "";
+    private string simName = "";
+
+    // ===== 第2步：SQL数据库连接 =====
+    private string serverName = "";
+    private string databaseName = "";
+    private string dbUser = "";
+    private string dbPassword = "";
+    private string connectionTestMsg = "";
+    private bool connectionTestSuccess = false;
+
+    // ===== 第3步：帐套选择 =====
+    private List<AccountSetItem> accountSets = new();
+    private List<string> selectedAccountSets = new();
+    private bool enableAddAccount = false;
+
+    // ===== 第4步：进阶设定 =====
+    private string logLevel = "Info";
+    private int sessionTimeout = 30;
+    private string defaultLanguage = "zh-CN";
+
+    // ===== 第5步：完成 =====
+    private string saveMessage = "";
+    private bool saveSuccess = false;
+    private bool isSaving = false;
+
+    // ===== UI状态 =====
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAccountSets();
+    }
+
+    private async Task LoadAccountSets()
+    {
+        try
+        {
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get,
+                $"http://localhost:5102/api/EnvironmentSetting/account-sets", TokenProvider.Token);
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<AccountSetItem>>>();
+                if (result?.Success == true && result.Data != null)
+                {
+                    accountSets = result.Data;
+                    // 默认全选
+                    selectedAccountSets = accountSets.Select(a => a.CompNo).ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载账套列表失败");
+            // 使用默认账套数据
+            accountSets = new List<AccountSetItem>
+            {
+                new() { CompNo = "DB", CompName = "DB" },
+                new() { CompNo = "GU01", CompName = "天津渤海化学试剂测试账套" },
+                new() { CompNo = "GZ01", CompName = "天津渤海化学试剂测试账套" },
+                new() { CompNo = "GZ02", CompName = "天津渤海化学的测试账套" }
+            };
+            selectedAccountSets = accountSets.Select(a => a.CompNo).ToList();
+        }
+    }
+
+    private void GoNext()
+    {
+        if (currentStep < stepTitles.Length - 1)
+        {
+            currentStep++;
+        }
+    }
+
+    private void GoPrev()
+    {
+        if (currentStep > 0)
+        {
+            currentStep--;
+            connectionTestMsg = "";
+        }
+    }
+
+    private async Task TestConnection()
+    {
+        try
+        {
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post,
+                "http://localhost:5102/api/EnvironmentSetting/test-connection", TokenProvider.Token);
+
+            request.Content = JsonContent.Create(new
+            {
+                ServerName = serverName,
+                DatabaseName = databaseName,
+                User = dbUser,
+                Password = dbPassword
+            });
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                connectionTestSuccess = result?.Success ?? false;
+                connectionTestMsg = result?.Message ?? (connectionTestSuccess ? "连接成功" : "连接失败");
+            }
+            else
+            {
+                connectionTestSuccess = false;
+                connectionTestMsg = "连接失败：无法连接到服务器";
+            }
+        }
+        catch (Exception ex)
+        {
+            connectionTestSuccess = false;
+            connectionTestMsg = $"连接失败: {ex.Message}";
+        }
+    }
+
+    private void ToggleAccountSet(string compNo, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!selectedAccountSets.Contains(compNo))
+                selectedAccountSets.Add(compNo);
+        }
+        else
+        {
+            selectedAccountSets.Remove(compNo);
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        isSaving = true;
+        saveMessage = "";
+        try
+        {
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Post,
+                "http://localhost:5102/api/EnvironmentSetting/save", TokenProvider.Token);
+
+            request.Content = JsonContent.Create(new
+            {
+                SimUser = simUser,
+                SimPassword = simPassword,
+                SimName = simName,
+                ServerName = serverName,
+                DatabaseName = databaseName,
+                DbUser = dbUser,
+                DbPassword = dbPassword,
+                SelectedAccountSets = selectedAccountSets,
+                DefaultAccountSet = selectedAccountSets.FirstOrDefault()
+            });
+
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                saveSuccess = result?.Success ?? false;
+                saveMessage = result?.Message ?? (saveSuccess ? "保存成功！" : "保存失败");
+            }
+            else
+            {
+                saveSuccess = false;
+                saveMessage = "保存失败：服务器无响应";
+            }
+        }
+        catch (Exception ex)
+        {
+            saveSuccess = false;
+            saveMessage = $"保存失败: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowHelp()
+    {
+        // TODO: 显示帮助信息
+    }
+
+    private void ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true;
+            InvokeAsync(async () =>
+            {
+                await Task.Delay(2000);
+                showFavoriteSuccess = false;
+                StateHasChanged();
+            });
+        }
+    }
+}

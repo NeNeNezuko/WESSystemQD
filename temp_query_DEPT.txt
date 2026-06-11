@@ -1,0 +1,13 @@
+﻿output
+TP_ID | 第三方标记
+NAME_PY | 助记码
+UP_DD | 上次更新时间
+SYS_DATE | 输入日期
+USR | 录入员
+GROUP_ID | 是集团分公司
+MAKE_ID | 部门性质
+STOP_DD | 停用日期
+UP | 上层部门
+ENG_NAME | 英文名称
+NAME | 名称
+DEP | 部门代号

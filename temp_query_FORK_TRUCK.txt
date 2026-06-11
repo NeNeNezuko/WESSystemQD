@@ -1,0 +1,5 @@
+﻿output
+REM | 备注
+NAME | 叉车名称
+TRUCK_NO | 叉车号
+WH | 仓库代号

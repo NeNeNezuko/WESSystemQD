@@ -1,0 +1,11 @@
+﻿output
+TP_ID | 第三方标志
+SETBYPRDT | 依货品设置特征分段
+SYS_DATE | 创建日期
+END_DD | 停用日期
+UP_DD | 上次更新时间
+MOB_NAME | 模版名称
+REM | 说明
+PRD_MARK | 货品特征
+MOB_ID | 模版代号
+CON_NO | 货主编码

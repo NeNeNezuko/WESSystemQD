@@ -1,0 +1,58 @@
+﻿output
+RK_CHUW_SORT2 | 入库储位配位排序（穿梭式）
+MULT_CW_BY | 多深位依据(GS:排 LAYER:层)
+RQ_SXJ_MODE | 容器上下架方式(1.单容器上下架 2.多容器叠放上下架)
+XJ_BILL_COUNT | 依来源单配货-分组单据容量
+XJ_GROUP_COND | 依来源单配货-自动分组条件
+FLAG_DG | 是代管仓
+ALLOW_BHRQSJ | 启用备货容器上架管理
+SHUTTLE_AQYCF | 穿梭式货架-按区域设定存放规则
+XJ_WHS | 依来源单配货-指定仓库
+XJ_PWCKYJ | 依来源单配货-配位仓库依据(1.下属仓库 2.指定仓库)
+CAPACITY_TYPE | 储位容量管制方式
+ALLOW_STATUS_JY | 允许上架的检验状态
+MAP_NO | 地图编号
+KRQRK_CHUW_SORT | 空容器入库储位配位排序（非穿梭式）
+IC_TYPE | 调拨方式(1拣货后调拨、2直接调拨)
+WH_TY | 检验仓库
+TYWZ | 检验位置(1库内、2库外)
+PTL_SW | 启用PTL电子标签拣货
+PD_MTH | 盘点方式(1.直接盘点 2.依任务盘点)
+XJ_KCBZCL | 依来源单配货-库存不足处理
+WMS_ID | WMS接管仓库标记
+RULE_ID_XJ | 下架策略代号
+CK_FLOW | 出库流程标记(BC 为波次流程，JH 为直接拣货流程)
+SHUTTLE_SORT | 穿梭式货架-配位顺序
+SHUTTLE_GS | 穿梭式货架-巷道规则(1.排+层 2.列+层)
+SHUTTLE_CFZLYJ | 穿梭式货架-巷道存放种类依据
+ALLOW_KRQSJ | 空容器允许上架
+RK_CHUW_SORT | 入库储位配位排序（非穿梭式）
+HJFL | 货架分类(1.非穿梭式 2.穿梭式 3.移动货架)
+MODE_PG_PK | 拣货派工方式(1.按任务单派工 2.按通知单派工)
+QTY_KEEP_CW | 预留空储位数
+TP_ID | 第三方标记
+RULE_ID_BC | 波次策略代号
+PK_FLOW | 拣货流程(1、总拣-分拣 2、直接拣货)
+RULE_ID_PK | 拣货策略代号
+LKIF_ID | 立库接口代号
+RK_FLOW | 入库流程(1.入库-上架、2.入库同时上架)
+FLAG_FKC | 负库存控制
+CW_FLAG | 启用储位管理
+WH_TYPE | 上下架模式(1.手持PDA模式 2.自动化接口模式 3.叉车任务模式)
+NAME_PY | 助记码
+DEPRO_NO | 部门群组代号
+UP_DD | 上次更新时间
+CUS_NO | 客户代号
+SYS_DATE | 输入日期
+USR | 录入员
+REM | 备注
+STOP_DD | 停用日期
+INVALID | 废品仓否
+CNT_MAN | 联系人代号
+UP_WH | 上层库位
+FAX_NO | 传真
+TEL_NO | 电话
+DEP | 部门代号
+ATTRIB | 属性
+NAME | 名称
+WH | 仓库

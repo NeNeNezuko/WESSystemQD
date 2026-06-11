@@ -1,0 +1,15 @@
+﻿output
+SHOW_PAK | 包装重量
+SCALE_QZ | 称重数量取整
+SCALE_POINT | 称重小数位数
+NEED_SCALE | 需称重  T/F
+SHOW_TYPE | 主副互推弹窗显示 1.弹窗,2.不弹窗
+BARCODE_TYPE | 适用条码类型
+QTY_TYPE | 主单位数量修改反推副单位(T/F)
+UT1_DISP | 副单位显示方式
+UT1_POINT | 副单位数量小数位
+UT_POINT | 主单位数量小数位
+QTY_QZ_MODE | 数量取整模式
+QTY_COLLECT | 数量采集方式
+PRD_NO | 货品代号
+CON_NO | 货主编码

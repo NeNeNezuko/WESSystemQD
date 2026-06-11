@@ -141,6 +141,12 @@
                     <InboundNotice />
                 </div>
             }
+            @if (tabs.Any(t => t.Id == "inbound-notice-add"))
+            {
+                <div style="display:@(activeTabId == "inbound-notice-add" ? "flex" : "none")">
+                    <InboundNoticeAdd />
+                </div>
+            }
             @if (tabs.Any(t => t.Id == "inbound-order"))
             {
                 <div style="display:@(activeTabId == "inbound-order" ? "flex" : "none")">
@@ -151,6 +157,481 @@
             {
                 <div style="display:@(activeTabId == "inbound-notice-change" ? "flex" : "none")">
                     <InboundNoticeChange />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "outbound-notice-dispatch"))
+            {
+                <div style="display:@(activeTabId == "outbound-notice-dispatch" ? "flex" : "none")">
+                    <OutboundNoticeDispatch />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "outbound-notice"))
+            {
+                <div style="display:@(activeTabId == "outbound-notice" ? "flex" : "none")">
+                    <OutboundNotice />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "outbound-return-notice"))
+            {
+                <div style="display:@(activeTabId == "outbound-return-notice" ? "flex" : "none")">
+                    <OutboundReturnNotice />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "wave-order"))
+            {
+                <div style="display:@(activeTabId == "wave-order" ? "flex" : "none")">
+                    <WaveOrder />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "direct-pick-task"))
+            {
+                <div style="display:@(activeTabId == "direct-pick-task" ? "flex" : "none")">
+                    <DirectPickTask />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "wave-pick-task"))
+            {
+                <div style="display:@(activeTabId == "wave-pick-task" ? "flex" : "none")">
+                    <WavePickTask />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "pick-return"))
+            {
+                <div style="display:@(activeTabId == "pick-return" ? "flex" : "none")">
+                    <PickReturn />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "picking-order"))
+            {
+                <div style="display:@(activeTabId == "picking-order" ? "flex" : "none")">
+                    <PickingOrder />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "outbound-notice-change"))
+            {
+                <div style="display:@(activeTabId == "outbound-notice-change" ? "flex" : "none")">
+                    <OutboundNoticeChange />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "outbound-order"))
+            {
+                <div style="display:@(activeTabId == "outbound-order" ? "flex" : "none")">
+                    <OutboundOrder />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "secondary-sort"))
+            {
+                <div style="display:@(activeTabId == "secondary-sort" ? "flex" : "none")">
+                    <SecondarySort />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "allocation-change-notice"))
+            {
+                <div style="display:@(activeTabId == "allocation-change-notice" ? "flex" : "none")">
+                    <AllocationChangeNotice />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "initial-count-task"))
+            {
+                <div style="display:@(activeTabId == "initial-count-task" ? "flex" : "none")">
+                    <InitialCountTask />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "initial-count-sheet"))
+            {
+                <div style="display:@(activeTabId == "initial-count-sheet" ? "flex" : "none")">
+                    <InitialCountSheet />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "inventory-count-sheet"))
+            {
+                <div style="display:@(activeTabId == "inventory-count-sheet" ? "flex" : "none")">
+                    <InventoryCountSheet />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "inventory-loss-sheet"))
+            {
+                <div style="display:@(activeTabId == "inventory-loss-sheet" ? "flex" : "none")">
+                    <InventoryLossSheet />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "document-confirm"))
+            {
+                <div style="display:@(activeTabId == "document-confirm" ? "flex" : "none")">
+                    <DocumentConfirm />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "system-registration"))
+            {
+                <div style="display:@(activeTabId == "system-registration" ? "flex" : "none")">
+                    <SystemRegistration />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "registration-info"))
+            {
+                <div style="display:@(activeTabId == "registration-info" ? "flex" : "none")">
+                    <RegistrationInfo />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "outbound-task-assignment"))
+            {
+                <div style="display:@(activeTabId == "outbound-task-assignment" ? "flex" : "none")">
+                    <OutboundTaskAssignment />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "source-picking"))
+            {
+                <div style="display:@(activeTabId == "source-picking" ? "flex" : "none")">
+                    <SourcePicking />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "storage-shelving"))
+            {
+                <div style="display:@(activeTabId == "storage-shelving" ? "flex" : "none")">
+                    <StorageShelving />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "storage-transfer"))
+            {
+                <div style="display:@(activeTabId == "storage-transfer" ? "flex" : "none")">
+                    <StorageTransfer />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "storage-unshelving"))
+            {
+                <div style="display:@(activeTabId == "storage-unshelving" ? "flex" : "none")">
+                    <StorageUnshelving />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "transfer-notice"))
+            {
+                <div style="display:@(activeTabId == "transfer-notice" ? "flex" : "none")">
+                    <TransferNotice />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "inventory-transfer"))
+            {
+                <div style="display:@(activeTabId == "inventory-transfer" ? "flex" : "none")">
+                    <InventoryTransfer />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "stock-profit"))
+            {
+                <div style="display:@(activeTabId == "stock-profit" ? "flex" : "none")">
+                    <StockProfit />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "inspection-task"))
+            {
+                <div style="display:@(activeTabId == "inspection-task" ? "flex" : "none")">
+                    <InspectionTask />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "kc-inspect-expiry"))
+            {
+                <div style="display:@(activeTabId == "kc-inspect-expiry" ? "flex" : "none")">
+                    <KcInspectExpiry />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "inspection-order"))
+            {
+                <div style="display:@(activeTabId == "inspection-order" ? "flex" : "none")">
+                    <InspectionOrder />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "acceptance-return"))
+            {
+                <div style="display:@(activeTabId == "acceptance-return" ? "flex" : "none")">
+                    <AcceptanceReturn />
+                </div>
+            }
+            @* ===== 基础资料 - 货品资料 ===== *@
+            @if (tabs.Any(t => t.Id == "product-code-setting"))
+            {
+                <div style="display:@(activeTabId == "product-code-setting" ? "flex" : "none")">
+                    <ProductCodeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "mid-class-setting"))
+            {
+                <div style="display:@(activeTabId == "mid-class-setting" ? "flex" : "none")">
+                    <MidClassSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "storage-nature-setting"))
+            {
+                <div style="display:@(activeTabId == "storage-nature-setting" ? "flex" : "none")">
+                    <StorageNatureSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "product-attr-setting"))
+            {
+                <div style="display:@(activeTabId == "product-attr-setting" ? "flex" : "none")">
+                    <ProductAttrSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "product-mark-setting"))
+            {
+                <div style="display:@(activeTabId == "product-mark-setting" ? "flex" : "none")">
+                    <ProductMarkSetting />
+                </div>
+            }
+            @* ===== 基础资料 - 仓库资料 ===== *@
+            @if (tabs.Any(t => t.Id == "warehouse-code-setting"))
+            {
+                <div style="display:@(activeTabId == "warehouse-code-setting" ? "flex" : "none")">
+                    <WarehouseCodeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "storage-location-detail"))
+            {
+                <div style="display:@(activeTabId == "storage-location-detail" ? "flex" : "none")">
+                    <StorageLocationDetail />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "product-storage-by-class"))
+            {
+                <div style="display:@(activeTabId == "product-storage-by-class" ? "flex" : "none")">
+                    <ProductStorageByClass />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "product-storage-by-nature"))
+            {
+                <div style="display:@(activeTabId == "product-storage-by-nature" ? "flex" : "none")">
+                    <ProductStorageByNature />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "warehouse-arrival-confirm"))
+            {
+                <div style="display:@(activeTabId == "warehouse-arrival-confirm" ? "flex" : "none")">
+                    <WarehouseArrivalConfirm />
+                </div>
+            }
+            @* ===== 基础资料 - 系统策略 ===== *@
+            @if (tabs.Any(t => t.Id == "wave-strategy"))
+            {
+                <div style="display:@(activeTabId == "wave-strategy" ? "flex" : "none")">
+                    <WaveStrategy />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "pick-strategy"))
+            {
+                <div style="display:@(activeTabId == "pick-strategy" ? "flex" : "none")">
+                    <PickStrategy />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "unshelve-strategy"))
+            {
+                <div style="display:@(activeTabId == "unshelve-strategy" ? "flex" : "none")">
+                    <UnshelveStrategy />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "batch-no-picking-setting"))
+            {
+                <div style="display:@(activeTabId == "batch-no-picking-setting" ? "flex" : "none")">
+                    <BatchNoPickingSetting />
+                </div>
+            }
+            @* ===== 基础资料 - 其他资料 ===== *@
+            @if (tabs.Any(t => t.Id == "dept-setting"))
+            {
+                <div style="display:@(activeTabId == "dept-setting" ? "flex" : "none")">
+                    <DeptSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "doc-type-setting"))
+            {
+                <div style="display:@(activeTabId == "doc-type-setting" ? "flex" : "none")">
+                    <DocTypeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "count-reason-setting"))
+            {
+                <div style="display:@(activeTabId == "count-reason-setting" ? "flex" : "none")">
+                    <CountReasonSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "notice-setting"))
+            {
+                <div style="display:@(activeTabId == "notice-setting" ? "flex" : "none")">
+                    <NoticeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "industry-code-setting"))
+            {
+                <div style="display:@(activeTabId == "industry-code-setting" ? "flex" : "none")">
+                    <IndustryCodeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "forklift-management"))
+            {
+                <div style="display:@(activeTabId == "forklift-management" ? "flex" : "none")">
+                    <ForkliftManagement />
+                </div>
+            }
+            @* ===== 基础资料 - 数据导入 ===== *@
+            @if (tabs.Any(t => t.Id == "import-initial-inventory"))
+            {
+                <div style="display:@(activeTabId == "import-initial-inventory" ? "flex" : "none")">
+                    <ImportInitialInventory />
+                </div>
+            }
+            @* ===== 系统管理 - 环境设定 ===== *@
+            @if (tabs.Any(t => t.Id == "environment-setting"))
+            {
+                <div style="display:@(activeTabId == "environment-setting" ? "flex" : "none")">
+                    <EnvironmentSetting />
+                </div>
+            }
+            @* ===== 系统管理 - 系统设定 ===== *@
+            @if (tabs.Any(t => t.Id == "system-setting"))
+            {
+                <div style="display:@(activeTabId == "system-setting" ? "flex" : "none")">
+                    <SystemSetting />
+                </div>
+            }
+            @* ===== 打印管理 - 编码规则（7个） ===== *@
+            @if (tabs.Any(t => t.Id == "barcode-rule-product"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-product" ? "flex" : "none")">
+                    <BarcodeRuleProduct />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-rule-box"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-box" ? "flex" : "none")">
+                    <BarcodeRuleBox />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-rule-serial"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-serial" ? "flex" : "none")">
+                    <BarcodeRuleSerial />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-rule-box-serial"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-box-serial" ? "flex" : "none")">
+                    <BarcodeRuleBoxSerial />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-rule-contain"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-contain" ? "flex" : "none")">
+                    <BarcodeRuleContain />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-rule-batch"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-batch" ? "flex" : "none")">
+                    <BarcodeRuleBatch />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-rule-package"))
+            {
+                <div style="display:@(activeTabId == "barcode-rule-package" ? "flex" : "none")">
+                    <BarcodeRulePackage />
+                </div>
+            }
+            @* ===== 打印管理 - 拆码规则（2个） ===== *@
+            @if (tabs.Any(t => t.Id == "barcode-split-rule"))
+            {
+                <div style="display:@(activeTabId == "barcode-split-rule" ? "flex" : "none")">
+                    <BarcodeSplitRule />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-split-supplier"))
+            {
+                <div style="display:@(activeTabId == "barcode-split-supplier" ? "flex" : "none")">
+                    <BarcodeSplitSupplier />
+                </div>
+            }
+            @* ===== 打印管理 - 打印网点（2个） ===== *@
+            @if (tabs.Any(t => t.Id == "print-site-list"))
+            {
+                <div style="display:@(activeTabId == "print-site-list" ? "flex" : "none")">
+                    <PrintSiteList />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "print-site-query"))
+            {
+                <div style="display:@(activeTabId == "print-site-query" ? "flex" : "none")">
+                    <PrintSiteQuery />
+                </div>
+            }
+            @* ===== 打印管理 - 条码打印套版与标签（8个） ===== *@
+            @if (tabs.Any(t => t.Id == "barcode-template-product"))
+            {
+                <div style="display:@(activeTabId == "barcode-template-product" ? "flex" : "none")">
+                    <BarcodeTemplateProduct />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-print-product"))
+            {
+                <div style="display:@(activeTabId == "barcode-print-product" ? "flex" : "none")">
+                    <BarcodePrintProduct />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-print-product-source"))
+            {
+                <div style="display:@(activeTabId == "barcode-print-product-source" ? "flex" : "none")">
+                    <BarcodePrintProductSource />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-print-box"))
+            {
+                <div style="display:@(activeTabId == "barcode-print-box" ? "flex" : "none")">
+                    <BarcodePrintBox />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-print-box-source"))
+            {
+                <div style="display:@(activeTabId == "barcode-print-box-source" ? "flex" : "none")">
+                    <BarcodePrintBoxSource />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-box-history"))
+            {
+                <div style="display:@(activeTabId == "barcode-box-history" ? "flex" : "none")">
+                    <BarcodeBoxHistory />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-print-serial"))
+            {
+                <div style="display:@(activeTabId == "barcode-print-serial" ? "flex" : "none")">
+                    <BarcodePrintSerial />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "barcode-print-serial-source"))
+            {
+                <div style="display:@(activeTabId == "barcode-print-serial-source" ? "flex" : "none")">
+                    <BarcodePrintSerialSource />
+                </div>
+            }
+            @* ===== 打印管理 - 物流容器（3个） ===== *@
+            @if (tabs.Any(t => t.Id == "contain-barcode-print"))
+            {
+                <div style="display:@(activeTabId == "contain-barcode-print" ? "flex" : "none")">
+                    <ContainBarcodePrint />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "contain-type-setting"))
+            {
+                <div style="display:@(activeTabId == "contain-type-setting" ? "flex" : "none")">
+                    <ContainTypeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "contain-history-query"))
+            {
+                <div style="display:@(activeTabId == "contain-history-query" ? "flex" : "none")">
+                    <ContainHistoryQuery />
+                </div>
+            }
+            @* ===== 打印管理 - 包装单（1个） ===== *@
+            @if (tabs.Any(t => t.Id == "outbound-package"))
+            {
+                <div style="display:@(activeTabId == "outbound-package" ? "flex" : "none")">
+                    <OutboundPackage />
                 </div>
             }
             </CascadingValue>
@@ -317,19 +798,19 @@
     }
 
     // ★ 用户菜单功能
-    private void ToggleUserMenu()
+    private async Task ToggleUserMenu()
     {
         showUserMenu = !showUserMenu;
         if (showUserMenu)
         {
-            CloseMegaMenu();
+            await CloseMegaMenu();
         }
         StateHasChanged();
     }
 
     private async Task HandleLogout()
     {
-        AuthService.Logout();
+        await Task.Run(() => AuthService.Logout());
         NavigationManager.NavigateTo("/login", true);
     }
 
@@ -440,6 +921,524 @@
             return;
         }
 
+        if (itemTitle == "出库通知单派工")
+        {
+            OpenTab("outbound-notice-dispatch", "出库通知单派工");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "出库通知单")
+        {
+            OpenTab("outbound-notice", "出库通知单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "出库退回通知单")
+        {
+            OpenTab("outbound-return-notice", "出库退回通知单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "出库通知变更单")
+        {
+            OpenTab("outbound-notice-change", "出库通知变更单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "波次单")
+        {
+            OpenTab("wave-order", "波次单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "直接拣货任务单")
+        {
+            OpenTab("direct-pick-task", "直接拣货任务单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "波次拣货任务单")
+        {
+            OpenTab("wave-pick-task", "波次拣货任务单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "拣货退回单")
+        {
+            OpenTab("pick-return", "拣货退回单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "二次分拣单")
+        {
+            OpenTab("secondary-sort", "二次分拣单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "拣货单")
+        {
+            OpenTab("picking-order", "拣货单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "出库单")
+        {
+            OpenTab("outbound-order", "出库单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "调拨通知变更单")
+        {
+            OpenTab("allocation-change-notice", "调拨通知变更单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "储位上架单")
+        {
+            OpenTab("storage-shelving", "储位上架单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "储位调拨单")
+        {
+            OpenTab("storage-transfer", "储位调拨单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "储位下架单")
+        {
+            OpenTab("storage-unshelving", "储位下架单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "调拨通知单")
+        {
+            OpenTab("transfer-notice", "调拨通知单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "库存调拨单")
+        {
+            OpenTab("inventory-transfer", "库存调拨单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "初盘任务单")
+        {
+            OpenTab("initial-count-task", "初盘任务单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "初盘单")
+        {
+            OpenTab("initial-count-sheet", "初盘单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "盘点单")
+        {
+            OpenTab("inventory-count-sheet", "盘点单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "盘亏单")
+        {
+            OpenTab("inventory-loss-sheet", "盘亏单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "单据确认作业")
+        {
+            OpenTab("document-confirm", "单据确认作业");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "系统注册")
+        {
+            OpenTab("system-registration", "系统注册");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "注册信息")
+        {
+            OpenTab("registration-info", "注册信息");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "出库任务分配作业")
+        {
+            OpenTab("outbound-task-assignment", "出库任务分配作业");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "依来源单配货")
+        {
+            OpenTab("source-picking", "依来源单配货");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "盘盈单")
+        {
+            OpenTab("stock-profit", "盘盈单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "库存货品检验到期查询")
+        {
+            OpenTab("kc-inspect-expiry", "库存货品检验到期查询");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "请检任务单")
+        {
+            OpenTab("inspection-task", "请检任务单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "检验单")
+        {
+            OpenTab("inspection-order", "检验单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "验收退回单")
+        {
+            OpenTab("acceptance-return", "验收退回单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 货品资料 =====
+        if (itemTitle == "货品代号设定")
+        {
+            OpenTab("product-code-setting", "货品代号设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "中类代号设定")
+        {
+            OpenTab("mid-class-setting", "中类代号设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "储存性质设定")
+        {
+            OpenTab("storage-nature-setting", "储存性质设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "货品属性信息设定")
+        {
+            OpenTab("product-attr-setting", "货品属性信息设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "货品特征码段设定")
+        {
+            OpenTab("product-mark-setting", "货品特征码段设定");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 仓库资料 =====
+        if (itemTitle == "仓库代号设定")
+        {
+            OpenTab("warehouse-code-setting", "仓库代号设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "储位明细")
+        {
+            OpenTab("storage-location-detail", "储位明细");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依储类设定货品储位")
+        {
+            OpenTab("product-storage-by-class", "依储类设定货品储位");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依储存性设定货品储位")
+        {
+            OpenTab("product-storage-by-nature", "依储存性设定货品储位");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依仓库启用到货确认")
+        {
+            OpenTab("warehouse-arrival-confirm", "依仓库启用到货确认");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 系统策略 =====
+        if (itemTitle == "波次策略")
+        {
+            OpenTab("wave-strategy", "波次策略");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "拣货策略")
+        {
+            OpenTab("pick-strategy", "拣货策略");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "下架策略")
+        {
+            OpenTab("unshelve-strategy", "下架策略");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "不能参与配位的批号设置")
+        {
+            OpenTab("batch-no-picking-setting", "不能参与配位的批号设置");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 其他资料 =====
+        if (itemTitle == "部门设定")
+        {
+            OpenTab("dept-setting", "部门设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "单据类别设定")
+        {
+            OpenTab("doc-type-setting", "单据类别设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "查盘/与原因设定")
+        {
+            OpenTab("count-reason-setting", "查盘/与原因设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "即时消息通知设定")
+        {
+            OpenTab("notice-setting", "即时消息通知设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "行业代号设定")
+        {
+            OpenTab("industry-code-setting", "行业代号设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "叉车车号管理")
+        {
+            OpenTab("forklift-management", "叉车车号管理");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 打印管理 - 编码规则 =====
+        if (itemTitle == "货品条码编码规则设定")
+        {
+            OpenTab("barcode-rule-product", "货品条码编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "储条列号编码规则设定")
+        {
+            OpenTab("barcode-rule-box", "箱条码编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "序列号编码规则设定")
+        {
+            OpenTab("barcode-rule-serial", "序列号编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "箱条列号编码规则设定")
+        {
+            OpenTab("barcode-rule-box-serial", "箱序列号编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "物流容器编码规则设定")
+        {
+            OpenTab("barcode-rule-contain", "物流容器编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "批号编码规则设定")
+        {
+            OpenTab("barcode-rule-batch", "批号编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "包装编码规则设定")
+        {
+            OpenTab("barcode-rule-package", "包装码编码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "入库条码料规则设定")
+        {
+            OpenTab("barcode-split-rule", "入库条码拆码规则设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依供应商拆码规则设定")
+        {
+            OpenTab("barcode-split-supplier", "依供应商设置拆码规则");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 打印管理 - 打印网点 =====
+        if (itemTitle == "打印网点列表查询")
+        {
+            OpenTab("print-site-list", "打印网点列表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "打印网点资料查询")
+        {
+            OpenTab("print-site-query", "打印网点资料查询");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 打印管理 - 条码打印套版与标签 =====
+        if (itemTitle == "依来源单打印/查询/套版")
+        {
+            OpenTab("barcode-template-product", "依货品设置条码打印套版");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "货品条码标签打印/查询")
+        {
+            OpenTab("barcode-print-product", "货品条码标签打印/查询");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依来源单打印/查询条码")
+        {
+            // 根据父菜单区分货品条码或箱条码，统一先映射到货品条码
+            OpenTab("barcode-print-product-source", "依来源单打印货品条码");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "储条码标签打印/查询")
+        {
+            OpenTab("barcode-print-box", "箱条码标签打印/查询");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依来源单打印箱条码")
+        {
+            OpenTab("barcode-print-box-source", "依来源单打印箱条码");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "箱条码变动历史表")
+        {
+            OpenTab("barcode-box-history", "箱条码变动历史表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "序列号标签打印/查询")
+        {
+            OpenTab("barcode-print-serial", "序列号标签打印/查询");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "依来源单打印/查询序列号")
+        {
+            OpenTab("barcode-print-serial-source", "依来源单打印序列号");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 打印管理 - 物流容器 =====
+        if (itemTitle == "物流容器条码标签打印/查询")
+        {
+            OpenTab("contain-barcode-print", "物流容器条码标签打印/查询");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "物流容器类型设定")
+        {
+            OpenTab("contain-type-setting", "物流容器类型设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "物流容器变动历史查询")
+        {
+            OpenTab("contain-history-query", "物流容器变动历史查询");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 打印管理 - 包装单 =====
+        if (itemTitle == "出库包装单")
+        {
+            OpenTab("outbound-package", "出库包装单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 数据导入 =====
+        if (itemTitle == "导入期初库存")
+        {
+            OpenTab("import-initial-inventory", "导入期初库存");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 系统管理 - 环境设定 =====
+        if (itemTitle == "环境设定")
+        {
+            OpenTab("environment-setting", "环境设定");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 系统管理 - 系统设定 =====
+        if (itemTitle == "系统设定")
+        {
+            OpenTab("system-setting", "系统设定");
+            await CloseMegaMenu();
+            return;
+        }
+
         await CloseMegaMenu();
     }
 
@@ -531,6 +1530,7 @@
                         new() { Title = "初盘任务单" },
                         new() { Title = "初盘单" },
                         new() { Title = "盘点单" },
+                        new() { Title = "盘盈单" },
                         new() { Title = "盘亏单" },
                         new() { Title = "单据确认作业" },
                         new() { Title = "单据报表", IsCategoryHeader = true },
@@ -573,8 +1573,10 @@
                         new() { Title = "批号编码规则设定" },
                         new() { Title = "包装编码规则设定" },
                         new() { Title = "入库条码料规则设定" },
+                        new() { Title = "依供应商拆码规则设定" },
                         new() { Title = "打印设定", IsCategoryHeader = true },
                         new() { Title = "打印网点列表查询" },
+                        new() { Title = "打印网点资料查询" },
                         new() { Title = "依来源单打印/查询/套版" },
                         new() { Title = "货品条码", IsCategoryHeader = true },
                         new() { Title = "货品条码标签打印/查询" },
@@ -582,6 +1584,7 @@
                         new() { Title = "箱条码", IsCategoryHeader = true },
                         new() { Title = "储条码标签打印/查询" },
                         new() { Title = "依来源单打印/查询条码" },
+                        new() { Title = "箱条码变动历史表" },
                         new() { Title = "序列号", IsCategoryHeader = true },
                         new() { Title = "序列号标签打印/查询" },
                         new() { Title = "依来源单打印/查询序列号" },
@@ -772,6 +1775,393 @@
         else if (result.ThirdLevelTitle == "入库通知变更单")
         {
             OpenTab("inbound-notice-change", "入库通知变更单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "出库通知单")
+        {
+            OpenTab("outbound-notice", "出库通知单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "出库退回通知单")
+        {
+            OpenTab("outbound-return-notice", "出库退回通知单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "出库通知变更单")
+        {
+            OpenTab("outbound-notice-change", "出库通知变更单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "出库通知单派工")
+        {
+            OpenTab("outbound-notice-dispatch", "出库通知单派工");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "波次单")
+        {
+            OpenTab("wave-order", "波次单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "直接拣货任务单")
+        {
+            OpenTab("direct-pick-task", "直接拣货任务单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "波次拣货任务单")
+        {
+            OpenTab("wave-pick-task", "波次拣货任务单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "拣货退回单")
+        {
+            OpenTab("pick-return", "拣货退回单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "二次分拣单")
+        {
+            OpenTab("secondary-sort", "二次分拣单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "调拨通知变更单")
+        {
+            OpenTab("allocation-change-notice", "调拨通知变更单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储位上架单")
+        {
+            OpenTab("storage-shelving", "储位上架单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储位调拨单")
+        {
+            OpenTab("storage-transfer", "储位调拨单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储位下架单")
+        {
+            OpenTab("storage-unshelving", "储位下架单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "调拨通知单")
+        {
+            OpenTab("transfer-notice", "调拨通知单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "库存调拨单")
+        {
+            OpenTab("inventory-transfer", "库存调拨单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "初盘任务单")
+        {
+            OpenTab("initial-count-task", "初盘任务单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "初盘单")
+        {
+            OpenTab("initial-count-sheet", "初盘单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "盘点单")
+        {
+            OpenTab("inventory-count-sheet", "盘点单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "盘亏单")
+        {
+            OpenTab("inventory-loss-sheet", "盘亏单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "单据确认作业")
+        {
+            OpenTab("document-confirm", "单据确认作业");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "系统注册")
+        {
+            OpenTab("system-registration", "系统注册");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "注册信息")
+        {
+            OpenTab("registration-info", "注册信息");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "出库任务分配作业")
+        {
+            OpenTab("outbound-task-assignment", "出库任务分配作业");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依来源单配货")
+        {
+            OpenTab("source-picking", "依来源单配货");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "盘盈单")
+        {
+            OpenTab("stock-profit", "盘盈单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "库存货品检验到期查询")
+        {
+            OpenTab("kc-inspect-expiry", "库存货品检验到期查询");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "请检任务单")
+        {
+            OpenTab("inspection-task", "请检任务单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "检验单")
+        {
+            OpenTab("inspection-order", "检验单");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "验收退回单")
+        {
+            OpenTab("acceptance-return", "验收退回单");
+            handled = true;
+        }
+        // ===== 打印管理 - 编码规则 =====
+        else if (result.ThirdLevelTitle == "货品条码编码规则设定")
+        {
+            OpenTab("barcode-rule-product", "货品条码编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储条列号编码规则设定")
+        {
+            OpenTab("barcode-rule-box", "箱条码编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "序列号编码规则设定")
+        {
+            OpenTab("barcode-rule-serial", "序列号编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "箱条列号编码规则设定")
+        {
+            OpenTab("barcode-rule-box-serial", "箱序列号编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "物流容器编码规则设定")
+        {
+            OpenTab("barcode-rule-contain", "物流容器编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "批号编码规则设定")
+        {
+            OpenTab("barcode-rule-batch", "批号编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "包装编码规则设定")
+        {
+            OpenTab("barcode-rule-package", "包装码编码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "入库条码料规则设定")
+        {
+            OpenTab("barcode-split-rule", "入库条码拆码规则设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依供应商拆码规则设定")
+        {
+            OpenTab("barcode-split-supplier", "依供应商设置拆码规则");
+            handled = true;
+        }
+        // ===== 打印管理 - 打印网点 =====
+        else if (result.ThirdLevelTitle == "打印网点列表查询")
+        {
+            OpenTab("print-site-list", "打印网点列表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "打印网点资料查询")
+        {
+            OpenTab("print-site-query", "打印网点资料查询");
+            handled = true;
+        }
+        // ===== 打印管理 - 条码打印套版与标签 =====
+        else if (result.ThirdLevelTitle == "依来源单打印/查询/套版")
+        {
+            OpenTab("barcode-template-product", "依货品设置条码打印套版");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "货品条码标签打印/查询")
+        {
+            OpenTab("barcode-print-product", "货品条码标签打印/查询");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依来源单打印/查询条码" && result.SecondLevelTitle == "货品条码")
+        {
+            OpenTab("barcode-print-product-source", "依来源单打印货品条码");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储条码标签打印/查询")
+        {
+            OpenTab("barcode-print-box", "箱条码标签打印/查询");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依来源单打印/查询条码" && result.SecondLevelTitle == "箱条码")
+        {
+            OpenTab("barcode-print-box-source", "依来源单打印箱条码");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "箱条码变动历史表")
+        {
+            OpenTab("barcode-box-history", "箱条码变动历史表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "序列号标签打印/查询")
+        {
+            OpenTab("barcode-print-serial", "序列号标签打印/查询");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依来源单打印/查询序列号")
+        {
+            OpenTab("barcode-print-serial-source", "依来源单打印序列号");
+            handled = true;
+        }
+        // ===== 打印管理 - 物流容器 =====
+        else if (result.ThirdLevelTitle == "物流容器条码标签打印/查询")
+        {
+            OpenTab("contain-barcode-print", "物流容器条码标签打印/查询");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "物流容器类型设定")
+        {
+            OpenTab("contain-type-setting", "物流容器类型设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "物流容器变动历史查询")
+        {
+            OpenTab("contain-history-query", "物流容器变动历史查询");
+            handled = true;
+        }
+        // ===== 打印管理 - 包装单 =====
+        else if (result.ThirdLevelTitle == "出库包装单")
+        {
+            OpenTab("outbound-package", "出库包装单");
+            handled = true;
+        }
+        // ===== 基础资料 - 货品资料 =====
+        else if (result.ThirdLevelTitle == "货品代号设定")
+        {
+            OpenTab("product-code-setting", "货品代号设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "中类代号设定")
+        {
+            OpenTab("mid-class-setting", "中类代号设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储存性质设定")
+        {
+            OpenTab("storage-nature-setting", "储存性质设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "货品属性信息设定")
+        {
+            OpenTab("product-attr-setting", "货品属性信息设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "货品特征码段设定")
+        {
+            OpenTab("product-mark-setting", "货品特征码段设定");
+            handled = true;
+        }
+        // ===== 基础资料 - 仓库资料 =====
+        else if (result.ThirdLevelTitle == "仓库代号设定")
+        {
+            OpenTab("warehouse-code-setting", "仓库代号设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "储位明细")
+        {
+            OpenTab("storage-location-detail", "储位明细");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依储类设定货品储位")
+        {
+            OpenTab("product-storage-by-class", "依储类设定货品储位");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依储存性设定货品储位")
+        {
+            OpenTab("product-storage-by-nature", "依储存性设定货品储位");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "依仓库启用到货确认")
+        {
+            OpenTab("warehouse-arrival-confirm", "依仓库启用到货确认");
+            handled = true;
+        }
+        // ===== 基础资料 - 系统策略 =====
+        else if (result.ThirdLevelTitle == "波次策略")
+        {
+            OpenTab("wave-strategy", "波次策略");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "拣货策略")
+        {
+            OpenTab("pick-strategy", "拣货策略");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "下架策略")
+        {
+            OpenTab("unshelve-strategy", "下架策略");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "不能参与配位的批号设置")
+        {
+            OpenTab("batch-no-picking-setting", "不能参与配位的批号设置");
+            handled = true;
+        }
+        // ===== 基础资料 - 其他资料 =====
+        else if (result.ThirdLevelTitle == "部门设定")
+        {
+            OpenTab("dept-setting", "部门设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "单据类别设定")
+        {
+            OpenTab("doc-type-setting", "单据类别设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "查盘/与原因设定")
+        {
+            OpenTab("count-reason-setting", "查盘/与原因设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "即时消息通知设定")
+        {
+            OpenTab("notice-setting", "即时消息通知设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "行业代号设定")
+        {
+            OpenTab("industry-code-setting", "行业代号设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "叉车车号管理")
+        {
+            OpenTab("forklift-management", "叉车车号管理");
+            handled = true;
+        }
+        // ===== 基础资料 - 数据导入 =====
+        else if (result.ThirdLevelTitle == "导入期初库存")
+        {
+            OpenTab("import-initial-inventory", "导入期初库存");
+            handled = true;
+        }
+        // ===== 系统管理 - 环境设定 =====
+        else if (result.ThirdLevelTitle == "环境设定")
+        {
+            OpenTab("environment-setting", "环境设定");
+            handled = true;
+        }
+        // ===== 系统管理 - 系统设定 =====
+        else if (result.ThirdLevelTitle == "系统设定")
+        {
+            OpenTab("system-setting", "系统设定");
             handled = true;
         }
 

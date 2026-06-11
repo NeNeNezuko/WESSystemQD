@@ -1,0 +1,4 @@
+﻿output
+REASON_REM | 原因说明
+IJ_REASON | 原因代号
+BIL_ID | 单据别

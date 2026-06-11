@@ -1,0 +1,10 @@
+﻿output
+MODIFY_DD | 最近修改日期
+MODIFY_MAN | 最近修改人
+SYS_DATE | 录入时间
+USR | 录入人员
+STOP_ID | 停用标记
+WH_TYPE | 上下架模式(1.手持PDA模式 2.自动化接口模式 3.叉车任务模式)
+NAME | 拣货策略名称
+DEP | 集团公司
+RULE_ID | 拣货策略代号

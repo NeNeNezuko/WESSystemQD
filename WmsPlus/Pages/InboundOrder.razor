@@ -62,94 +62,8 @@
             </div>
 
             <div class="query-form">
-                <!-- 单据日期 - 双月范围选择器 -->
-                <div class="form-item">
-                    <label class="form-label">单据日期</label>
-                    <div class="date-picker-trigger" @onclick="ToggleDatePicker" @ref="datePickerTriggerRef">
-                        <span class="date-display-text">@DateDisplayText</span>
-                        <svg class="date-picker-icon" viewBox="0 0 16 16" width="12" height="12" fill="#999999">
-                            <rect x="2" y="3" width="12" height="11" rx="2" stroke="#999999" stroke-width="1.2" fill="none"/>
-                            <line x1="2" y1="6" x2="14" y2="6" stroke="#999999" stroke-width="1.2"/>
-                            <line x1="5" y1="1" x2="5" y2="4" stroke="#999999" stroke-width="1.2" stroke-linecap="round"/>
-                            <line x1="11" y1="1" x2="11" y2="4" stroke="#999999" stroke-width="1.2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-
-                    <!-- 日历弹出层 -->
-                    @if (ShowCalendar)
-                    {
-                        <div class="datepicker-dropdown" @onclick:stopPropagation @ref="datePickerDropdownRef">
-                            <div class="datepicker-popup-dual">
-                                <!-- 头部导航：年 + 月切换 -->
-                                <div class="dp-header-dual">
-                                    <button class="dp-nav" @onclick="GoPrevYear" title="上一年">&#171;</button>
-                                    <button class="dp-nav" @onclick="GoPrevMonth" title="上一月">&#8249;</button>
-                                    <span class="dp-title-dual">@ViewYear 年 @ViewMonth 月</span>
-                                    <span class="dp-title-sep"></span>
-                                    @{
-                                        var nextM = ViewMonth + 1;
-                                        var nextY = ViewYear;
-                                        if (nextM > 12) { nextM = 1; nextY++; }
-                                    }
-                                    <span class="dp-title-dual">@nextY 年 @nextM 月</span>
-                                    <button class="dp-nav" @onclick="GoNextMonth" title="下一月">&#8250;</button>
-                                    <button class="dp-nav" @onclick="GoNextYear" title="下一年">&#187;</button>
-                                </div>
-
-                                <!-- 双月并排区域 -->
-                                <div class="dp-months-row">
-                                    <!-- 左侧月份 -->
-                                    <div class="dp-month-block">
-                                        <div class="dp-week-row">
-                                            <span class="dp-week">一</span><span class="dp-week">二</span><span class="dp-week">三</span><span class="dp-week">四</span><span class="dp-week">五</span><span class="dp-week">六</span><span class="dp-week">日</span>
-                                        </div>
-                                        <div class="dp-grid">
-                                            @for (int idx = 0; idx < LeftCalendarCells.Count; idx++)
-                                            {
-                                                var cell = LeftCalendarCells[idx];
-                                                <button class="dp-cell @(cell.IsSelected ? "dp-sel" : "") @(cell.IsInRange ? "dp-range" : "") @(cell.IsToday && !cell.IsSelected ? "dp-today" : "") @(!cell.IsCurrentMonth ? "dp-gray" : "")"
-                                                        @onclick="@(() => PickDate(cell.Year, cell.Month, cell.Day))">
-                                                    @cell.Day
-                                                </button>
-                                            }
-                                        </div>
-                                    </div>
-                                    <!-- 右侧月份 -->
-                                    <div class="dp-month-block">
-                                        <div class="dp-week-row">
-                                            <span class="dp-week">一</span><span class="dp-week">二</span><span class="dp-week">三</span><span class="dp-week">四</span><span class="dp-week">五</span><span class="dp-week">六</span><span class="dp-week">日</span>
-                                        </div>
-                                        <div class="dp-grid">
-                                            @for (int idx = 0; idx < RightCalendarCells.Count; idx++)
-                                            {
-                                                var cell = RightCalendarCells[idx];
-                                                <button class="dp-cell @(cell.IsSelected ? "dp-sel" : "") @(cell.IsInRange ? "dp-range" : "") @(cell.IsToday && !cell.IsSelected ? "dp-today" : "") @(!cell.IsCurrentMonth ? "dp-gray" : "")"
-                                                        @onclick="@(() => PickDate(cell.Year, cell.Month, cell.Day))">
-                                                    @cell.Day
-                                                </button>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 快捷按钮 - 两行 -->
-                                <div class="dp-shortcuts-row">
-                                    <button class="dp-qbtn" @onclick="QYesterday">昨天</button>
-                                    <button class="dp-qbtn" @onclick="QLastWeek">上周</button>
-                                    <button class="dp-qbtn" @onclick="QLastMonth">上月</button>
-                                    <button class="dp-qbtn" @onclick="QLastYear">上年</button>
-                                </div>
-                                <div class="dp-shortcuts-row">
-                                    <button class="dp-qbtn dp-qbtn-primary" @onclick="QToday">今日</button>
-                                    <button class="dp-qbtn" @onclick="QThisWeek">本周</button>
-                                    <button class="dp-qbtn" @onclick="QThisMonth">本月</button>
-                                    <button class="dp-qbtn" @onclick="QThisQuarter">本季</button>
-                                    <button class="dp-qbtn" @onclick="QThisYear">本年</button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
+                <!-- 单据日期 - 日期范围选择器 -->
+                <DateRangeInput @bind-Value="query.DateRange" />
 
                 <div class="form-item">
                     <label class="form-label">单据号码</label>
@@ -161,25 +75,9 @@
                     </div>
                 </div>
 
-                <div class="form-item">
-                    <label class="form-label">部门代号</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.DeptCode" />
-                        <button class="search-icon-btn" title="搜索">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14.5" y2="14.5"/></svg>
-                        </button>
-                    </div>
-                </div>
+                <DeptCodeInput @bind-Value="query.DeptCode" />
 
-                <div class="form-item">
-                    <label class="form-label">仓库代号</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.WarehouseCode" />
-                        <button class="search-icon-btn" title="搜索">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14.5" y2="14.5"/></svg>
-                        </button>
-                    </div>
-                </div>
+                <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
 
                 <div class="form-item">
                     <label class="form-label">厂商代号</label>
@@ -306,198 +204,13 @@
     private InboundOrderQuery query = new();
     private List<InboundOrderModel> dataSource = new();
 
-    // ===== 日历状态 =====
-    private bool ShowCalendar = false;
-    private int ViewYear;
-    private int ViewMonth;
-    private DateTime? SelectedStart;
-    private DateTime? SelectedEnd;
-    private bool PickingEnd = false;
-    private ElementReference datePickerTriggerRef;
-    private ElementReference datePickerDropdownRef;
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
 
-    // ===== 计算属性 =====
-    private string DateDisplayText
-    {
-        get
-        {
-            if (SelectedStart.HasValue && SelectedEnd.HasValue)
-                return $"{SelectedStart.Value:yyyy-MM-dd} → {SelectedEnd.Value:yyyy-MM-dd}";
-            return "请选择日期";
-        }
-    }
-
-    private List<CalCell> LeftCalendarCells => BuildCalendar(ViewYear, ViewMonth);
-
-    private List<CalCell> RightCalendarCells
-    {
-        get
-        {
-            var m = ViewMonth + 1;
-            var y = ViewYear;
-            if (m > 12) { m = 1; y++; }
-            return BuildCalendar(y, m);
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        var today = DateTime.Today;
-        query.DateFrom = today;
-        query.DateTo = today;
-        SelectedStart = today;
-        SelectedEnd = today;
-        ViewYear = today.Year;
-        ViewMonth = today.Month;
         await LoadFavoriteStatus();
         await LoadData();
-    }
-
-    // ===== 日历方法 =====
-    private async Task ToggleDatePicker()
-    {
-        ShowCalendar = !ShowCalendar;
-        if (ShowCalendar && SelectedStart.HasValue)
-        {
-            ViewYear = SelectedStart.Value.Year;
-            ViewMonth = SelectedStart.Value.Month;
-        }
-        PickingEnd = false;
-        if (ShowCalendar)
-        {
-            await JS.InvokeVoidAsync("eval", @"(function(){
-                var trigger = arguments[0];
-                var dropdown = arguments[1];
-                var rect = trigger.getBoundingClientRect();
-                dropdown.style.left = rect.left + 'px';
-                dropdown.style.top = (rect.bottom + 4) + 'px';
-            })()", datePickerTriggerRef, datePickerDropdownRef);
-        }
-        StateHasChanged();
-    }
-
-    private void QYesterday() => QuickSet("yesterday");
-    private void QLastWeek() => QuickSet("lastWeek");
-    private void QLastMonth() => QuickSet("lastMonth");
-    private void QLastYear() => QuickSet("lastYear");
-    private void QToday() => QuickSet("today");
-    private void QThisWeek() => QuickSet("thisWeek");
-    private void QThisMonth() => QuickSet("thisMonth");
-    private void QThisQuarter() => QuickSet("thisQuarter");
-    private void QThisYear() => QuickSet("thisYear");
-
-    private void GoPrevYear()
-    {
-        ViewYear--;
-        StateHasChanged();
-    }
-
-    private void GoNextYear()
-    {
-        ViewYear++;
-        StateHasChanged();
-    }
-
-    private void GoPrevMonth()
-    {
-        ViewMonth--;
-        if (ViewMonth < 1) { ViewMonth = 12; ViewYear--; }
-        StateHasChanged();
-    }
-
-    private void GoNextMonth()
-    {
-        ViewMonth++;
-        if (ViewMonth > 12) { ViewMonth = 1; ViewYear++; }
-        StateHasChanged();
-    }
-
-    private void PickDate(int year, int month, int day)
-    {
-        var dt = new DateTime(year, month, day);
-        if (!PickingEnd || !SelectedStart.HasValue || (SelectedStart.HasValue && SelectedEnd.HasValue))
-        {
-            SelectedStart = dt;
-            SelectedEnd = null;
-            PickingEnd = true;
-        }
-        else
-        {
-            if (dt >= SelectedStart.Value) SelectedEnd = dt;
-            else { SelectedEnd = SelectedStart; SelectedStart = dt; }
-        }
-        query.DateFrom = SelectedStart ?? DateTime.Today;
-        query.DateTo = SelectedEnd ?? SelectedStart ?? DateTime.Today;
-        StateHasChanged();
-
-        if (SelectedStart.HasValue && SelectedEnd.HasValue)
-            ShowCalendar = false;
-    }
-
-    private void QuickSet(string type)
-    {
-        var t = DateTime.Today;
-        switch (type)
-        {
-            case "yesterday": SelectedStart = t.AddDays(-1); SelectedEnd = t.AddDays(-1); break;
-            case "lastWeek": var lm = t.AddDays(-(int)t.DayOfWeek - 6); SelectedStart = lm; SelectedEnd = lm.AddDays(6); break;
-            case "lastMonth": SelectedStart = new DateTime(t.Year, t.Month, 1).AddMonths(-1); SelectedEnd = new DateTime(t.Year, t.Month, 1).AddDays(-1); break;
-            case "lastYear": SelectedStart = new DateTime(t.Year - 1, 1, 1); SelectedEnd = new DateTime(t.Year - 1, 12, 31); break;
-            case "today": SelectedStart = t; SelectedEnd = t; break;
-            case "thisWeek": var tw = t.AddDays(-(int)t.DayOfWeek); SelectedStart = tw; SelectedEnd = tw.AddDays(6); break;
-            case "thisMonth": SelectedStart = new DateTime(t.Year, t.Month, 1); SelectedEnd = new DateTime(t.Year, t.Month, DateTime.DaysInMonth(t.Year, t.Month)); break;
-            case "thisQuarter":
-                var tq = (t.Month - 1) / 3 + 1;
-                SelectedStart = new DateTime(t.Year, (tq - 1) * 3 + 1, 1);
-                SelectedEnd = new DateTime(t.Year, tq * 3, DateTime.DaysInMonth(t.Year, tq * 3)); break;
-            case "thisYear": SelectedStart = new DateTime(t.Year, 1, 1); SelectedEnd = new DateTime(t.Year, 12, 31); break;
-        }
-        query.DateFrom = SelectedStart.Value;
-        query.DateTo = SelectedEnd.Value;
-        ViewYear = SelectedStart.Value.Year;
-        ViewMonth = SelectedStart.Value.Month;
-        ShowCalendar = false;
-        StateHasChanged();
-    }
-
-    // ===== 日历数据构建（周一为第一天，6行42格）======
-    private List<CalCell> BuildCalendar(int year, int month)
-    {
-        var list = new List<CalCell>();
-        var first = new DateTime(year, month, 1);
-        // 周一为第一天：DayOfWeek.Monday=0 ... Sunday=6
-        int dow = ((int)first.DayOfWeek + 6) % 7;
-        // 前补（上月日期）
-        for (int i = dow - 1; i >= 0; i--)
-        {
-            var d = first.AddDays(-(i + 1));
-            list.Add(new CalCell(d.Year, d.Month, d.Day, false));
-        }
-        // 当月
-        int dim = DateTime.DaysInMonth(year, month);
-        for (int d = 1; d <= dim; d++)
-            list.Add(new CalCell(year, month, d, true));
-        // 后补到42格（6行 x 7列）
-        while (list.Count < 42)
-        {
-            var last = list[list.Count - 1];
-            var nd = new DateTime(last.Year, last.Month, last.Day).AddDays(1);
-            list.Add(new CalCell(nd.Year, nd.Month, nd.Day, false));
-        }
-        // 标记选中状态
-        for (int i = 0; i < list.Count; i++)
-        {
-            var c = list[i];
-            var cDate = new DateTime(c.Year, c.Month, c.Day);
-            c.IsSelected = (SelectedStart.HasValue && cDate == SelectedStart.Value.Date)
-                         || (SelectedEnd.HasValue && cDate == SelectedEnd.Value.Date);
-            c.IsToday = cDate == DateTime.Today;
-            c.IsInRange = SelectedStart.HasValue && SelectedEnd.HasValue
-                           && cDate > SelectedStart.Value.Date && cDate < SelectedEnd.Value.Date;
-        }
-        return list;
     }
 
     // ===== 原有功能方法 =====
@@ -560,18 +273,5 @@
     private async Task HandleQuery()
     {
         await LoadData();
-    }
-
-    // ===== 日历单元格数据类 =====
-    private class CalCell
-    {
-        public int Year { get; set; }
-        public int Month { get; set; }
-        public int Day { get; set; }
-        public bool IsCurrentMonth { get; set; }
-        public bool IsSelected { get; set; }
-        public bool IsToday { get; set; }
-        public bool IsInRange { get; set; }
-        public CalCell(int y, int m, int d, bool cur) { Year = y; Month = m; Day = d; IsCurrentMonth = cur; }
     }
 }

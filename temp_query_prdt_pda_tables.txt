@@ -1,0 +1,2 @@
+﻿Tables_in_db_gz01 (PRDT_PDA%)
+prdt_pda_rn

@@ -1,0 +1,984 @@
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject ILogger<SourcePicking> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/source-picking.css" />
+
+<div class="source-picking-page">
+    <!-- 顶部标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">依来源单配货</span>
+        </div>
+        <div class="header-right">
+            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 内层选项卡栏 + 工具按钮 -->
+    <div class="inner-tab-bar">
+        <div class="tab-list">
+            @foreach (var tab in innerTabs)
+            {
+                <div class="tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
+                    <span>@tab.Title</span>
+                </div>
+            }
+        </div>
+        <!-- 右侧工具按钮（随Tab变化） -->
+        <div class="tab-toolbar">
+            @if (activeInnerTabId == "batch-shelving")
+            {
+                <button class="toolbar-action-btn" @onclick="HandleConfigDownload">配置下载</button>
+                <button class="toolbar-action-btn primary" @onclick="HandleBatchExport">导出</button>
+            }
+            else if (activeInnerTabId == "direct-pick-task")
+            {
+                <button class="toolbar-action-btn" @onclick="HandlePrint">打印</button>
+                <button class="toolbar-action-btn primary" @onclick="HandleAddNew">新增</button>
+            }
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="page-content">
+        <!-- 左侧查询区域（两Tab共用容器，内容随Tab切换） -->
+        <div class="query-panel @(isCollapsed ? "collapsed" : "")">
+            <div class="query-header">
+                <span class="query-title">查询</span>
+                <button class="query-settings-btn" title="设置" @onclick="ToggleSettingsMenu">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999999" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2.83 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2.83 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+                @if (showSettingsMenu)
+                {
+                    <div class="settings-dropdown" @onclick:stopPropagation>
+                        <div class="settings-dropdown-item" @onclick="BatchAddCondition">批次添加条件</div>
+                        <div class="settings-dropdown-item" @onclick="AddSingleCondition">添加单一条件</div>
+                        <div class="settings-dropdown-item" @onclick="CustomCondition">自定义条件</div>
+                        <div class="settings-dropdown-item" @onclick="RemoveCondition">移除条件</div>
+                        <div class="settings-dropdown-item" @onclick="SaveConditionValues">保存条件值</div>
+                    </div>
+                }
+            </div>
+
+            <div class="query-form">
+                @if (activeInnerTabId == "batch-shelving")
+                {
+                    <!-- ====== Tab1: 批量上架 查询条件 ====== -->
+                    <WarehouseCodeInput @bind-Value="batchQuery.WarehouseCode" />
+
+                    <DateRangeInput @bind-Value="batchQuery.DateRange" />
+
+                    <div class="form-item">
+                        <label class="form-label">单据号码</label>
+                        <input type="text" class="form-input" placeholder="" @bind="batchQuery.DocumentNumber" />
+                    </div>
+
+                    <BizTypeInput @bind-Value="batchQuery.BusinessType" />
+
+                    <DeptCodeInput @bind-Value="batchQuery.DeptCode" />
+
+                    <CustomerCodeInput @bind-Value="batchQuery.CustomerCode" />
+
+                    <div class="form-item">
+                        <label class="form-label">业务单号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="batchQuery.BusinessOrderNumber" />
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">ERP申请单号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="batchQuery.ErpApplyOrderNumber" />
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">收货点</label>
+                        <input type="text" class="form-input" placeholder="" @bind="batchQuery.ReceivePoint" />
+                    </div>
+
+                    <!-- 起止货品 -->
+                    <div class="form-item">
+                        <label class="form-label">起止货品</label>
+                        <div style="display:flex;align-items:center;flex:1;gap:4px;padding:0 6px;">
+                            <input type="text" style="width:45%;font-size:11px;border:none;outline:none;" placeholder="" @bind="batchQuery.ProductFrom" />
+                            <span style="color:#999;font-size:11px;">~</span>
+                            <input type="text" style="width:45%;font-size:11px;border:none;outline:none;" placeholder="" @bind="batchQuery.ProductTo" />
+                            <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999" style="cursor:pointer;flex-shrink:0;">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- 不手唤已下架任务量 Toggle -->
+                    <div class="form-item toggle-row">
+                        <span class="toggle-row-label">不手唤已下架任务量</span>
+                        <label class="mini-toggle-switch">
+                            <input type="checkbox" @bind="batchQuery.ExcludeShelvedTasks" />
+                            <span class="mini-toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- 家源单据到 Checkbox组 -->
+                    <div class="form-item" style="height:auto;min-height:30px;align-items:center;flex-direction:column;gap:4px;">
+                        <label class="form-label" style="width:100%;">家源单据到</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" checked="@batchQuery.SourceNoticeOutbound" @onchange="(e) => batchQuery.SourceNoticeOutbound = (bool)e.Value!" /> 出库通知单</label>
+                            <label class="checkbox-label"><input type="checkbox" checked="@batchQuery.SourceTransferNotice" @onchange="(e) => batchQuery.SourceTransferNotice = (bool)e.Value!" /> 调拨通知单</label>
+                        </div>
+                    </div>
+                }
+                else if (activeInnerTabId == "direct-pick-task")
+                {
+                    <!-- ====== Tab2: 直接拣货任务单 查询条件 ====== -->
+                    <DateRangeInput @bind-Value="pickQuery.DateRange" />
+
+                    <div class="form-item">
+                        <label class="form-label">单据号码</label>
+                        <input type="text" class="form-input" placeholder="" @bind="pickQuery.DocumentNumber" />
+                    </div>
+
+                    <BizTypeInput @bind-Value="pickQuery.BusinessType" />
+
+                    <WarehouseCodeInput @bind-Value="pickQuery.WarehouseCode" />
+
+                    <div class="form-item">
+                        <label class="form-label">申请单号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="pickQuery.ApplyOrderNumber" />
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">通知单号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="pickQuery.NoticeNumber" />
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">业务单号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="pickQuery.BusinessOrderNumber" />
+                    </div>
+
+                    <!-- 打印标签列示 -->
+                    <div class="form-item">
+                        <label class="form-label">打印标签</label>
+                        <div class="select-wrapper">
+                            <select class="form-select" @bind="pickQuery.PrintLabelType">
+                                <option value="全部">全部</option>
+                                <option value="已打印">已打印</option>
+                                <option value="未打印">未打印</option>
+                            </select>
+                            <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                <path d="M2 4l4 4 4-4"/>
+                            </svg>
+                        </div>
+                    </div>
+                }
+
+                <!-- 查询按钮（两Tab共用） -->
+                <div class="form-item query-btn-wrapper">
+                    <button class="query-submit-btn" @onclick="HandleSearch">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
+                            <circle cx="7" cy="7" r="5"/>
+                            <line x1="11" y1="11" x2="15" y2="15"/>
+                        </svg>
+                        <span>查询</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧数据表格区域 -->
+        <div class="table-panel">
+            @if (activeInnerTabId == "batch-shelving")
+            {
+                <!-- ====== Tab1: 批量上架 表格 ====== -->
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in batchColumnConfigs.Where(c => c.Visible))
+                                {
+                                    var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                    if (col.Sortable)
+                                    {
+                                        <th style="@widthStyle" class="sortable">
+                                            @col.DisplayName
+                                            <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                                <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                                <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                            </svg>
+                                        </th>
+                                    }
+                                    else
+                                    {
+                                        <th style="@widthStyle">@col.DisplayName</th>
+                                    }
+                                }
+                                <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                    <span>操作</span>
+                                    <button class="column-settings-btn" title="栏位设置" @onclick="OpenBatchColumnSettings">
+                                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                        </svg>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (batchDataSource.Count == 0)
+                            {
+                                <tr><td colspan="@(BatchVisibleCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in batchDataSource)
+                                {
+                                    var idx = batchDataSource.IndexOf(item) + 1;
+                                    <tr>
+                                        <td>@idx</td>
+                                        @foreach (var col in batchColumnConfigs.Where(c => c.Visible).Skip(1))
+                                        {
+                                            var wStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                            <td style="@wStyle">@GetBatchCellValue(item, col.FieldKey)</td>
+                                        }
+                                        <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <!-- ====== Tab2: 直接拣货任务单 双表格布局 ====== -->
+
+                <!-- 上方：主表格（MF_XJRW表头数据） -->
+                <div class="data-table-container" style="flex:1;overflow:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in pickMainColumnConfigs.Where(c => c.Visible))
+                                {
+                                    var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                    if (col.Sortable)
+                                    {
+                                        <th style="@widthStyle" class="sortable">
+                                            @col.DisplayName
+                                            <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                                <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
+                                                <path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/>
+                                            </svg>
+                                        </th>
+                                    }
+                                    else
+                                    {
+                                        <th style="@widthStyle">@col.DisplayName</th>
+                                    }
+                                }
+                                <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                    <span>操作</span>
+                                    <button class="column-settings-btn" title="栏位设置" @onclick="OpenPickMainColumnSettings">
+                                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                        </svg>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (pickMainDataSource.Count == 0)
+                            {
+                                <tr><td colspan="@(PickMainVisibleCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in pickMainDataSource)
+                                {
+                                    <tr>
+                                        @foreach (var col in pickMainColumnConfigs.Where(c => c.Visible))
+                                        {
+                                            var wStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                            <td style="@wStyle">@GetPickMainCellValue(item, col.FieldKey)</td>
+                                        }
+                                        <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 下方：明细表格标题 -->
+                <div class="detail-section-title">直接拣货任务单明细</div>
+
+                <!-- 下方：明细表格（TF_XJRW表身数据） -->
+                <div class="data-table-container" style="max-height:280px;overflow:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in pickDetailColumnConfigs.Where(c => c.Visible))
+                                {
+                                    var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                                <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
+                                    <span>操作</span>
+                                    <button class="column-settings-btn" title="栏位设置" @onclick="OpenPickDetailColumnSettings">
+                                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                                        </svg>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (pickDetailDataSource.Count == 0)
+                            {
+                                <tr><td colspan="@(PickDetailVisibleCount + 1)" class="empty-data-cell"><div class="empty-data"><svg viewBox="0 0 64 64" width="80" height="80" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p class="empty-text">暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in pickDetailDataSource)
+                                {
+                                    <tr>
+                                        @foreach (var col in pickDetailColumnConfigs.Where(c => c.Visible))
+                                        {
+                                            var wStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                            <td style="@wStyle">@GetPickDetailCellValue(item, col.FieldKey)</td>
+                                        }
+                                        <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 导出对话框 -->
+@if (showExportDialog)
+{
+    <div class="export-dialog-overlay" @onclick="CancelExport">
+        <div class="export-dialog" @onclick:stopPropagation>
+            <div class="export-dialog-header">
+                <span>导出 Excel</span>
+                <button class="export-dialog-close" @onclick="CancelExport">&times;</button>
+            </div>
+            <div class="export-dialog-body">
+                <label class="export-label">文件名</label>
+                <input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput" />
+            </div>
+            <div class="export-dialog-footer">
+                <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
+                <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 栏位设计对话框 -->
+@if (showColumnSettingsDialog)
+{
+    <div class="column-settings-overlay" @onclick="CloseColumnSettings">
+        <div class="column-settings-dialog" @onclick:stopPropagation>
+            <div class="column-settings-header">
+                <span>栏位设计</span>
+                <button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button>
+            </div>
+            <div class="column-settings-search">
+                <input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput" />
+            </div>
+            <div class="column-settings-body">
+                <table class="column-settings-table">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">项次</th>
+                            <th class="col-visible">显示否</th>
+                            <th class="col-original">原栏位名</th>
+                            <th class="col-display">栏位标题</th>
+                            <th class="col-width">宽度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < FilteredCurrentColumns.Count; i++)
+                        {
+                            var col = FilteredCurrentColumns[i];
+                            var idx = CurrentEditingColumns.IndexOf(col) + 1;
+                            <tr>
+                                <td class="col-seq">@idx</td>
+                                <td class="col-visible">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e) => col.Visible = (bool)e.Value!)" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td class="col-original">@col.OriginalName</td>
+                                <td class="col-display">
+                                    <input type="text" class="col-title-input" value="@col.DisplayName"
+                                           @onchange="@((ChangeEventArgs e) => col.DisplayName = e.Value?.ToString() ?? col.OriginalName)" />
+                                </td>
+                                <td class="col-width">
+                                    <input type="number" class="col-width-input" value="@col.Width"
+                                           min="0" max="500"
+                                           @onchange="@((ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var w)) col.Width = w; })" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="column-settings-footer">
+                <div class="footer-left">
+                    <button class="col-select-all" @onclick="SelectAllCurrentColumns">全选</button>
+                    <button class="col-restore-default" @onclick="RestoreCurrentDefaultColumns">恢复默认</button>
+                </div>
+                <div class="footer-right">
+                    <button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button>
+                    <button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    // ====== 状态变量 ======
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+    private bool isCollapsed = false;
+    private bool showSettingsMenu = false;
+    private bool showExportDialog = false;
+    private string exportFileName = "";
+    private bool showColumnSettingsDialog = false;
+    private string columnSearchKeyword = "";
+
+    // 当前正在编辑的栏位配置类型
+    private string currentEditingColumnType = "batch"; // batch | pick-main | pick-detail
+
+    // ====== 内层选项卡 ======
+    private List<InnerTab> innerTabs = new()
+    {
+        new() { Id = "batch-shelving", Title = "批量上架", IsActive = true },
+        new() { Id = "direct-pick-task", Title = "直接拣货任务单", IsActive = false }
+    };
+    private string activeInnerTabId = "batch-shelving";
+
+    // ====== Tab1: 批量上架 数据 ======
+    private List<ColumnConfig> batchColumnConfigs = new();
+    private List<ColumnConfig> defaultBatchColumnConfigs = new();
+    private BatchShelvingQuery batchQuery = new();
+    private List<BatchShelvingModel> batchDataSource = new();
+
+    // ====== Tab2: 直接拣货任务单 数据 ======
+    private List<ColumnConfig> pickMainColumnConfigs = new();
+    private List<ColumnConfig> defaultPickMainColumnConfigs = new();
+    private List<ColumnConfig> pickDetailColumnConfigs = new();
+    private List<ColumnConfig> defaultPickDetailColumnConfigs = new();
+    private SourcePickTaskQuery pickQuery = new();
+    private List<SourcePickMainModel> pickMainDataSource = new();
+    private List<SourcePickDetailModel> pickDetailDataSource = new();
+
+    [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+
+    // ====== 内层选项卡模型 ======
+    private class InnerTab
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+        public bool IsActive { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitAllDefaultColumnConfigs();
+        await LoadAllColumnSettings();
+        await LoadFavoriteStatus();
+        await LoadData();
+    }
+
+    // ====== 内层选项卡切换 ======
+    private void SwitchInnerTab(string tabId)
+    {
+        activeInnerTabId = tabId;
+        foreach (var tab in innerTabs)
+            tab.IsActive = (tab.Id == tabId);
+        StateHasChanged();
+    }
+
+    // ====== 收藏功能 ======
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_source_picking"); isFavorited = r == "true"; }
+        catch { isFavorited = false; }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "wms_favorite_source_picking", isFavorited.ToString().ToLower()); } catch { }
+        OnFavoriteChanged?.Invoke();
+        if (isFavorited)
+        {
+            showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false;
+        }
+        StateHasChanged();
+    }
+
+    // ====== 面板折叠 ======
+    private void ToggleCollapse()
+    {
+        isCollapsed = !isCollapsed;
+        StateHasChanged();
+    }
+
+    // ====== 设置菜单 ======
+    private void ToggleSettingsMenu() { showSettingsMenu = !showSettingsMenu; StateHasChanged(); }
+    private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void RemoveCondition() { showSettingsMenu = false; StateHasChanged(); }
+    private void SaveConditionValues() { showSettingsMenu = false; StateHasChanged(); }
+
+    // ====== 工具栏按钮（仅UI，暂无实现）======
+    private void HandleConfigDownload() { /* TODO */ }
+    private void HandlePrint() { /* TODO */ }
+    private void HandleAddNew() { /* TODO */ }
+
+    // ====== 查询 ======
+    private async Task HandleSearch() { await LoadData(); }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            if (activeInnerTabId == "batch-shelving")
+            {
+                await LoadBatchData(ApiBaseUrl, jsonOptions);
+            }
+            else
+            {
+                await LoadPickData(ApiBaseUrl, jsonOptions);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载依来源单配货数据失败");
+            batchDataSource = new List<BatchShelvingModel>();
+            pickMainDataSource = new List<SourcePickMainModel>();
+            pickDetailDataSource = new List<SourcePickDetailModel>();
+        }
+        StateHasChanged();
+    }
+
+    private async Task LoadBatchData(string apiBase, System.Text.Json.JsonSerializerOptions opts)
+    {
+        var today = DateTime.Today;
+        var dateFromStr = today.ToString("yyyy-MM-dd");
+        var dateToStr = today.ToString("yyyy-MM-dd");
+        if (!string.IsNullOrWhiteSpace(batchQuery.DateRange) && batchQuery.DateRange.Contains("→"))
+        {
+            var parts = batchQuery.DateRange.Split("→", StringSplitOptions.TrimEntries);
+            if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
+        }
+        var url = $"{apiBase}/api/SourcePicking/batch-search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.WarehouseCode))
+            url += $"&warehouseCode={Uri.EscapeDataString(batchQuery.WarehouseCode)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.DocumentNumber))
+            url += $"&documentNumber={Uri.EscapeDataString(batchQuery.DocumentNumber)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.BusinessType))
+            url += $"&businessType={Uri.EscapeDataString(batchQuery.BusinessType)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.DeptCode))
+            url += $"&deptCode={Uri.EscapeDataString(batchQuery.DeptCode)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.CustomerCode))
+            url += $"&customerCode={Uri.EscapeDataString(batchQuery.CustomerCode)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.BusinessOrderNumber))
+            url += $"&businessOrderNumber={Uri.EscapeDataString(batchQuery.BusinessOrderNumber)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.ErpApplyOrderNumber))
+            url += $"&erpApplyOrderNumber={Uri.EscapeDataString(batchQuery.ErpApplyOrderNumber)}";
+        if (!string.IsNullOrWhiteSpace(batchQuery.ReceivePoint))
+            url += $"&receivePoint={Uri.EscapeDataString(batchQuery.ReceivePoint)}";
+
+        var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+        var responseMsg = await Http.SendAsync(request);
+        var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<BatchShelvingModel>>>(opts);
+        batchDataSource = (response != null && response.Success && response.Data != null) ? response.Data : new List<BatchShelvingModel>();
+    }
+
+    private async Task LoadPickData(string apiBase, System.Text.Json.JsonSerializerOptions opts)
+    {
+        var today = DateTime.Today;
+        var dateFromStr = today.ToString("yyyy-MM-dd");
+        var dateToStr = today.ToString("yyyy-MM-dd");
+        if (!string.IsNullOrWhiteSpace(pickQuery.DateRange) && pickQuery.DateRange.Contains("→"))
+        {
+            var parts = pickQuery.DateRange.Split("→", StringSplitOptions.TrimEntries);
+            if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
+        }
+        var url = $"{apiBase}/api/SourcePicking/pick-search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+        if (!string.IsNullOrWhiteSpace(pickQuery.DocumentNumber))
+            url += $"&documentNumber={Uri.EscapeDataString(pickQuery.DocumentNumber)}";
+        if (!string.IsNullOrWhiteSpace(pickQuery.BusinessType))
+            url += $"&businessType={Uri.EscapeDataString(pickQuery.BusinessType)}";
+        if (!string.IsNullOrWhiteSpace(pickQuery.WarehouseCode))
+            url += $"&warehouseCode={Uri.EscapeDataString(pickQuery.WarehouseCode)}";
+        if (!string.IsNullOrWhiteSpace(pickQuery.ApplyOrderNumber))
+            url += $"&applyOrderNumber={Uri.EscapeDataString(pickQuery.ApplyOrderNumber)}";
+        if (!string.IsNullOrWhiteSpace(pickQuery.NoticeNumber))
+            url += $"&noticeNumber={Uri.EscapeDataString(pickQuery.NoticeNumber)}";
+        if (!string.IsNullOrWhiteSpace(pickQuery.BusinessOrderNumber))
+            url += $"&businessOrderNumber={Uri.EscapeDataString(pickQuery.BusinessOrderNumber)}";
+
+        var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+        var responseMsg = await Http.SendAsync(request);
+        var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<PickSearchResult>>(opts);
+        if (response != null && response.Success && response.Data != null)
+        {
+            pickMainDataSource = response.Data.MainList ?? new List<SourcePickMainModel>();
+                pickDetailDataSource = response.Data.DetailList ?? new List<SourcePickDetailModel>();
+        }
+        else
+        {
+            pickMainDataSource = new List<SourcePickMainModel>();
+            pickDetailDataSource = new List<SourcePickDetailModel>();
+        }
+    }
+
+    // ====== 导出 ======
+    private async Task HandleBatchExport()
+    {
+        if (batchDataSource.Count == 0) { await JS.InvokeVoidAsync("alert", "暂无数据可导出"); return; }
+        exportFileName = $"批量上架_{DateTime.Now:yyyyMMddHHmmss}";
+        showExportDialog = true;
+        StateHasChanged();
+    }
+
+    private void CancelExport() { showExportDialog = false; StateHasChanged(); }
+
+    private async Task ConfirmExport()
+    {
+        showExportDialog = false;
+        try { await ExportToExcel(); } catch (Exception ex) { await JS.InvokeVoidAsync("alert", $"导出失败: {ex.Message}"); }
+    }
+
+    private async Task ExportToExcel()
+    {
+        var visibleCols = batchColumnConfigs.Where(c => c.Visible).ToList();
+        var headers = visibleCols.Select(c => c.DisplayName).ToArray();
+        var rows = new List<object[]>();
+        rows.Add(headers);
+        foreach (var item in batchDataSource)
+        {
+            var row = new object[visibleCols.Count];
+            for (int i = 0; i < visibleCols.Count; i++)
+                row[i] = GetBatchCellValue(item, visibleCols[i].FieldKey);
+            rows.Add(row);
+        }
+        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"批量上架_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+        if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
+        await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
+    }
+
+    // ====== 栏位配置系统 ======
+    private class ColumnConfig
+    {
+        public string FieldKey { get; set; } = "";
+        public string OriginalName { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public bool Visible { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+        public bool Sortable { get; set; } = false;
+    }
+
+    private const string BATCH_COLUMN_KEY = "wms_column_settings_source_picking_batch";
+    private const string PICK_MAIN_COLUMN_KEY = "wms_column_settings_source_picking_pick_main";
+    private const string PICK_DETAIL_COLUMN_KEY = "wms_column_settings_source_picking_pick_detail";
+
+    private void InitAllDefaultColumnConfigs()
+    {
+        // --- 批量上架 默认列 ---
+        defaultBatchColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "Priority", OriginalName = "优先级", DisplayName = "优先级", Visible = true, Width = 55, DefaultWidth = 55 },
+            new() { FieldKey = "DocumentDate", OriginalName = "单据日期", DisplayName = "单据日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "DocumentNumber", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "BusinessType", OriginalName = "业务类型", DisplayName = "业务类型", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "ErpApplyOrderNumber", OriginalName = "ERP申请单号", DisplayName = "ERP申请单号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "BusinessOrderNumber", OriginalName = "业务单号", DisplayName = "业务单号", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "PreOutboundDate", OriginalName = "预出库日", DisplayName = "预出库日", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "DeptName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 80, DefaultWidth = 80 }
+        };
+        batchColumnConfigs = CloneColumnConfigs(defaultBatchColumnConfigs);
+
+        // --- 直接拣货任务单 主表默认列 ---
+        defaultPickMainColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "TaskNumber", OriginalName = "直接拣货任务单号", DisplayName = "直接拣货任务单号", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
+            new() { FieldKey = "ShelvingDate", OriginalName = "下架日期", DisplayName = "下架日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "DeptName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "Priority", OriginalName = "优先级", DisplayName = "优先级", Visible = true, Width = 55, DefaultWidth = 55 },
+            new() { FieldKey = "WarehouseName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "ContainerBarcode", OriginalName = "客器条码", DisplayName = "客器条码", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "CloseMark", OriginalName = "结案标记", DisplayName = "结案标记", Visible = true, Width = 65, DefaultWidth = 65 },
+            new() { FieldKey = "ShelvingMark", OriginalName = "下架标记", DisplayName = "下架标记", Visible = true, Width = 65, DefaultWidth = 65 }
+        };
+        pickMainColumnConfigs = CloneColumnConfigs(defaultPickMainColumnConfigs);
+
+        // --- 直接拣货任务单 明细表默认列 ---
+        defaultPickDetailColumnConfigs = new List<ColumnConfig>
+        {
+            new() { FieldKey = "TaskNumber", OriginalName = "直接拣货任务单号", DisplayName = "直接拣货任务单号", Visible = true, Width = 130, DefaultWidth = 130 },
+            new() { FieldKey = "Itm", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 55, DefaultWidth = 55 },
+            new() { FieldKey = "PickQty", OriginalName = "已拣货量", DisplayName = "已拣货量", Visible = true, Width = 65, DefaultWidth = 65 },
+            new() { FieldKey = "PasteId", OriginalName = "通贴单ID", DisplayName = "通贴单ID", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "PasteNo", OriginalName = "通贴单号", DisplayName = "通贴单号", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PasteItm", OriginalName = "通贴单次", DisplayName = "通贴单次", Visible = true, Width = 65, DefaultWidth = 65 },
+            new() { FieldKey = "Ef", OriginalName = "EF", DisplayName = "EF", Visible = true, Width = 40, DefaultWidth = 40 }
+        };
+        pickDetailColumnConfigs = CloneColumnConfigs(defaultPickDetailColumnConfigs);
+    }
+
+    private List<ColumnConfig> CloneColumnConfigs(List<ColumnConfig> source)
+    {
+        return source.Select(c => new ColumnConfig
+        {
+            FieldKey = c.FieldKey,
+            OriginalName = c.OriginalName,
+            DisplayName = c.DisplayName,
+            Visible = c.Visible,
+            Width = c.Width,
+            DefaultWidth = c.DefaultWidth,
+            Sortable = c.Sortable
+        }).ToList();
+    }
+
+    private async Task LoadAllColumnSettings()
+    {
+        await LoadSingleColumnSettings(BATCH_COLUMN_KEY, batchColumnConfigs, defaultBatchColumnConfigs);
+        await LoadSingleColumnSettings(PICK_MAIN_COLUMN_KEY, pickMainColumnConfigs, defaultPickMainColumnConfigs);
+        await LoadSingleColumnSettings(PICK_DETAIL_COLUMN_KEY, pickDetailColumnConfigs, defaultPickDetailColumnConfigs);
+    }
+
+    private async Task LoadSingleColumnSettings(string key, List<ColumnConfig> configs, List<ColumnConfig> defaults)
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", key);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var saved = System.Text.Json.JsonSerializer.Deserialize<List<ColumnConfig>>(json, opts);
+                if (saved != null && saved.Count > 0)
+                {
+                    foreach (var col in configs)
+                    {
+                        var s = saved.FirstOrDefault(sc => sc.FieldKey == col.FieldKey);
+                        if (s != null)
+                        {
+                            col.Visible = s.Visible;
+                            col.DisplayName = !string.IsNullOrWhiteSpace(s.DisplayName) ? s.DisplayName : col.OriginalName;
+                            col.Width = s.Width >= 0 ? s.Width : col.DefaultWidth;
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveCurrentColumnSettings()
+    {
+        try
+        {
+            var key = currentEditingColumnType switch
+            {
+                "batch" => BATCH_COLUMN_KEY,
+                "pick-main" => PICK_MAIN_COLUMN_KEY,
+                "pick-detail" => PICK_DETAIL_COLUMN_KEY,
+                _ => BATCH_COLUMN_KEY
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(CurrentEditingColumns);
+            await JS.InvokeVoidAsync("localStorage.setItem", key, json);
+        }
+        catch { }
+    }
+
+    // 当前编辑中的栏位配置列表
+    private List<ColumnConfig> CurrentEditingColumns => currentEditingColumnType switch
+    {
+        "batch" => batchColumnConfigs,
+        "pick-main" => pickMainColumnConfigs,
+        "pick-detail" => pickDetailColumnConfigs,
+        _ => batchColumnConfigs
+    };
+
+    private List<ColumnConfig> FilteredCurrentColumns =>
+        string.IsNullOrWhiteSpace(columnSearchKeyword)
+            ? CurrentEditingColumns
+            : CurrentEditingColumns.Where(c => c.OriginalName.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                                               c.FieldKey.Contains(columnSearchKeyword, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private void OpenColumnSettings(string columnType)
+    {
+        currentEditingColumnType = columnType;
+        columnSearchKeyword = "";
+        showColumnSettingsDialog = true;
+        StateHasChanged();
+    }
+
+    private void OpenBatchColumnSettings() => OpenColumnSettings("batch");
+    private void OpenPickMainColumnSettings() => OpenColumnSettings("pick-main");
+    private void OpenPickDetailColumnSettings() => OpenColumnSettings("pick-detail");
+
+    private void CloseColumnSettings() { showColumnSettingsDialog = false; StateHasChanged(); }
+
+    private void ConfirmColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = SaveCurrentColumnSettings();
+        StateHasChanged();
+    }
+
+    private void CancelColumnSettings()
+    {
+        showColumnSettingsDialog = false;
+        _ = LoadAllColumnSettings(); // 放弃修改，重新加载
+        StateHasChanged();
+    }
+
+    private void SelectAllCurrentColumns()
+    {
+        foreach (var col in CurrentEditingColumns) col.Visible = true;
+        StateHasChanged();
+    }
+
+    private void RestoreCurrentDefaultColumns()
+    {
+        var defaults = currentEditingColumnType switch
+        {
+            "batch" => defaultBatchColumnConfigs,
+            "pick-main" => defaultPickMainColumnConfigs,
+            "pick-detail" => defaultPickDetailColumnConfigs,
+            _ => defaultBatchColumnConfigs
+        };
+        var target = CurrentEditingColumns;
+        for (int i = 0; i < target.Count && i < defaults.Count; i++)
+        {
+            target[i].Visible = defaults[i].Visible;
+            target[i].DisplayName = defaults[i].DisplayName;
+            target[i].Width = defaults[i].Width;
+        }
+        StateHasChanged();
+    }
+
+    // 可见列计数
+    private int BatchVisibleCount => batchColumnConfigs.Count(c => c.Visible);
+    private int PickMainVisibleCount => pickMainColumnConfigs.Count(c => c.Visible);
+    private int PickDetailVisibleCount => pickDetailColumnConfigs.Count(c => c.Visible);
+
+    // ====== 单元格渲染 ======
+    private object GetBatchCellValue(BatchShelvingModel item, string fieldKey) => fieldKey switch
+    {
+        "Priority" => item.Priority,
+        "DocumentDate" => item.DocumentDate?.ToString("yyyy-MM-dd") ?? "",
+        "DocumentNumber" => item.DocumentNumber,
+        "BusinessType" => item.BusinessType,
+        "ErpApplyOrderNumber" => item.ErpApplyOrderNumber,
+        "BusinessOrderNumber" => item.BusinessOrderNumber,
+        "PreOutboundDate" => item.PreOutboundDate?.ToString("yyyy-MM-dd") ?? "",
+        "CustomerName" => item.CustomerName,
+        "DeptName" => item.DeptName,
+        _ => ""
+    };
+
+    private object GetPickMainCellValue(SourcePickMainModel item, string fieldKey) => fieldKey switch
+    {
+        "ItemNo" => item.ItemNo,
+        "TaskNumber" => item.TaskNumber,
+        "ShelvingDate" => item.ShelvingDate?.ToString("yyyy-MM-dd") ?? "",
+        "DeptName" => item.DeptName,
+        "Priority" => item.Priority,
+        "WarehouseName" => item.WarehouseName,
+        "ContainerBarcode" => item.ContainerBarcode,
+        "CloseMark" => item.CloseMark,
+        "ShelvingMark" => item.ShelvingMark,
+        _ => ""
+    };
+
+    private object GetPickDetailCellValue(SourcePickDetailModel item, string fieldKey) => fieldKey switch
+    {
+        "TaskNumber" => item.TaskNumber,
+        "Itm" => item.Itm,
+        "PrdNo" => item.PrdNo,
+        "PrdName" => item.PrdName,
+        "BatNo" => item.BatNo,
+        "Unit" => item.Unit,
+        "Qty" => item.Qty,
+        "PickQty" => item.PickQty,
+        "PasteId" => item.PasteId,
+        "PasteNo" => item.PasteNo,
+        "PasteItm" => item.PasteItm,
+        "Ef" => item.Ef,
+        _ => ""
+    };
+
+    // ====== API响应模型 ======
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+
+    private class PickSearchResult
+    {
+        public List<SourcePickMainModel>? MainList { get; set; }
+        public List<SourcePickDetailModel>? DetailList { get; set; }
+    }
+}
