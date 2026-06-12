@@ -1,5 +1,6 @@
 @inject HttpClient Http
 @inject ILogger<DeptCodeInput> _logger
+@inject TokenProvider TokenProvider
 
 <style>
 /* ========== 部门选择器对话框 ========== */
@@ -249,11 +250,13 @@
         try
         {
             var url = $"http://localhost:5102/api/warehouse/deptsearch?keyword={Uri.EscapeDataString(deptSearchKeyword ?? "")}&pageIndex={deptPageIndex}&pageSize={deptPageSize}";
-            var response = await Http.GetAsync(url);
-            if (response.IsSuccessStatusCode)
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            if (responseMsg.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = System.Text.Json.JsonSerializer.Deserialize<DeptSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<DeptSearchResult>(json, jsonOptions);
                 if (result != null)
                 {
                     deptData = result.Items ?? new List<DeptItem>();

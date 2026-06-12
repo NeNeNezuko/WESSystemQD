@@ -1957,6 +1957,7 @@ namespace WmsPlus.Api.Data
             modelBuilder.Entity<ValidddUpdHis>(entity =>
             {
                 entity.ToTable("VALIDDD_UPD_HIS");
+                entity.HasKey(e => e.HIS_NO);
                 entity.Property(e => e.BAT_NO).HasColumnName("BAT_NO").HasMaxLength(40);
                 entity.Property(e => e.CON_NO).HasColumnName("CON_NO").HasMaxLength(30);
                 entity.Property(e => e.HIS_NO).HasColumnName("HIS_NO");
@@ -2191,6 +2192,7 @@ namespace WmsPlus.Api.Data
             modelBuilder.Entity<SvcLog>(entity =>
             {
                 entity.ToTable("SVC_LOG");
+                entity.HasKey(e => e.SVC_NO);
                 entity.Property(e => e.SVC_NO).HasColumnName("SVC_NO").HasMaxLength(50);
                 entity.Property(e => e.SVC_NO1).HasColumnName("SVC_NO1").HasMaxLength(50);
                 entity.Property(e => e.NAME).HasColumnName("NAME").HasMaxLength(200);
@@ -2206,6 +2208,7 @@ namespace WmsPlus.Api.Data
             modelBuilder.Entity<SvcYc>(entity =>
             {
                 entity.ToTable("SVC_YC");
+                entity.HasKey(e => e.YC_NO);
                 entity.Property(e => e.YC_NO).HasColumnName("YC_NO").HasMaxLength(50);
                 entity.Property(e => e.SVC_NO).HasColumnName("SVC_NO").HasMaxLength(50);
                 entity.Property(e => e.SVC_NO1).HasColumnName("SVC_NO1").HasMaxLength(50);
@@ -2369,6 +2372,7 @@ namespace WmsPlus.Api.Data
             modelBuilder.Entity<ApiActionHisI>(entity =>
             {
                 entity.ToTable("API_ACTION_HIS_I");
+                entity.HasKey(e => e.HIS_NO);
                 entity.Property(e => e.HIS_NO).HasColumnName("HIS_NO");
                 entity.Property(e => e.ACT_ID).HasColumnName("ACT_ID").HasMaxLength(20);
                 entity.Property(e => e.ACT_NO).HasColumnName("ACT_NO").HasMaxLength(50);
@@ -2404,6 +2408,7 @@ namespace WmsPlus.Api.Data
             modelBuilder.Entity<ApiActionHisO>(entity =>
             {
                 entity.ToTable("API_ACTION_HIS_O");
+                entity.HasKey(e => e.HIS_NO);
                 entity.Property(e => e.HIS_NO).HasColumnName("HIS_NO");
                 entity.Property(e => e.ACT_ID).HasColumnName("ACT_ID").HasMaxLength(20);
                 entity.Property(e => e.ACT_NO).HasColumnName("ACT_NO").HasMaxLength(50);
@@ -2430,6 +2435,41 @@ namespace WmsPlus.Api.Data
                 entity.Property(e => e.RESULT_SIZE).HasColumnName("RESULT_SIZE");
                 entity.Property(e => e.START_DATE).HasColumnName("START_DATE");
                 entity.Property(e => e.END_DATE).HasColumnName("END_DATE");
+            });
+
+            // 拣货退回单表身（TF_JT）
+            modelBuilder.Entity<TfJt>(entity =>
+            {
+                entity.ToTable("TF_JT");
+                entity.HasKey(e => new { e.JT_NO, e.ITM });
+            });
+
+            // 出库退回通知单表身（TF_CKTB）
+            modelBuilder.Entity<TfCktb>(entity =>
+            {
+                entity.ToTable("TF_CKTB");
+                entity.HasKey(e => new { e.TB_NO, e.ITM });
+            });
+
+            // 二次分拣单表身（TF_PKFJ）
+            modelBuilder.Entity<TfPkfj>(entity =>
+            {
+                entity.ToTable("TF_PKFJ");
+                entity.HasKey(e => new { e.PKFJ_NO, e.ITM });
+            });
+
+            // 波次拣货任务单表身（TF_JHRW）
+            modelBuilder.Entity<TfJhrw>(entity =>
+            {
+                entity.ToTable("TF_JHRW");
+                entity.HasKey(e => new { e.JR_NO, e.ITM });
+            });
+
+            // 出库单表身（TF_CK）
+            modelBuilder.Entity<TfCk>(entity =>
+            {
+                entity.ToTable("TF_CK");
+                entity.HasKey(e => new { e.CK_ID, e.ITM });
             });
 
             // ========== 三级菜单界面 - 新增表Fluent API配置结束 ==========

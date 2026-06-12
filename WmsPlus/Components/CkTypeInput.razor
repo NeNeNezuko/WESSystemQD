@@ -1,4 +1,5 @@
 @inject HttpClient Http
+@inject TokenProvider TokenProvider
 
 <style>
 /* ========== 出库业务类型选择器对话框 ========== */
@@ -337,13 +338,14 @@
         try
         {
             var url = $"http://localhost:5102/api/warehouse/cktypesearch?keyword={Uri.EscapeDataString(ckTypeSearchKeyword ?? "")}&pageIndex={ckTypePageIndex}&pageSize={ckTypePageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
 
-            var response = await Http.GetAsync(url);
-
-            if (response.IsSuccessStatusCode)
+            if (responseMsg.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = System.Text.Json.JsonSerializer.Deserialize<CkTypeSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<CkTypeSearchResult>(json, jsonOptions);
 
                 if (result != null)
                 {

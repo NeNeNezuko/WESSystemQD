@@ -71,24 +71,36 @@
 
             <div class="query-form">
                 <!-- 有效日期 - 日期范围选择器 -->
-                <DateRangeInput @bind-Value="query.DateRange" />
+                <DateRangeInput @bind-Value="query.DateRange" Label="有效日期" />
 
                 <!-- 仓库代号 -->
                 <WarehouseCodeInput @bind-Value="query.Wh" />
 
-                <!-- 起止货品（融合式双重复合筛选框）-->
-                <div class="form-item-fused">
-                    <div class="fused-row">
-                        <label class="fused-label">起止货品 起</label>
-                        <div class="fused-input-area">
-                            <ProductCodeInput @bind-Value="query.PrdNoFrom" />
-                        </div>
+                <!-- 货品代号 起 -->
+                <div class="form-item">
+                    <label class="form-label">货品代号 起</label>
+                    <div class="input-with-search">
+                        <ProductCodeInput @bind-Value="query.PrdNoFrom" />
+                        <button class="search-icon-btn" title="搜索货品">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="fused-row">
-                        <label class="fused-label">起止货品 止</label>
-                        <div class="fused-input-area">
-                            <ProductCodeInput @bind-Value="query.PrdNoTo" />
-                        </div>
+                </div>
+
+                <!-- 货品代号 止 -->
+                <div class="form-item">
+                    <label class="form-label">货品代号 止</label>
+                    <div class="input-with-search">
+                        <ProductCodeInput @bind-Value="query.PrdNoTo" />
+                        <button class="search-icon-btn" title="搜索货品">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 

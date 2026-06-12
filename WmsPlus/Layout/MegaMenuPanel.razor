@@ -17,7 +17,7 @@
                         <ul class="mega-menu-items">
                             @foreach (var item in category.Value)
                             {
-                                <li class="mega-menu-item" @onclick="() => HandleItemClick(item.Title)">
+                                <li class="mega-menu-item" @onclick="() => HandleItemClick(item.Title)" @onclick:stopPropagation>
                                     @item.Title
                                     <span class="menu-item-arrow">›</span>
                                 </li>

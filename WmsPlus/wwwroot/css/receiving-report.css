@@ -1,4 +1,4 @@
-﻿/* ========== 收货单报表页面样式 ========== */
+/* ========== 收货单报表页面样式 ========== */
 
 .receiving-report-page {
     width: 100%;
@@ -68,15 +68,32 @@
     gap: 4px;
 }
 
-/* ===== 内层选项卡 ===== */
-.inner-tab-bar {
+/* 标题栏工具按钮 */
+.header-toolbar-btn {
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.3s;
+    background-color: #ffffff;
+    color: #666666;
+}
+
+.header-toolbar-btn:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+/* ===== 内层选项卡（内嵌于工具栏中） ===== */
+.inner-tab-bar-inline {
     display: flex;
     align-items: center;
     gap: 0;
-    padding: 0 12px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e8e8e8;
-    min-height: 30px;
 }
 
 .inner-tab-item {
@@ -478,7 +495,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 10px;
+    padding: 6px 12px;
     border-bottom: 1px solid #e8e8e8;
     background-color: #fafafa;
     min-height: 34px;
@@ -486,6 +503,13 @@
 
 .toolbar-left {
     display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
     gap: 6px;
 }
 
@@ -969,17 +993,51 @@
 .col-btn-cancel:hover { border-color: #1890ff; color: #1890ff; }
 
 /* ===== 底部统计栏 ===== */
-.stats-footer {
+.table-footer {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 6px 12px;
     border-top: 1px solid #e8e8e8;
     background-color: #fafafa;
     min-height: 32px;
+    flex-shrink: 0;
 }
 
-.stats-group {
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #666666;
+    flex-wrap: nowrap;
+}
+
+.group-label {
+    font-size: 12px;
+    color: #333333;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #666666;
+}
+
+.group-checkbox input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.footer-right {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -987,27 +1045,15 @@
     color: #666666;
 }
 
-.stats-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.stats-checkbox input[type=checkbox] {
-    width: 13px;
-    height: 13px;
-    margin: 0;
-    cursor: pointer;
+.record-count {
+    color: #999999;
+    font-size: 11px;
 }
 
 .pagination-info {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #666666;
+    gap: 6px;
 }
 
 .page-btn {
@@ -1032,80 +1078,4 @@
 .page-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-}
-/* ========== 琛ㄦ牸搴曢儴鏍?========== */
-.table-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 12px;
-    border-top: 1px solid #e8e8e8;
-    background-color: #fafafa;
-    min-height: 32px;
-    flex-shrink: 0;
-}
-
-.footer-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
-    color: #666666;
-}
-
-.footer-label {
-    color: #333333;
-    font-weight: 400;
-    white-space: nowrap;
-}
-
-.footer-checkboxes {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.footer-checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    color: #666666;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.footer-checkbox-item input[type="checkbox"] {
-    width: 13px;
-    height: 13px;
-    cursor: pointer;
-}
-
-.footer-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
-    color: #666666;
-}
-
-.record-count {
-    color: #999999;
-    font-size: 11px;
-}
-
-.pagination-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.page-size-select {
-    height: 22px;
-    font-size: 11px;
-    padding: 0 4px;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    outline: none;
 }

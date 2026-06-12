@@ -101,14 +101,31 @@
                 <!-- 仓库代号 -->
                 <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
 
-                <!-- 起止货品（融合式单边框）-->
-                <div class="form-item-fused">
-                    <div class="fused-row">
-                        <ProductCodeInput @bind-Value="query.PrdNoFrom" Label="货品代号 起" />
+                <!-- 货品代号 起 -->
+                <div class="form-item">
+                    <label class="form-label">货品代号 起</label>
+                    <div class="input-with-search">
+                        <ProductCodeInput @bind-Value="query.PrdNoFrom" />
+                        <button class="search-icon-btn" title="搜索货品">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="fused-divider"></div>
-                    <div class="fused-row">
-                        <ProductCodeInput @bind-Value="query.PrdNoTo" Label="货品代号 止" />
+                </div>
+
+                <!-- 货品代号 止 -->
+                <div class="form-item">
+                    <label class="form-label">货品代号 止</label>
+                    <div class="input-with-search">
+                        <ProductCodeInput @bind-Value="query.PrdNoTo" />
+                        <button class="search-icon-btn" title="搜索货品">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 

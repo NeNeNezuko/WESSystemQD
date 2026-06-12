@@ -2,7 +2,7 @@
 @inject ILogger<DateRangeInput> _logger
 
 <div class="form-item">
-    <label class="form-label">单据日期</label>
+    <label class="form-label">@Label</label>
     <div class="date-picker-trigger" @onclick="ToggleDatePicker" @ref="datePickerTriggerRef">
         <span class="date-display-text">@DateDisplayText</span>
         <svg class="date-picker-icon" viewBox="0 0 16 16" width="12" height="12" fill="#999999">
@@ -315,6 +315,7 @@
 @code {
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string Label { get; set; } = "单据日期";
 
     // ===== 日历状态 =====
     private bool ShowCalendar = false;

@@ -1,5 +1,6 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject TokenProvider TokenProvider
 
 <style>
 /* ========== 仓库选择器对话框 ========== */
@@ -517,13 +518,14 @@
         try
         {
             var url = $"http://localhost:5102/api/warehouse/search?keyword={Uri.EscapeDataString(warehouseSearchKeyword ?? "")}&pageIndex={warehousePageIndex}&pageSize={warehousePageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
 
-            var response = await Http.GetAsync(url);
-
-            if (response.IsSuccessStatusCode)
+            if (responseMsg.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = System.Text.Json.JsonSerializer.Deserialize<WarehouseSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<WarehouseSearchResult>(json, jsonOptions);
 
                 if (result != null)
                 {
@@ -532,7 +534,10 @@
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WarehouseCodeInput] 查询仓库数据失败: {ex.Message}");
+        }
         StateHasChanged();
     }
 

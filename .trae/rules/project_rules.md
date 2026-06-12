@@ -197,31 +197,35 @@ if (!string.IsNullOrWhiteSpace(query.CustomerCode))
 
 ### 日期范围输入组件 (DateRangeInput)
 
-**适用场景**：任何查询表单页面中需要"日期范围"输入/筛选条件的场景（如入库通知单、入库单、出库通知单、出库单、盘点等）
+**适用场景**：任何查询表单页面中需要"日期范围"输入/筛选条件的场景（如入库通知单、入库单、出库通知单、出库单、盘点、报表等）
 
 **组件路径**：`WmsPlus/Components/DateRangeInput.razor`
 
 **使用方式**：
 
 1. 在查询表单的 `@code` 块中，确保查询模型包含 `DateRange` 字段（string 类型）
-2. 在表单 HTML 中添加一行组件调用
+2. 在表单 HTML 中添加一行组件调用，通过 `Label` 参数指定日期字段的中文名称
 3. 查询时从 `query.DateRange` 解析出 dateFrom 和 dateTo 传给后端 API
 
 **代码示例**：
 
 ```razor
-<!-- 表单中嵌入 -->
+<!-- 默认标签"单据日期" -->
 <DateRangeInput @bind-Value="query.DateRange" />
+
+<!-- 自定义标签名称 -->
+<DateRangeInput @bind-Value="query.DateRange" Label="制表日期" />
+<DateRangeInput @bind-Value="query.DateRange" Label="收货日期" />
+<DateRangeInput @bind-Value="query.EstDateRange" Label="预计出货日期" />
 ```
 
 ```csharp
 // 查询模型
 public class XxxQuery { public string DateRange { get; set; } = ""; }
 
-// 查询传参（从 DateRange 解析）
-var today = DateTime.Today;
-var dateFromStr = today.ToString("yyyy-MM-dd");
-var dateToStr = today.ToString("yyyy-MM-dd");
+// 查询传参（从 DateRange 解析，分隔符为 "→"）
+var dateFromStr = "";
+var dateToStr = "";
 if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
 {
     var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
@@ -234,7 +238,90 @@ if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→
 url += $"&dateFrom={dateFromStr}&dateTo={dateToStr}";
 ```
 
-**功能说明**：组件自包含，内部封装了双月历范围选择器（含日期网格、快捷按钮、× 关闭按钮、点击外部自动关闭）、所有 CSS 样式。回传值为 `"yyyy-MM-dd → yyyy-MM-dd"` 格式的字符串。默认初始值为当天。调用方无需额外处理样式或逻辑。
+**功能说明**：
+- 组件自包含，内部封装了双月历范围选择器（含日期网格、快捷按钮、× 关闭按钮、点击外部自动关闭）、所有 CSS 样式
+- **Label 参数**：支持自定义日期标签名称，默认值为 `"单据日期"`。不同页面根据实际业务语义传入对应名称，如 `"制表日期"`、`"收货日期"`、`"检验时间"`、`"有效日期"`、`"变动时间"` 等
+- 回传值为 `"yyyy-MM-dd → yyyy-MM-dd"` 格式的字符串，默认初始值为当天
+- 调方无需额外处理样式或逻辑，组件自身渲染完整的 `.form-item` 行（含 label + 日期文本 + 日历图标）
+
+### 起/止范围查询字段规范
+
+**适用场景**：查询表单中需要按范围筛选的字段（如单据号码、货品代号、储位代号等），将原来的"融合式双栏位"（一行内 label + 起 ~ 止）改为**独立的两个 form-item 行**
+
+**布局规则**：
+
+- 范围字段的「起」和「止」必须拆分为**两个独立的 `.form-item` 行**
+- 每行格式：`<label>字段名 起/止</label>` + `<input>` （可带搜索图标按钮）
+- 标签命名规则：`{字段名} 起` / `{字段名} 止`（如 "单据号码 起"、"货品代号 止"）
+
+**代码示例**：
+
+```razor
+<!-- 单据号码 起 -->
+<div class="form-item">
+    <label class="form-label">单据号码 起</label>
+    <div class="input-with-search">
+        <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
+        <button class="search-icon-btn" title="搜索">
+            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                <circle cx="6" cy="6" r="4"/>
+                <line x1="9" y1="9" x2="13" y2="13"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- 单据号码 止 -->
+<div class="form-item">
+    <label class="form-label">单据号码 止</label>
+    <div class="input-with-search">
+        <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
+        <button class="search-icon-btn" title="搜索">
+            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                <circle cx="6" cy="6" r="4"/>
+                <line x1="9" y1="9" x2="13" y2="13"/>
+            </svg>
+        </button>
+    </div>
+</div>
+```
+
+```csharp
+// 查询模型
+public class XxxQuery
+{
+    public string BilNoFrom { get; set; } = "";  // 单据号码 起
+    public string BilNoTo { get; set; } = "";    // 单据号码 止
+}
+```
+
+**注意事项**：
+- 不再使用已废弃的 `form-item-fused` 融合式布局（保留 CSS 样式定义以避免报错）
+- 带搜索图标的字段使用 `.input-with-search` 容器 + `.search-icon-btn` 按钮
+- 货品代号等需要弹窗选择的字段，在 input 旁放置放大镜图标按钮（功能后续实现）
+
+### 模糊复选框规范
+
+**适用场景**：查询表单中的文本输入字段需要支持模糊/精确匹配切换
+
+**布局规则**：
+- 模糊复选框紧跟在输入框右侧，使用 `.input-with-fuzzy` 容器包裹
+- 复选框样式类为 `.fuzzy-checkbox`，显示文字为"模糊"
+
+**代码示例**：
+
+```razor
+<div class="form-item">
+    <label class="form-label">ERP申请单号</label>
+    <div class="input-with-fuzzy">
+        <input type="text" class="form-input" placeholder="" @bind="query.ErpApNo" />
+        <label class="fuzzy-checkbox">
+            <input type="checkbox" @bind="query.ErpApNoFuzzy" />
+            <span>模糊</span>
+        </label>
+    </div>
+</div>
+```
 
 ### 单据确认作业 (DocumentConfirm)
 
@@ -250,7 +337,7 @@ url += $"&dateFrom={dateFromStr}&dateTo={dateToStr}";
 - 页面内嵌套横向选项卡：`待确认` | `已确认`
 - 待确认Tab右上角显示「确认」按钮（蓝色），已确认Tab显示「反确认」按钮
 - 切换选项卡时自动重新加载数据（confirmStatus参数变化）
-- 查询表单含特殊两行高输入框：`起止货品 起` / `起止货品 止`（样式已实现，搜索弹窗待开发）
+- 查询表单含起止货品字段：`货品代号 起` / `货品代号 止`（独立 form-item 行，带搜索图标按钮，搜索弹窗待开发）
 
 **查询表单字段**：
 
@@ -259,8 +346,8 @@ url += $"&dateFrom={dateFromStr}&dateTo={dateToStr}";
 | 单据别 | `<select>` 下拉框 | `query.DocType` | PD(盘点单)/YN(盘盈单)/KU(盘亏单) |
 | 单据日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
 | 仓库代号 | `WarehouseCodeInput` 组件 | `query.WarehouseCode` | 通用仓库选择组件 |
-| 起止货品 起 | `<input>` (两行高) | `query.PrdNoFrom` | 货品代号范围起始 |
-| 起止货品 止 | `<input>` (两行高) | `query.PrdNoTo` | 货品代号范围结束 |
+| 货品代号 起 | `<input>` + 搜索按钮 | `query.PrdNoFrom` | 货品代号范围起始（独立行） |
+| 货品代号 止 | `<input>` + 搜索按钮 | `query.PrdNoTo` | 货品代号范围结束（独立行） |
 
 **数据库连接**：db_gz01
 
@@ -622,3 +709,96 @@ SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_F
 -- PDA条码采集表
 SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='PDA_BAR_COLLECT.DB';
 ```
+
+## 后端开发强制规范（EF Core & API）
+
+> **血泪教训**：2026-06-12 因新增实体缺 HasKey 配置导致 WarehouseDbContext 全部 API 500 崩溃，仓库/货品/部门等选择器全部空白。**以下规则必须严格遵守，违者必崩。**
+
+### 一、新增 DbSet 实体的 mandatory 检查清单
+
+每次在 `WarehouseDbContext.cs` 中添加 `public DbSet<XXX>` 后，**必须同时完成以下全部操作**，缺一不可：
+
+| 步骤 | 操作 | 验证方式 |
+|------|------|---------|
+| 1 | 创建实体模型类 `WmsPlus.Api/Models/Xxx.cs` | 文件存在且有属性定义 |
+| 2 | 在 `WarehouseDbContext` 中注册 `DbSet<Xxx>` | DbSet 行存在 |
+| 3 | **在 `OnModelCreating` 中添加 Fluent API 配置块** | `modelBuilder.Entity<Xxx>(entity => { ... })` 存在 |
+| 4 | **配置块内必须包含 `HasKey()` 调用** | `entity.HasKey(e => ...)` 存在 |
+| 5 | 编译通过 | `dotnet build` 0 错误 |
+| 6 | **启动后端服务，调用一个已有的 API 确认无 500 错误** | 如 `GET /api/warehouse/search` |
+
+### 二、HasKey 配置规则
+
+EF Core 要求每个实体必须有主键。根据表结构类型，按以下规则配置：
+
+#### 单主键表（大多数情况）
+```csharp
+modelBuilder.Entity<MyEntity>(entity =>
+{
+    entity.ToTable("TABLE_NAME");
+    entity.HasKey(e => e.ID);           // ← 必须有！单字段主键
+    entity.Property(e => e.ID).HasColumnName("ID");
+    // ... 其他属性配置
+});
+```
+
+#### 复合主键表（表身类 Tf_ 开头、多对多中间表等）
+```csharp
+modelBuilder.Entity<TfXxx>(entity =>
+{
+    entity.ToTable("TF_XXX");
+    entity.HasKey(e => new { e.MAIN_NO, e.ITM });  // ← 复合主键：单号 + 项次
+    // ...
+});
+```
+
+#### 无主键视图/只读表（极少数）
+```csharp
+modelBuilder.Entity<ReadOnlyView>(entity =>
+{
+    entity.ToTable("VIEW_NAME");
+    entity.HasNoKey();   // ← 显式声明无主键
+    entity.ToView("VIEW_NAME");
+});
+```
+
+### 三、前端组件 API 请求认证规范
+
+所有前端组件（特别是 `WmsPlus/Components/` 下的选择器组件）发起 API 请求时：
+
+**必须使用**：
+```csharp
+@inject TokenProvider TokenProvider    // ← 注入 TokenProvider
+
+// 请求方式：
+var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+var responseMsg = await Http.SendAsync(request);
+```
+
+**禁止使用**：
+```csharp
+// ❌ 错误！不带 Token，后端会返回 401 或被全局认证拦截
+var response = await Http.GetAsync(url);
+```
+
+### 四、已有选择器组件清单（均需使用 AuthHttpClient）
+
+| 组件文件 | 注入依赖 | API 端点 |
+|---------|---------|---------|
+| `WarehouseCodeInput.razor` | HttpClient, IJSRuntime, **TokenProvider** | `/api/warehouse/search` |
+| `ProductCodeInput.razor` | HttpClient, IJSRuntime, **TokenProvider** | `/api/warehouse/prdsearch` |
+| `CustomerCodeInput.razor` | HttpClient, ILogger, **TokenProvider** | `/api/warehouse/customersearch` |
+| `BizTypeInput.razor` | HttpClient, **TokenProvider** | `/api/warehouse/rktypesearch` |
+| `CkTypeInput.razor` | HttpClient, **TokenProvider** | `/api/warehouse/cktypesearch` |
+| `DeptCodeInput.razor` | HttpClient, ILogger, **TokenProvider** | `/api/warehouse/deptsearch` |
+
+### 五、冒烟测试检查点
+
+每次后端代码修改（尤其是涉及 DbContext、实体类、Controller）后，必须验证以下 API 正常返回：
+
+```
+GET http://localhost:5102/api/warehouse/search?pageIndex=1&pageSize=3     → 应返回 JSON 数据
+GET http://localhost:5102/api/warehouse/columns?tableName=MY_WH.DB        → 应返回字段列表
+```
+
+如果任一接口返回 500，说明 **WarehouseDbContext 模型有问题**，必须立即排查修复。

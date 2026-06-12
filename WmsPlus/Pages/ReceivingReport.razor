@@ -21,6 +21,33 @@
             <span class="page-title">收货单报表</span>
         </div>
         <div class="header-right">
+            <button class="header-toolbar-btn" @onclick="HandleTypeConfig">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M3 3h10v2H3V3zm0 4h7v2H3V7zm0 4h10v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>
+                </svg>
+                <span>类型</span>
+            </button>
+            <button class="header-toolbar-btn" @onclick="HandleExport">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span>导出Excel</span>
+            </button>
+            <button class="header-toolbar-btn" @onclick="HandlePrint">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M4 2h8v3H4V2zM3 6h10v6H3V6z" stroke="#666666" stroke-width="1.2" fill="none"/>
+                    <line x1="6" y1="13" x2="6" y2="15" stroke="#666666" stroke-width="1.2"/>
+                    <line x1="10" y1="13" x2="10" y2="15" stroke="#666666" stroke-width="1.2"/>
+                </svg>
+                <span>打印</span>
+            </button>
+            <button class="header-toolbar-btn" @onclick="HandleColumnDesign">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" stroke="#666666" stroke-width="1" fill="none"/>
+                </svg>
+                <span>类型设计</span>
+            </button>
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
@@ -44,16 +71,6 @@
             </div>
         </div>
     }
-
-    <!-- 内层选项卡：明细表 | 统计表 -->
-    <div class="inner-tab-bar">
-        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
-            明细表
-        </div>
-        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
-            统计表
-        </div>
-    </div>
 
     <!-- 主内容区域 -->
     <div class="page-content">
@@ -81,42 +98,60 @@
 
             <div class="query-form">
                 <!-- 收货日期 -->
-                <DateRangeInput @bind-Value="query.DateRange" />
+                <DateRangeInput @bind-Value="query.DateRange" Label="制货日期" />
 
-                <!-- 转入单号（融合式起止输入框）-->
+                <!-- 转入单号 起/止 融合 -->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <label class="form-label">转入单号 起</label>
+                        <label class="form-label">转入单号</label>
                         <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <label class="form-label">转入单号 止</label>
+                        <label class="form-label">转入单号</label>
                         <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
                     </div>
                 </div>
 
-                <!-- 单据号码（融合式起止输入框）-->
+                <!-- 单据号码 起/止 融合 -->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <label class="form-label">单据号码 起</label>
+                        <label class="form-label">单据号码</label>
                         <input type="text" class="form-input" placeholder="" @bind="query.ShNoFrom" />
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <label class="form-label">单据号码 止</label>
+                        <label class="form-label">单据号码</label>
                         <input type="text" class="form-input" placeholder="" @bind="query.ShNoTo" />
                     </div>
                 </div>
 
-                <!-- 货品代号（融合式起止输入框，使用ProductCodeInput组件）-->
+                <!-- 货品代号 起/止 融合 -->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <ProductCodeInput @bind-Value="query.PrdNoFrom" Label="货品代号 起" />
+                        <label class="form-label">货品代号</label>
+                        <div class="input-with-search">
+                            <input type="text" class="form-input" placeholder="" @bind="query.PrdNoFrom" />
+                            <button class="search-icon-btn" title="搜索货品">
+                                <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="6" cy="6" r="4"/>
+                                    <line x1="9" y1="9" x2="13" y2="13"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <ProductCodeInput @bind-Value="query.PrdNoTo" Label="货品代号 止" />
+                        <label class="form-label">货品代号</label>
+                        <div class="input-with-search">
+                            <input type="text" class="form-input" placeholder="" @bind="query.PrdNoTo" />
+                            <button class="search-icon-btn" title="搜索货品">
+                                <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="6" cy="6" r="4"/>
+                                    <line x1="9" y1="9" x2="13" y2="13"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -159,36 +194,18 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
-            <!-- 工具栏 -->
+            <!-- 顶部工具栏：内层选项卡 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn export-btn" @onclick="HandleTypeConfig">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M3 3h10v2H3V3zm0 4h7v2H3V7zm0 4h10v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>
-                        </svg>
-                        <span>类型</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>导出Excel</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandlePrint">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M4 2h8v3H4V2zM3 6h10v6H3V6z" stroke="#666666" stroke-width="1.2" fill="none"/>
-                            <line x1="6" y1="13" x2="6" y2="15" stroke="#666666" stroke-width="1.2"/>
-                            <line x1="10" y1="13" x2="10" y2="15" stroke="#666666" stroke-width="1.2"/>
-                        </svg>
-                        <span>打印</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleColumnDesign">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" stroke="#666666" stroke-width="1" fill="none"/>
-                        </svg>
-                        <span>栏位设计</span>
-                    </button>
+                    <!-- 内层选项卡：明细表 | 统计表 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
+                            明细表
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
+                            统计表
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -251,40 +268,37 @@
             <!-- 底部统计栏 -->
             <div class="table-footer">
                 <div class="footer-left">
+                    <span class="group-label">分组统计字段：</span>
                     <label class="group-checkbox">
                         <input type="checkbox" checked="@groupByDate" @onchange="@((ChangeEventArgs e) => groupByDate = (bool)e.Value!)" />
                         制表日期
                     </label>
                     <label class="group-checkbox">
                         <input type="checkbox" checked="@groupByYear" @onchange="@((ChangeEventArgs e) => groupByYear = (bool)e.Value!)" />
-                        制表日期年
+                        制表日期-年
                     </label>
                     <label class="group-checkbox">
                         <input type="checkbox" checked="@groupByQuarter" @onchange="@((ChangeEventArgs e) => groupByQuarter = (bool)e.Value!)" />
-                        制表日期季
+                        制表日期-季
                     </label>
                     <label class="group-checkbox">
                         <input type="checkbox" checked="@groupByMonth" @onchange="@((ChangeEventArgs e) => groupByMonth = (bool)e.Value!)" />
-                        制表日期月
+                        制表日期-月
                     </label>
                     <label class="group-checkbox">
                         <input type="checkbox" checked="@groupByWeek" @onchange="@((ChangeEventArgs e) => groupByWeek = (bool)e.Value!)" />
-                        制表日期周
+                        制表日期-周
                     </label>
                     <label class="group-checkbox">
                         <input type="checkbox" checked="@groupByDay" @onchange="@((ChangeEventArgs e) => groupByDay = (bool)e.Value!)" />
-                        制表日期日
-                    </label>
-                    <label class="group-checkbox">
-                        <input type="checkbox" checked="@groupByPrdNo" @onchange="@((ChangeEventArgs e) => groupByPrdNo = (bool)e.Value!)" />
                         货品代号
                     </label>
                     <label class="group-checkbox">
-                        <input type="checkbox" checked="@groupByWh" @onchange="@((ChangeEventArgs e) => groupByWh = (bool)e.Value!)" />
+                        <input type="checkbox" checked="@groupByPrdNo" @onchange="@((ChangeEventArgs e) => groupByPrdNo = (bool)e.Value!)" />
                         仓库
                     </label>
                     <label class="group-checkbox">
-                        <input type="checkbox" checked="@groupByCustomer" @onchange="@((ChangeEventArgs e) => groupByCustomer = (bool)e.Value!)" />
+                        <input type="checkbox" checked="@groupByWh" @onchange="@((ChangeEventArgs e) => groupByWh = (bool)e.Value!)" />
                         客户名称
                     </label>
                 </div>

@@ -11,11 +11,13 @@ public class WarehouseController : ControllerBase
 {
     private readonly WarehouseDbContext _warehouseCtx;
     private readonly AppDbContext _appCtx;
+    private readonly ILogger<WarehouseController> _logger;
 
-    public WarehouseController(WarehouseDbContext warehouseCtx, AppDbContext appCtx)
+    public WarehouseController(WarehouseDbContext warehouseCtx, AppDbContext appCtx, ILogger<WarehouseController> logger)
     {
         _warehouseCtx = warehouseCtx;
         _appCtx = appCtx;
+        _logger = logger;
     }
 
     /// <summary>
@@ -24,29 +26,37 @@ public class WarehouseController : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string? keyword = null, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 20)
     {
-        var query = _warehouseCtx.MyWhs.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(keyword))
+        try
         {
-            query = query.Where(w => w.WH.Contains(keyword) || (w.NAME != null && w.NAME.Contains(keyword)));
+            var query = _warehouseCtx.MyWhs.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(w => w.WH.Contains(keyword) || (w.NAME != null && w.NAME.Contains(keyword)));
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(w => new
+                {
+                    WH = w.WH,
+                    NAME = w.NAME,
+                    WH_TYPE = w.WH_TYPE,
+                    ATTRIB = w.ATTRIB,
+                    DEP = w.DEP,
+                    INVALID = w.INVALID
+                })
+                .ToListAsync();
+
+            return Ok(new { items, totalCount });
         }
-
-        var totalCount = await query.CountAsync();
-        var items = await query
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .Select(w => new 
-            { 
-                WH = w.WH, 
-                NAME = w.NAME, 
-                WH_TYPE = w.WH_TYPE, 
-                ATTRIB = w.ATTRIB, 
-                DEP = w.DEP, 
-                INVALID = w.INVALID 
-            })
-            .ToListAsync();
-
-        return Ok(new { items, totalCount });
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Warehouse Search API 500错误: {Message}", ex.Message);
+            return StatusCode(500, "服务器内部错误，请稍后重试");
+        }
     }
 
     /// <summary>

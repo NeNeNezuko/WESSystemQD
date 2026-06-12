@@ -70,39 +70,76 @@
             </div>
 
             <div class="query-form">
-                <!-- 制单日期 - 日期范围选择器 + 模糊复选框 -->
-                <div class="form-item form-item-date-range">
-                    <label class="form-label">制单日期</label>
-                    <div class="date-range-with-fuzzy">
-                        <DateRangeInput @bind-Value="query.DateRange" />
-                        <label class="fuzzy-checkbox-inline">
-                            <input type="checkbox" @bind="query.DateFuzzy" />
+                <!-- 制表日期 - 日期范围选择器 -->
+                <DateRangeInput @bind-Value="query.DateRange" Label="制表日期" />
+
+                <!-- ERP申请单号 + 模糊复选框 -->
+                <div class="form-item">
+                    <label class="form-label">ERP申请单号</label>
+                    <div class="input-with-fuzzy">
+                        <input type="text" class="form-input" placeholder="" @bind="query.ErpApNo" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.ErpApNoFuzzy" />
                             <span>模糊</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- ERP申请单号 -->
+                <!-- 单据号码 起 -->
                 <div class="form-item">
-                    <label class="form-label">ERP申请单号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.ErpApNo" />
+                    <label class="form-label">单据号码 起</label>
+                    <div class="input-with-search">
+                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
+                        <button class="search-icon-btn" title="搜索">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- 单据号码 起/止 - 融合式双栏位 -->
-                <div class="form-item-fused">
-                    <label class="form-label">单据号码</label>
-                    <div class="fused-inputs">
-                        <input type="text" class="form-input fused-from" placeholder="起" @bind="query.BilNoFrom" />
-                        <span class="fused-separator">~</span>
-                        <input type="text" class="form-input fused-to" placeholder="止" @bind="query.BilNoTo" />
+                <!-- 单据号码 止 -->
+                <div class="form-item">
+                    <label class="form-label">单据号码 止</label>
+                    <div class="input-with-search">
+                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
+                        <button class="search-icon-btn" title="搜索">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
                 <!-- 货品代号 起 -->
-                <ProductCodeInput @bind-Value="query.PrdNoFrom" Label="货品代号 起" />
+                <div class="form-item">
+                    <label class="form-label">货品代号 起</label>
+                    <div class="input-with-search">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdNoFrom" />
+                        <button class="search-icon-btn" title="搜索货品">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- 货品代号 止 -->
-                <ProductCodeInput @bind-Value="query.PrdNoTo" Label="货品代号 止" />
+                <div class="form-item">
+                    <label class="form-label">货品代号 止</label>
+                    <div class="input-with-search">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdNoTo" />
+                        <button class="search-icon-btn" title="搜索货品">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- 货品名称 + 模糊复选框 -->
                 <div class="form-item">
@@ -128,14 +165,26 @@
                     </div>
                 </div>
 
-                <!-- 储位代号 起/止 - 融合式双栏位(带放大镜按钮) -->
-                <div class="form-item-fused">
-                    <label class="form-label">储位代号</label>
-                    <div class="fused-inputs">
-                        <input type="text" class="form-input fused-from" placeholder="起" @bind="query.ChuwFrom" />
-                        <span class="fused-separator">~</span>
-                        <input type="text" class="form-input fused-to" placeholder="止" @bind="query.ChuwTo" />
-                        <button class="fused-search-btn" title="搜索储位">
+                <!-- 储位代号 起 -->
+                <div class="form-item">
+                    <label class="form-label">储位代号 起</label>
+                    <div class="input-with-search">
+                        <input type="text" class="form-input" placeholder="" @bind="query.ChuwFrom" />
+                        <button class="search-icon-btn" title="搜索储位">
+                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                                <circle cx="6" cy="6" r="4"/>
+                                <line x1="9" y1="9" x2="13" y2="13"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 储位代号 止 -->
+                <div class="form-item">
+                    <label class="form-label">储位代号 止</label>
+                    <div class="input-with-search">
+                        <input type="text" class="form-input" placeholder="" @bind="query.ChuwTo" />
+                        <button class="search-icon-btn" title="搜索储位">
                             <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="6" cy="6" r="4"/>
                                 <line x1="9" y1="9" x2="13" y2="13"/>
@@ -576,9 +625,9 @@
             // 解析DateRange
             var dateFromStr = "";
             var dateToStr = "";
-            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("~"))
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
             {
-                var parts = query.DateRange.Split("~", StringSplitOptions.TrimEntries);
+                var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
                 if (parts.Length >= 2)
                 {
                     dateFromStr = parts[0];
@@ -588,8 +637,8 @@
 
             // 构建URL
             var url = $"{ApiBaseUrl}/api/InboundOrderReport/detailSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
-            url += $"&dateFuzzy={query.DateFuzzy}";
             if (!string.IsNullOrWhiteSpace(query.ErpApNo)) url += $"&erpApNo={Uri.EscapeDataString(query.ErpApNo)}";
+            url += $"&erpApNoFuzzy={query.ErpApNoFuzzy}";
             if (!string.IsNullOrWhiteSpace(query.BilNoFrom)) url += $"&bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
             if (!string.IsNullOrWhiteSpace(query.BilNoTo)) url += $"&bilNoTo={Uri.EscapeDataString(query.BilNoTo)}";
             if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
@@ -638,9 +687,9 @@
             // 解析DateRange
             var dateFromStr = "";
             var dateToStr = "";
-            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("~"))
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
             {
-                var parts = query.DateRange.Split("~", StringSplitOptions.TrimEntries);
+                var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
                 if (parts.Length >= 2)
                 {
                     dateFromStr = parts[0];
@@ -650,8 +699,8 @@
 
             // 构建URL
             var url = $"{ApiBaseUrl}/api/InboundOrderReport/statsSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
-            url += $"&dateFuzzy={query.DateFuzzy}";
             if (!string.IsNullOrWhiteSpace(query.ErpApNo)) url += $"&erpApNo={Uri.EscapeDataString(query.ErpApNo)}";
+            url += $"&erpApNoFuzzy={query.ErpApNoFuzzy}";
             if (!string.IsNullOrWhiteSpace(query.BilNoFrom)) url += $"&bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
             if (!string.IsNullOrWhiteSpace(query.BilNoTo)) url += $"&bilNoTo={Uri.EscapeDataString(query.BilNoTo)}";
             if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
@@ -1050,17 +1099,30 @@
     // ===== 查询模型 =====
     private class InboundOrderReportQuery
     {
-        public string DateRange { get; set; } = "";
-        public bool DateFuzzy { get; set; } = false;
+        // 制表日期范围
+        public string DateRange { get; set; } = "";  // 格式 "2026-06-01 → 2026-06-30"
+
+        // ERP申请单号
         public string ErpApNo { get; set; } = "";
+        public bool ErpApNoFuzzy { get; set; } = false;
+
+        // 单据号码 起/止
         public string BilNoFrom { get; set; } = "";
         public string BilNoTo { get; set; } = "";
+
+        // 货品代号 起/止
         public string PrdNoFrom { get; set; } = "";
         public string PrdNoTo { get; set; } = "";
+
+        // 货品名称
         public string PrdName { get; set; } = "";
         public bool PrdNameFuzzy { get; set; } = false;
+
+        // 仓库名称
         public string WhName { get; set; } = "";
         public bool WhNameFuzzy { get; set; } = false;
+
+        // 储位代号 起/止
         public string ChuwFrom { get; set; } = "";
         public string ChuwTo { get; set; } = "";
     }

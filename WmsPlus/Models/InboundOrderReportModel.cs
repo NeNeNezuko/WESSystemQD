@@ -2,12 +2,12 @@ namespace WmsPlus.Models
 {
     public class InboundOrderReportQuery
     {
-        // 制单日期范围
-        public string? DateRange { get; set; }  // 格式 "2026-06-01 ~ 2026-06-30"
-        public bool DateFuzzy { get; set; } = false;  // 模糊匹配
+        // 制表日期范围
+        public string? DateRange { get; set; }  // 格式 "2026-06-01 → 2026-06-30"
 
         // ERP申请单号
         public string? ErpApNo { get; set; }
+        public bool ErpApNoFuzzy { get; set; } = false;
 
         // 单据号码 起/止
         public string? BilNoFrom { get; set; }

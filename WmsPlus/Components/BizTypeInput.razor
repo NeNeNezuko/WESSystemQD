@@ -1,4 +1,5 @@
 @inject HttpClient Http
+@inject TokenProvider TokenProvider
 
 <style>
 /* ========== 业务类型选择器对话框 ========== */
@@ -339,13 +340,14 @@
         try
         {
             var url = $"http://localhost:5102/api/warehouse/rktypesearch?keyword={Uri.EscapeDataString(bizTypeSearchKeyword ?? "")}&pageIndex={bizTypePageIndex}&pageSize={bizTypePageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
 
-            var response = await Http.GetAsync(url);
-
-            if (response.IsSuccessStatusCode)
+            if (responseMsg.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = System.Text.Json.JsonSerializer.Deserialize<BizTypeSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<BizTypeSearchResult>(json, jsonOptions);
 
                 if (result != null)
                 {

@@ -1,5 +1,6 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject TokenProvider TokenProvider
 
 <style>
 /* ========== 货品选择器对话框 ========== */
@@ -454,13 +455,14 @@
         try
         {
             var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
 
-            var response = await Http.GetAsync(url);
-
-            if (response.IsSuccessStatusCode)
+            if (responseMsg.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = System.Text.Json.JsonSerializer.Deserialize<ProductSearchResult>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<ProductSearchResult>(json, jsonOptions);
 
                 if (result != null)
                 {
@@ -469,7 +471,10 @@
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProductCodeInput] 查询货品数据失败: {ex.Message}");
+        }
         StateHasChanged();
     }
 

@@ -110,8 +110,8 @@
                 }
             </div>
             <div class="query-form">
-                <DateRangeInput @bind-Value="query.DateRange" />
-                <DateRangeInput @bind-Value="query.LastPrintTimeRange" />
+                <DateRangeInput @bind-Value="query.DateRange" Label="打印日期" />
+                <DateRangeInput @bind-Value="query.LastPrintTimeRange" Label="最近打印时间" />
                 <div class="form-item">
                     <label class="form-label">来源单号</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.SourceNo" />
@@ -140,7 +140,7 @@
                         <input type="text" style="width:45%;font-size:11px;border:none;outline:none;" placeholder="" @bind="query.SerialTo" />
                     </div>
                 </div>
-                <DateRangeInput @bind-Value="query.InventoryDateRange" />
+                <DateRangeInput @bind-Value="query.InventoryDateRange" Label="盘点日期" />
                 <div class="toggle-row">
                     <span class="toggle-row-label">盘点为空列示</span>
                     <label class="mini-toggle-switch">
