@@ -45,31 +45,6 @@
         </div>
     }
 
-    <!-- 内层选项卡栏 + 工具按钮 -->
-    <div class="inner-tab-bar">
-        <div class="tab-list">
-            @foreach (var tab in innerTabs)
-            {
-                <div class="tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
-                    <span>@tab.Title</span>
-                </div>
-            }
-        </div>
-        <!-- 右侧工具按钮（随Tab变化） -->
-        <div class="tab-toolbar">
-            @if (activeInnerTabId == "batch-shelving")
-            {
-                <button class="toolbar-action-btn" @onclick="HandleConfigDownload">配置下载</button>
-                <button class="toolbar-action-btn primary" @onclick="HandleBatchExport">导出</button>
-            }
-            else if (activeInnerTabId == "direct-pick-task")
-            {
-                <button class="toolbar-action-btn" @onclick="HandlePrint">打印</button>
-                <button class="toolbar-action-btn primary" @onclick="HandleAddNew">新增</button>
-            }
-        </div>
-    </div>
-
     <!-- 主内容区域 -->
     <div class="page-content">
         <!-- 左侧查询区域（两Tab共用容器，内容随Tab切换） -->
@@ -219,6 +194,31 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
+            <!-- 工具栏 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <!-- 内层选项卡 -->
+                    <div class="inner-tab-bar-inline">
+                        @foreach (var tab in innerTabs)
+                        {
+                            <div class="inner-tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
+                                @tab.Title
+                            </div>
+                        }
+                    </div>
+                    @if (activeInnerTabId == "batch-shelving")
+                    {
+                        <button class="toolbar-btn export-btn" @onclick="HandleConfigDownload">配置下载</button>
+                        <button class="toolbar-btn primary-btn" @onclick="HandleBatchExport">导出</button>
+                    }
+                    else if (activeInnerTabId == "direct-pick-task")
+                    {
+                        <button class="toolbar-btn export-btn" @onclick="HandlePrint">打印</button>
+                        <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">新增</button>
+                    }
+                </div>
+            </div>
+
             @if (activeInnerTabId == "batch-shelving")
             {
                 <!-- ====== Tab1: 批量上架 表格 ====== -->

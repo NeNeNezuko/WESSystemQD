@@ -44,50 +44,6 @@
         </div>
     }
 
-    <div class="inner-tab-bar">
-        <div class="tab-list">
-            @foreach (var tab in innerTabs)
-            {
-                <div class="tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
-                    <span>@tab.Title</span>
-                </div>
-            }
-        </div>
-        <div class="tab-toolbar">
-            <button class="toolbar-action-btn primary" @onclick="HandleAddNew">
-                <svg viewBox="0 0 14 14" width="12" height="12" fill="white">
-                    <path d="M7 2v10M2 7h10" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-                <span>新增</span>
-            </button>
-            <button class="toolbar-action-btn" @onclick="HandleBatchPrint">
-                <svg viewBox="0 0 14 14" width="12" height="12" fill="#666">
-                    <path d="M4 11h6M7 3v5m0 0l-2-2m2 2l2-2" stroke="#666" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>批次打印</span>
-            </button>
-            <button class="toolbar-action-btn danger-btn" style="border-color:#ff4d4f;color:#ff4d4f;" @onclick="HandleDelete">
-                <svg viewBox="0 0 14 14" width="12" height="12" fill="#ff4d4f">
-                    <path d="M3 4h8M5 4V3h4v1M5 4v7a1 1 0 001 1h2a1 1 0 001-1V4" stroke="#ff4d4f" stroke-width="1.3" fill="none"/>
-                </svg>
-                <span>删除</span>
-            </button>
-            <button class="toolbar-action-btn" @onclick="HandleImportTemplate">
-                <svg viewBox="0 0 14 14" width="12" height="12" fill="#666">
-                    <rect x="3" y="2" width="8" height="10" rx="1" stroke="#666" stroke-width="1.2" fill="none"/>
-                    <path d="M6 6h2M6 8h2" stroke="#666" stroke-width="1.2"/>
-                </svg>
-                <span>依模版导入</span>
-            </button>
-            <button class="toolbar-action-btn" @onclick="HandleExport">
-                <svg viewBox="0 0 14 14" width="12" height="12" fill="#666">
-                    <path d="M7 10V3m0 0L4 6m3-3l3 3M2 11v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="#666" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>导出Excel</span>
-            </button>
-        </div>
-    </div>
-
     <div class="page-content">
         <div class="query-panel @(isCollapsed ? "collapsed" : "")">
             <div class="query-header">
@@ -161,6 +117,20 @@
         </div>
 
         <div class="table-panel">
+            <!-- 顶部工具栏：内层选项卡 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <div class="inner-tab-bar-inline">
+                        @foreach (var tab in innerTabs)
+                        {
+                            <div class="inner-tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
+                                @tab.Title
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
             <div class="data-table-container">
                 <table class="data-table">
                     <thead>

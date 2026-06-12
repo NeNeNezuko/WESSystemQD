@@ -45,16 +45,6 @@
         </div>
     }
 
-    <!-- 内层选项卡：待确认 / 已确认 -->
-    <div class="inner-tab-bar">
-        <div class="inner-tab-item @(activeInnerTab == "pending" ? "active" : "")" @onclick="SwitchToPendingTab">
-            待确认
-        </div>
-        <div class="inner-tab-item @(activeInnerTab == "confirmed" ? "active" : "")" @onclick="SwitchToConfirmedTab">
-            已确认
-        </div>
-    </div>
-
     <!-- 主内容区域 -->
     <div class="page-content">
         <!-- 左侧查询区域 -->
@@ -104,29 +94,13 @@
                 <!-- 货品代号 起 -->
                 <div class="form-item">
                     <label class="form-label">货品代号 起</label>
-                    <div class="input-with-search">
-                        <ProductCodeInput @bind-Value="query.PrdNoFrom" />
-                        <button class="search-icon-btn" title="搜索货品">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <ProductCodeInput @bind-Value="query.PrdNoFrom" />
                 </div>
 
                 <!-- 货品代号 止 -->
                 <div class="form-item">
                     <label class="form-label">货品代号 止</label>
-                    <div class="input-with-search">
-                        <ProductCodeInput @bind-Value="query.PrdNoTo" />
-                        <button class="search-icon-btn" title="搜索货品">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <ProductCodeInput @bind-Value="query.PrdNoTo" />
                 </div>
 
                 <!-- 查询按钮 -->
@@ -147,6 +121,15 @@
             <!-- 工具栏：根据内层选项卡显示不同按钮 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
+                    <!-- 内层选项卡：待确认 / 已确认 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "pending" ? "active" : "")" @onclick="SwitchToPendingTab">
+                            待确认
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "confirmed" ? "active" : "")" @onclick="SwitchToConfirmedTab">
+                            已确认
+                        </div>
+                    </div>
                     @if (activeInnerTab == "pending")
                     {
                         <button class="toolbar-btn primary-btn" @onclick="HandleConfirm">

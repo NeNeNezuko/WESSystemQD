@@ -44,21 +44,6 @@
         </div>
     }
 
-    <div class="inner-tab-bar">
-        <div class="tab-list">
-            @foreach (var tab in innerTabs)
-            {
-                <div class="tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
-                    <span>@tab.Title</span>
-                </div>
-            }
-        </div>
-        <div class="tab-toolbar">
-            <button class="toolbar-action-btn primary" @onclick="HandleBatchPrint">批次打印</button>
-            <button class="toolbar-action-btn" @onclick="HandleSearch">查询</button>
-        </div>
-    </div>
-
     <div class="page-content">
         @* ===== 打印&查询选项卡内容 ===== *@
         <div style="display:@(innerTabs[0].IsActive ? "flex" : "none");flex-direction:column;flex:1;gap:0;overflow:hidden;">
@@ -124,6 +109,23 @@
         </div>
 
         <div class="table-panel">
+            <!-- 工具栏 -->
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <!-- 内层选项卡 -->
+                    <div class="inner-tab-bar-inline">
+                        @foreach (var tab in innerTabs)
+                        {
+                            <div class="inner-tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
+                                @tab.Title
+                            </div>
+                        }
+                    </div>
+                    <button class="toolbar-btn primary-btn" @onclick="HandleBatchPrint">批次打印</button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleSearch">查询</button>
+                </div>
+            </div>
+
             <div class="data-table-container">
                 <table class="data-table">
                     <thead>

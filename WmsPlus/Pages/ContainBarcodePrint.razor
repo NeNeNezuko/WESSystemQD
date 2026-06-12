@@ -69,13 +69,7 @@
                 }
             </div>
 
-            <!-- 内层选项卡 -->
-            <div class="inner-tab-bar">
-                <div class="inner-tab-item @(activeInnerTab == "print" ? "active" : "")" @onclick="SwitchToPrintTab">打印&amp;查询</div>
-                <div class="inner-tab-item @(activeInnerTab == "setting" ? "active" : "")" @onclick="SwitchToSettingTab">参数设定</div>
-            </div>
-
-            <div class="query-form">
+<div class="query-form">
                 <!-- 打印日期 - 日期范围选择器 -->
                 <DateRangeInput @bind-Value="query.DateRange" Label="打印日期" />
 
@@ -177,6 +171,11 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
+                    <!-- 内层选项卡：打印&查询 / 参数设定 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "print" ? "active" : "")" @onclick="SwitchToPrintTab">打印&amp;查询</div>
+                        <div class="inner-tab-item @(activeInnerTab == "setting" ? "active" : "")" @onclick="SwitchToSettingTab">参数设定</div>
+                    </div>
                     <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
                             <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>

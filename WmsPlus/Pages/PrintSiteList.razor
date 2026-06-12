@@ -45,16 +45,6 @@
         </div>
     }
 
-    <!-- 内层选项卡：明细表 | 统计表 -->
-    <div class="inner-tab-bar">
-        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
-            明细表
-        </div>
-        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
-            统计表
-        </div>
-    </div>
-
     <!-- 主内容区域 -->
     <div class="page-content">
         <!-- 左侧查询区域 -->
@@ -118,6 +108,15 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
+                    <!-- 内层选项卡：明细表 | 统计表 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
+                            明细表
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
+                            统计表
+                        </div>
+                    </div>
                     <button class="toolbar-btn export-btn" @onclick="HandleTypeConfig">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M3 3h10v2H3V3zm0 4h7v2H3V7zm0 4h10v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>

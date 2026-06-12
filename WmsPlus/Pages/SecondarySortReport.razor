@@ -24,11 +24,6 @@
         <div class="favorite-success-toast"><div class="toast-content"><svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A"><circle cx="8" cy="8" r="8"/><path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>收藏成功</span></div></div>
     }
 
-    <div class="inner-tab-bar">
-        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">明细表</div>
-        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">统计表</div>
-    </div>
-
     <div class="page-content">
         <div class="query-panel @(isCollapsed ? "collapsed" : "")">
             <div class="query-header">
@@ -49,6 +44,11 @@
         <div class="table-panel">
             <div class="table-toolbar">
                 <div class="toolbar-left">
+                    <!-- 内层选项卡：明细表 | 统计表 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">明细表</div>
+                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">统计表</div>
+                    </div>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport"><svg viewBox="0 0 16 16" width="14" height="14" fill="#666666"><path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><span>导出</span></button>
                 </div>
             </div>

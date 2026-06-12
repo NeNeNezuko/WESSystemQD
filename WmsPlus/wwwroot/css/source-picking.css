@@ -1,4 +1,4 @@
-﻿/* ========== 依来源单配货页面样式（参照 inbound-notice.css 风格）========== */
+/* ========== 依来源单配货页面样式（参照 inbound-notice.css 风格）========== */
 
 .source-picking-page {
     width: 100%;
@@ -47,6 +47,12 @@
     font-weight: 500;
     border-bottom-color: #1890ff;
 }
+
+/* 内层选项卡（内嵌于工具栏中） */
+.inner-tab-bar-inline{display:flex;align-items:center;gap:0;}
+.inner-tab-item{font-size:13px;color:#666666;padding:5px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s ease;user-select:none;position:relative;}
+.inner-tab-item:hover{color:#1890ff;}
+.inner-tab-item.active{color:#1890ff;font-weight:500;border-bottom-color:#1890ff;}
 
 .tab-toolbar {
     display: flex;

@@ -45,41 +45,6 @@
         </div>
     }
 
-    <!-- 内层选项卡栏 + 工具按钮 -->
-    <div class="inner-tab-bar">
-        <div class="tab-list">
-            @foreach (var tab in innerTabs)
-            {
-                <div class="tab-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
-                    <span>@tab.Title</span>
-                </div>
-            }
-        </div>
-        <!-- 右侧工具按钮（随Tab变化） -->
-        <div class="tab-toolbar">
-            @if (activeInnerTabId == "notice")
-            {
-                <button class="toolbar-action-btn" @onclick="HandleMainWaveAssign">主笔派次</button>
-                <button class="toolbar-action-btn" @onclick="HandleBoxList">箱单</button>
-            }
-            else if (activeInnerTabId == "wave")
-            {
-                <button class="toolbar-action-btn" @onclick="HandlePrint">打印</button>
-                <button class="toolbar-action-btn" @onclick="HandleDataSourceBatch">数源批次</button>
-            }
-            else if (activeInnerTabId == "pick-task")
-            {
-                <button class="toolbar-action-btn" @onclick="HandlePrint">打印</button>
-                <button class="toolbar-action-btn" @onclick="HandleFilterEmployee">筛选设定员工</button>
-                <button class="toolbar-action-btn primary" @onclick="HandleDispatch">派工</button>
-            }
-            else if (activeInnerTabId == "param")
-            {
-                <button class="toolbar-action-btn primary" @onclick="HandleSaveParam">点保存</button>
-            }
-        </div>
-    </div>
-
     <!-- 主内容区域 -->
     <div class="page-content">
         <!-- 左侧查询区域（Tab1-3共用，Tab4隐藏） -->

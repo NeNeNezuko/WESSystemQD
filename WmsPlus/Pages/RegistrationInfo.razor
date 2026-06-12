@@ -116,25 +116,24 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
-            <!-- 内层标签栏：模块列表 / 模块列表二 / 模块列表三 / 其他 -->
-            <div class="inner-tab-bar">
-                <div class="inner-tab-item @(activeInnerTab == "module-list" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list"))">
-                    模块列表
-                </div>
-                <div class="inner-tab-item @(activeInnerTab == "module-list-two" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list-two"))">
-                    模块列表二
-                </div>
-                <div class="inner-tab-item @(activeInnerTab == "module-list-three" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list-three"))">
-                    模块列表三
-                </div>
-                <div class="inner-tab-item @(activeInnerTab == "other" ? "active" : "")" @onclick="@(() => SwitchInnerTab("other"))">
-                    其他
-                </div>
-            </div>
-
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
+                    <!-- 内层选项卡：模块列表 / 模块列表二 / 模块列表三 / 其他 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "module-list" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list"))">
+                            模块列表
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "module-list-two" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list-two"))">
+                            模块列表二
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "module-list-three" ? "active" : "")" @onclick="@(() => SwitchInnerTab("module-list-three"))">
+                            模块列表三
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "other" ? "active" : "")" @onclick="@(() => SwitchInnerTab("other"))">
+                            其他
+                        </div>
+                    </div>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
