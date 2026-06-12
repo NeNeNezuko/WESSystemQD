@@ -99,6 +99,9 @@ public class MfIc
     /// <summary>跨货主调拨</summary>
     public string? SPAN_ERP_IC { get; set; }
 
+    /// <summary>请检任务单号/关联检验</summary>
+    public string? TZ_NO_UO { get; set; }
+
     /// <summary>ERP库存单据生成方式</summary>
     public string? ERP_GEN_METHOD { get; set; }
 }

@@ -39,4 +39,10 @@ public class TfQjrw
 
     /// <summary>数量2</summary>
     public decimal? QTY1 { get; set; }
+
+    /// <summary>货主编码</summary>
+    public string? CON_NO { get; set; }
+
+    /// <summary>调拨通知单号</summary>
+    public string? TN_NO { get; set; }
 }

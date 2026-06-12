@@ -37,6 +37,20 @@
 | 19 | 行业代号设定 | industry-code-setting | DEF_NS | 默认NS设定 |
 | 20 | 叉车车号管理 | forklift-management | FORK_TRUCK | 叉车 |
 | 21 | 导入期初库存 | import-initial-inventory | 无 | 仅UI样式，不关联表 |
+| 22 | 类别权限设定 | category-permission-setting | ROLE, FX_PSWD, PSWD_ROLE, BAR_PSWD_PROP | 类别权限,程序密码,密码角色,栏位权限属性 |
+| 23 | 类别成员设定 | category-member-setting | PSWD_ROLE | 密码角色 |
+| 24 | 单据属性设定 | doc-property-setting | MF_RPT, TF_RPT | 报表主档,报表明细 |
+| 25 | 自定义报表 | custom-report | MF_QRY, TF_QRY | 查询主档,查询明细 |
+| 26 | 仿真布局设备设定 | emulate-device-setting | EMULATE_SET | 仿真设备设定 |
+| 27 | 可视化仓储布局设定 | warehouse-view-setting | MY_WH_VIEW, HW_SET, HW_SET_P | 仓库视图,硬件设定,硬件参数 |
+| 28 | 服务日志查询表 | service-log-query | SVC_LOG | 服务日志 |
+| 29 | 服务异常查询表 | service-exception-query | SVC_YC | 服务异常 |
+| 30 | API接口异常表 | api-exception-table | API_ACTION_I, API_ACTION_O | API调用输入,API调用输出 |
+| 31 | 系统设备管理 | system-device-management | LK_ACTION_I, LK_ACTION_O, HW_SET, HW_SET_P | 链接动作输入/输出,硬件设定/参数 |
+| 32 | 第三方调用明细表 | third-party-call-detail | API_ACTION_I, API_ACTION_O | API调用输入,API调用输出 |
+| 33 | 第三方调用历史表 | third-party-call-history | API_ACTION_HIS_I, API_ACTION_HIS_O | API调用历史输入,API调用历史输出 |
+| 34 | 推送第三方明细表 | third-party-push-detail | LK_ACTION_I, LK_ACTION_O | 链接动作输入,链接动作输出 |
+| 35 | 推送第三方历史表 | third-party-push-history | API_ACTION_HIS_I, API_ACTION_HIS_O | API调用历史输入,API调用历史输出 |
 
 ---
 
@@ -115,6 +129,13 @@
 | 55 | 库存货品检验到期查询 | MF_QJRW, TF_QJRW | 请检任务单表头, 表身 |
 | 56 | 检验单 | MF_TY, TF_TY | 检验单表头, 表身 |
 | 57 | 验收退回单 | MF_YB, TF_YB | 验收退回单表头, 表身 |
+| 58 | 请检任务单明细表 | MF_QJRW, TF_QJRW | 请检任务单表头, 表身 |
+| 59 | 检验单明细表 | MF_TY, TF_TY | 检验单表头, 表身 |
+| 60 | 验收退回单明细表 | MF_YB, TF_YB | 验收退回单表头, 表身 |
+| 61 | 收货检验时效分析表 | MF_SH, TF_SH, MF_TY, TF_TY, MF_RK, TF_RK, MF_YB, TF_YB | 收货/检验/入库/退回多表关联时效 |
+| 62 | 车间入库检验时效分析表 | MF_CJ, TF_CJ, MF_TY, TF_TY, MF_RK, TF_RK, MF_YB, TF_YB | 车间入库/检验/入库多表关联时效 |
+| 63 | 库存检验时效分析表 | MF_QJRW, TF_QJRW, MF_TY, TF_TY, MF_IC, TF_IC | 请检任务/检验/调拨多表关联时效 |
+| 64 | 不合格原因设定 | SPC_SET | 不合格原因设定(检验) |
 
 ---
 

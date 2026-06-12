@@ -35,4 +35,25 @@ public class MfTy
 
     /// <summary>制单人</summary>
     public string? USR { get; set; }
+
+    /// <summary>客户/厂商代号</summary>
+    public string? CUS_NO { get; set; }
+
+    /// <summary>客户/厂商名称</summary>
+    public string? CUS_NAME { get; set; }
+
+    /// <summary>货主编码</summary>
+    public string? CON_NO { get; set; }
+
+    /// <summary>第三方系统单号</summary>
+    public string? OTH_BIL_NO { get; set; }
+
+    /// <summary>不合格结案</summary>
+    public string? CLS_ID_SPC { get; set; }
+
+    /// <summary>入库通知单号</summary>
+    public string? TZ_NO_UO { get; set; }
+
+    /// <summary>制单时间</summary>
+    public DateTime? SYS_DATE { get; set; }
 }

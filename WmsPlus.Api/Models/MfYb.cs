@@ -41,4 +41,7 @@ public class MfYb
 
     /// <summary>客户名称</summary>
     public string? CUS_NAME { get; set; }
+
+    /// <summary>业务类型</summary>
+    public string? TYPE_ID { get; set; }
 }

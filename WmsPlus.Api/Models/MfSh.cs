@@ -51,6 +51,9 @@ public class MfSh
     /// <summary>备注</summary>
     public string? REM { get; set; }
 
+    /// <summary>检验标志（T 检验/F 免检）</summary>
+    public string? FLAG_JY { get; set; }
+
     /// <summary>制单人</summary>
     public string? USR { get; set; }
 

@@ -29,4 +29,16 @@ public class MfQjrw
 
     /// <summary>开单日期</summary>
     public DateTime? SYS_DATE { get; set; }
+
+    /// <summary>货主编码</summary>
+    public string? CON_NO { get; set; }
+
+    /// <summary>单据类型(RK入库类型;CK出库检验;KC库存检验)</summary>
+    public string? BIL_KND { get; set; }
+
+    /// <summary>调拨通知单号</summary>
+    public string? TN_NO { get; set; }
+
+    /// <summary>下架标记</summary>
+    public string? XJ_FLAG { get; set; }
 }

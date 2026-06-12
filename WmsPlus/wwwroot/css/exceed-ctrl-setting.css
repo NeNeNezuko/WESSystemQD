@@ -1,8 +1,9 @@
-/* 超交管制设定页面 - 整体布局 */
+﻿﻿/* 超交管制设定页面 - 整体布局 */
 .exceed-ctrl-page {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    flex: 1 1 0%;
     overflow: hidden;
     background: #f5f5f5;
 }
@@ -50,8 +51,7 @@
 .exceed-ctrl-page .page-content {
     display: flex;
     flex: 1 1 0%;
-    overflow: hidden;
-}
+    min-height: 0;}
 
 /* ===== 左侧树状查询区域 ===== */
 .exceed-ctrl-page .tree-panel {
@@ -399,4 +399,80 @@
     flex: 1 1 0%;
     color: #999;
     font-size: 13px;
+}
+/* ========== 琛ㄦ牸搴曢儴鏍?========== */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    border-top: 1px solid #e8e8e8;
+    background-color: #fafafa;
+    min-height: 32px;
+    flex-shrink: 0;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #666666;
+}
+
+.footer-label {
+    color: #333333;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.footer-checkboxes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.footer-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: #666666;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.footer-checkbox-item input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #666666;
+}
+
+.record-count {
+    color: #999999;
+    font-size: 11px;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-size-select {
+    height: 22px;
+    font-size: 11px;
+    padding: 0 4px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    outline: none;
 }

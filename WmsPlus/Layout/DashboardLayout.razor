@@ -137,670 +137,801 @@
             <!-- 已打开的标签页（保持组件实例不被销毁，用 CSS 控制显隐） -->
             @if (tabs.Any(t => t.Id == "inbound-notice"))
             {
-                <div style="display:@(activeTabId == "inbound-notice" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inbound-notice" ? "flex" : "none"); min-height:0; height:100%;">
                     <InboundNotice />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inbound-notice-add"))
             {
-                <div style="display:@(activeTabId == "inbound-notice-add" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inbound-notice-add" ? "flex" : "none"); min-height:0; height:100%;">
                     <InboundNoticeAdd />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inbound-order"))
             {
-                <div style="display:@(activeTabId == "inbound-order" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inbound-order" ? "flex" : "none"); min-height:0; height:100%;">
                     <InboundOrder />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inbound-notice-change"))
             {
-                <div style="display:@(activeTabId == "inbound-notice-change" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inbound-notice-change" ? "flex" : "none"); min-height:0; height:100%;">
                     <InboundNoticeChange />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-notice-dispatch"))
             {
-                <div style="display:@(activeTabId == "outbound-notice-dispatch" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-notice-dispatch" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundNoticeDispatch />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-notice"))
             {
-                <div style="display:@(activeTabId == "outbound-notice" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-notice" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundNotice />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-return-notice"))
             {
-                <div style="display:@(activeTabId == "outbound-return-notice" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-return-notice" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundReturnNotice />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "wave-order"))
             {
-                <div style="display:@(activeTabId == "wave-order" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "wave-order" ? "flex" : "none"); min-height:0; height:100%;">
                     <WaveOrder />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "direct-pick-task"))
             {
-                <div style="display:@(activeTabId == "direct-pick-task" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "direct-pick-task" ? "flex" : "none"); min-height:0; height:100%;">
                     <DirectPickTask />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "wave-pick-task"))
             {
-                <div style="display:@(activeTabId == "wave-pick-task" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "wave-pick-task" ? "flex" : "none"); min-height:0; height:100%;">
                     <WavePickTask />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "pick-return"))
             {
-                <div style="display:@(activeTabId == "pick-return" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "pick-return" ? "flex" : "none"); min-height:0; height:100%;">
                     <PickReturn />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "picking-order"))
             {
-                <div style="display:@(activeTabId == "picking-order" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "picking-order" ? "flex" : "none"); min-height:0; height:100%;">
                     <PickingOrder />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-notice-change"))
             {
-                <div style="display:@(activeTabId == "outbound-notice-change" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-notice-change" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundNoticeChange />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-order"))
             {
-                <div style="display:@(activeTabId == "outbound-order" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-order" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundOrder />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "secondary-sort"))
             {
-                <div style="display:@(activeTabId == "secondary-sort" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "secondary-sort" ? "flex" : "none"); min-height:0; height:100%;">
                     <SecondarySort />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "allocation-change-notice"))
             {
-                <div style="display:@(activeTabId == "allocation-change-notice" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "allocation-change-notice" ? "flex" : "none"); min-height:0; height:100%;">
                     <AllocationChangeNotice />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "initial-count-task"))
             {
-                <div style="display:@(activeTabId == "initial-count-task" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "initial-count-task" ? "flex" : "none"); min-height:0; height:100%;">
                     <InitialCountTask />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "initial-count-sheet"))
             {
-                <div style="display:@(activeTabId == "initial-count-sheet" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "initial-count-sheet" ? "flex" : "none"); min-height:0; height:100%;">
                     <InitialCountSheet />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inventory-count-sheet"))
             {
-                <div style="display:@(activeTabId == "inventory-count-sheet" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inventory-count-sheet" ? "flex" : "none"); min-height:0; height:100%;">
                     <InventoryCountSheet />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inventory-loss-sheet"))
             {
-                <div style="display:@(activeTabId == "inventory-loss-sheet" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inventory-loss-sheet" ? "flex" : "none"); min-height:0; height:100%;">
                     <InventoryLossSheet />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "document-confirm"))
             {
-                <div style="display:@(activeTabId == "document-confirm" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "document-confirm" ? "flex" : "none"); min-height:0; height:100%;">
                     <DocumentConfirm />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "system-registration"))
             {
-                <div style="display:@(activeTabId == "system-registration" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "system-registration" ? "flex" : "none"); min-height:0; height:100%;">
                     <SystemRegistration />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "registration-info"))
             {
-                <div style="display:@(activeTabId == "registration-info" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "registration-info" ? "flex" : "none"); min-height:0; height:100%;">
                     <RegistrationInfo />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-task-assignment"))
             {
-                <div style="display:@(activeTabId == "outbound-task-assignment" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-task-assignment" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundTaskAssignment />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "source-picking"))
             {
-                <div style="display:@(activeTabId == "source-picking" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "source-picking" ? "flex" : "none"); min-height:0; height:100%;">
                     <SourcePicking />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-shelving"))
             {
-                <div style="display:@(activeTabId == "storage-shelving" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-shelving" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageShelving />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-transfer"))
             {
-                <div style="display:@(activeTabId == "storage-transfer" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-transfer" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageTransfer />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-unshelving"))
             {
-                <div style="display:@(activeTabId == "storage-unshelving" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-unshelving" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageUnshelving />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "transfer-notice"))
             {
-                <div style="display:@(activeTabId == "transfer-notice" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "transfer-notice" ? "flex" : "none"); min-height:0; height:100%;">
                     <TransferNotice />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inventory-transfer"))
             {
-                <div style="display:@(activeTabId == "inventory-transfer" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inventory-transfer" ? "flex" : "none"); min-height:0; height:100%;">
                     <InventoryTransfer />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inbound-notice-report"))
             {
-                <div style="display:@(activeTabId == "inbound-notice-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inbound-notice-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <InboundNoticeReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inbound-order-report"))
             {
-                <div style="display:@(activeTabId == "inbound-order-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inbound-order-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <InboundOrderReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "stock-profit"))
             {
-                <div style="display:@(activeTabId == "stock-profit" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "stock-profit" ? "flex" : "none"); min-height:0; height:100%;">
                     <StockProfit />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inspection-task"))
             {
-                <div style="display:@(activeTabId == "inspection-task" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inspection-task" ? "flex" : "none"); min-height:0; height:100%;">
                     <InspectionTask />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "kc-inspect-expiry"))
             {
-                <div style="display:@(activeTabId == "kc-inspect-expiry" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "kc-inspect-expiry" ? "flex" : "none"); min-height:0; height:100%;">
                     <KcInspectExpiry />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inspection-order"))
             {
-                <div style="display:@(activeTabId == "inspection-order" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inspection-order" ? "flex" : "none"); min-height:0; height:100%;">
                     <InspectionOrder />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "acceptance-return"))
             {
-                <div style="display:@(activeTabId == "acceptance-return" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "acceptance-return" ? "flex" : "none"); min-height:0; height:100%;">
                     <AcceptanceReturn />
+                </div>
+            }
+            @* ===== 品质检验 - 检验报表 ===== *@
+            @if (tabs.Any(t => t.Id == "inspection-task-detail"))
+            {
+                <div style="display:@(activeTabId == "inspection-task-detail" ? "flex" : "none"); min-height:0; height:100%;">
+                    <InspectionTaskDetail />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "inspection-order-detail"))
+            {
+                <div style="display:@(activeTabId == "inspection-order-detail" ? "flex" : "none"); min-height:0; height:100%;">
+                    <InspectionOrderDetail />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "acceptance-return-detail"))
+            {
+                <div style="display:@(activeTabId == "acceptance-return-detail" ? "flex" : "none"); min-height:0; height:100%;">
+                    <AcceptanceReturnDetail />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "receiving-inspection-analysis"))
+            {
+                <div style="display:@(activeTabId == "receiving-inspection-analysis" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ReceivingInspectionAnalysis />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "workshop-inspection-analysis"))
+            {
+                <div style="display:@(activeTabId == "workshop-inspection-analysis" ? "flex" : "none"); min-height:0; height:100%;">
+                    <WorkshopInspectionAnalysis />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "stock-inspection-analysis"))
+            {
+                <div style="display:@(activeTabId == "stock-inspection-analysis" ? "flex" : "none"); min-height:0; height:100%;">
+                    <StockInspectionAnalysis />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "reject-reason-setting"))
+            {
+                <div style="display:@(activeTabId == "reject-reason-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <RejectReasonSetting />
                 </div>
             }
             @* ===== 基础资料 - 货品资料 ===== *@
             @if (tabs.Any(t => t.Id == "product-code-setting"))
             {
-                <div style="display:@(activeTabId == "product-code-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "product-code-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <ProductCodeSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "mid-class-setting"))
             {
-                <div style="display:@(activeTabId == "mid-class-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "mid-class-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <MidClassSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-nature-setting"))
             {
-                <div style="display:@(activeTabId == "storage-nature-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-nature-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageNatureSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "product-attr-setting"))
             {
-                <div style="display:@(activeTabId == "product-attr-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "product-attr-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <ProductAttrSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "product-mark-setting"))
             {
-                <div style="display:@(activeTabId == "product-mark-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "product-mark-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <ProductMarkSetting />
                 </div>
             }
             @* ===== 基础资料 - 仓库资料 ===== *@
             @if (tabs.Any(t => t.Id == "warehouse-code-setting"))
             {
-                <div style="display:@(activeTabId == "warehouse-code-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "warehouse-code-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <WarehouseCodeSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-location-detail"))
             {
-                <div style="display:@(activeTabId == "storage-location-detail" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-location-detail" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageLocationDetail />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "product-storage-by-class"))
             {
-                <div style="display:@(activeTabId == "product-storage-by-class" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "product-storage-by-class" ? "flex" : "none"); min-height:0; height:100%;">
                     <ProductStorageByClass />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "product-storage-by-nature"))
             {
-                <div style="display:@(activeTabId == "product-storage-by-nature" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "product-storage-by-nature" ? "flex" : "none"); min-height:0; height:100%;">
                     <ProductStorageByNature />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "warehouse-arrival-confirm"))
             {
-                <div style="display:@(activeTabId == "warehouse-arrival-confirm" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "warehouse-arrival-confirm" ? "flex" : "none"); min-height:0; height:100%;">
                     <WarehouseArrivalConfirm />
                 </div>
             }
             @* ===== 基础资料 - 系统策略 ===== *@
             @if (tabs.Any(t => t.Id == "wave-strategy"))
             {
-                <div style="display:@(activeTabId == "wave-strategy" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "wave-strategy" ? "flex" : "none"); min-height:0; height:100%;">
                     <WaveStrategy />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "pick-strategy"))
             {
-                <div style="display:@(activeTabId == "pick-strategy" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "pick-strategy" ? "flex" : "none"); min-height:0; height:100%;">
                     <PickStrategy />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "unshelve-strategy"))
             {
-                <div style="display:@(activeTabId == "unshelve-strategy" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "unshelve-strategy" ? "flex" : "none"); min-height:0; height:100%;">
                     <UnshelveStrategy />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "batch-no-picking-setting"))
             {
-                <div style="display:@(activeTabId == "batch-no-picking-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "batch-no-picking-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <BatchNoPickingSetting />
                 </div>
             }
             @* ===== 基础资料 - 其他资料 ===== *@
             @if (tabs.Any(t => t.Id == "dept-setting"))
             {
-                <div style="display:@(activeTabId == "dept-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "dept-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <DeptSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "doc-type-setting"))
             {
-                <div style="display:@(activeTabId == "doc-type-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "doc-type-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <DocTypeSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "count-reason-setting"))
             {
-                <div style="display:@(activeTabId == "count-reason-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "count-reason-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <CountReasonSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "notice-setting"))
             {
-                <div style="display:@(activeTabId == "notice-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "notice-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <NoticeSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "industry-code-setting"))
             {
-                <div style="display:@(activeTabId == "industry-code-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "industry-code-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <IndustryCodeSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "forklift-management"))
             {
-                <div style="display:@(activeTabId == "forklift-management" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "forklift-management" ? "flex" : "none"); min-height:0; height:100%;">
                     <ForkliftManagement />
                 </div>
             }
             @* ===== 基础资料 - 数据导入 ===== *@
             @if (tabs.Any(t => t.Id == "import-initial-inventory"))
             {
-                <div style="display:@(activeTabId == "import-initial-inventory" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "import-initial-inventory" ? "flex" : "none"); min-height:0; height:100%;">
                     <ImportInitialInventory />
                 </div>
             }
             @* ===== 系统设定 - 超交管制设定 ===== *@
             @if (tabs.Any(t => t.Id == "exceed-ctrl-setting"))
             {
-                <div style="display:@(activeTabId == "exceed-ctrl-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "exceed-ctrl-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <ExceedCtrlSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "data-replace"))
             {
-                <div style="display:@(activeTabId == "data-replace" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "data-replace" ? "flex" : "none"); min-height:0; height:100%;">
                     <DataReplace />
                 </div>
             }
             @* ===== 系统管理 - 环境设定 ===== *@
             @if (tabs.Any(t => t.Id == "environment-setting"))
             {
-                <div style="display:@(activeTabId == "environment-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "environment-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <EnvironmentSetting />
                 </div>
             }
             @* ===== 系统管理 - 系统设定 ===== *@
             @if (tabs.Any(t => t.Id == "system-setting"))
             {
-                <div style="display:@(activeTabId == "system-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "system-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <SystemSetting />
                 </div>
             }
             @* ===== 系统管理 - 用户设定 ===== *@
             @if (tabs.Any(t => t.Id == "user-setting"))
             {
-                <div style="display:@(activeTabId == "user-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "user-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <UserSetting />
                 </div>
             }
             @* ===== 打印管理 - 编码规则（7个） ===== *@
             @if (tabs.Any(t => t.Id == "barcode-rule-product"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-product" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-product" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRuleProduct />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-rule-box"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-box" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-box" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRuleBox />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-rule-serial"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-serial" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-serial" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRuleSerial />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-rule-box-serial"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-box-serial" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-box-serial" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRuleBoxSerial />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-rule-contain"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-contain" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-contain" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRuleContain />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-rule-batch"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-batch" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-batch" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRuleBatch />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-rule-package"))
             {
-                <div style="display:@(activeTabId == "barcode-rule-package" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-rule-package" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeRulePackage />
                 </div>
             }
             @* ===== 打印管理 - 拆码规则（2个） ===== *@
             @if (tabs.Any(t => t.Id == "barcode-split-rule"))
             {
-                <div style="display:@(activeTabId == "barcode-split-rule" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-split-rule" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeSplitRule />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-split-supplier"))
             {
-                <div style="display:@(activeTabId == "barcode-split-supplier" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-split-supplier" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeSplitSupplier />
                 </div>
             }
             @* ===== 打印管理 - 打印网点（2个） ===== *@
             @if (tabs.Any(t => t.Id == "print-site-list"))
             {
-                <div style="display:@(activeTabId == "print-site-list" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "print-site-list" ? "flex" : "none"); min-height:0; height:100%;">
                     <PrintSiteList />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "print-site-query"))
             {
-                <div style="display:@(activeTabId == "print-site-query" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "print-site-query" ? "flex" : "none"); min-height:0; height:100%;">
                     <PrintSiteQuery />
                 </div>
             }
             @* ===== 报表管理 - 收货单报表 ===== *@
             @if (tabs.Any(t => t.Id == "receiving-report"))
             {
-                <div style="display:@(activeTabId == "receiving-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "receiving-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <ReceivingReport />
                 </div>
             }
             @* ===== 报表管理 - 出库管理报表（20个） ===== *@
             @if (tabs.Any(t => t.Id == "outbound-notice-report"))
             {
-                <div style="display:@(activeTabId == "outbound-notice-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-notice-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundNoticeReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-return-notice-report"))
             {
-                <div style="display:@(activeTabId == "outbound-return-notice-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-return-notice-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundReturnNoticeReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "wave-order-report"))
             {
-                <div style="display:@(activeTabId == "wave-order-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "wave-order-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <WaveOrderReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "wave-pick-task-report"))
             {
-                <div style="display:@(activeTabId == "wave-pick-task-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "wave-pick-task-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <WavePickTaskReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "direct-pick-task-report"))
             {
-                <div style="display:@(activeTabId == "direct-pick-task-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "direct-pick-task-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <DirectPickTaskReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "picking-order-report"))
             {
-                <div style="display:@(activeTabId == "picking-order-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "picking-order-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <PickingOrderReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "secondary-sort-report"))
             {
-                <div style="display:@(activeTabId == "secondary-sort-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "secondary-sort-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <SecondarySortReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "pick-return-report"))
             {
-                <div style="display:@(activeTabId == "pick-return-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "pick-return-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <PickReturnReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "outbound-order-report"))
             {
-                <div style="display:@(activeTabId == "outbound-order-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-order-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundOrderReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-shelving-report"))
             {
-                <div style="display:@(activeTabId == "storage-shelving-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-shelving-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageShelvingReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-unshelving-report"))
             {
-                <div style="display:@(activeTabId == "storage-unshelving-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-unshelving-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageUnshelvingReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-transfer-report"))
             {
-                <div style="display:@(activeTabId == "storage-transfer-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-transfer-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageTransferReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "transfer-notice-report"))
             {
-                <div style="display:@(activeTabId == "transfer-notice-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "transfer-notice-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <TransferNoticeReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inventory-transfer-report"))
             {
-                <div style="display:@(activeTabId == "inventory-transfer-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inventory-transfer-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <InventoryTransferReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "monthly-wh-inventory-report"))
             {
-                <div style="display:@(activeTabId == "monthly-wh-inventory-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "monthly-wh-inventory-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <MonthlyWhInventoryReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "monthly-cw-inventory-report"))
             {
-                <div style="display:@(activeTabId == "monthly-cw-inventory-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "monthly-cw-inventory-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <MonthlyCwInventoryReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "warehouse-inventory-report"))
             {
-                <div style="display:@(activeTabId == "warehouse-inventory-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "warehouse-inventory-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <WarehouseInventoryReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-inventory-report"))
             {
-                <div style="display:@(activeTabId == "storage-inventory-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "storage-inventory-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <StorageInventoryReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "product-lock-report"))
             {
-                <div style="display:@(activeTabId == "product-lock-report" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "product-lock-report" ? "flex" : "none"); min-height:0; height:100%;">
                     <ProductLockReport />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "inventory-detail-ledger"))
             {
-                <div style="display:@(activeTabId == "inventory-detail-ledger" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "inventory-detail-ledger" ? "flex" : "none"); min-height:0; height:100%;">
                     <InventoryDetailLedger />
                 </div>
             }
             @* ===== 打印管理 - 条码打印套版与标签（8个） ===== *@
             @if (tabs.Any(t => t.Id == "barcode-template-product"))
             {
-                <div style="display:@(activeTabId == "barcode-template-product" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-template-product" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeTemplateProduct />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-print-product"))
             {
-                <div style="display:@(activeTabId == "barcode-print-product" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-print-product" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodePrintProduct />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-print-product-source"))
             {
-                <div style="display:@(activeTabId == "barcode-print-product-source" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-print-product-source" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodePrintProductSource />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-print-box"))
             {
-                <div style="display:@(activeTabId == "barcode-print-box" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-print-box" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodePrintBox />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-print-box-source"))
             {
-                <div style="display:@(activeTabId == "barcode-print-box-source" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-print-box-source" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodePrintBoxSource />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-box-history"))
             {
-                <div style="display:@(activeTabId == "barcode-box-history" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-box-history" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodeBoxHistory />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-print-serial"))
             {
-                <div style="display:@(activeTabId == "barcode-print-serial" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-print-serial" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodePrintSerial />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "barcode-print-serial-source"))
             {
-                <div style="display:@(activeTabId == "barcode-print-serial-source" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "barcode-print-serial-source" ? "flex" : "none"); min-height:0; height:100%;">
                     <BarcodePrintSerialSource />
                 </div>
             }
             @* ===== 打印管理 - 物流容器（3个） ===== *@
             @if (tabs.Any(t => t.Id == "contain-barcode-print"))
             {
-                <div style="display:@(activeTabId == "contain-barcode-print" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "contain-barcode-print" ? "flex" : "none"); min-height:0; height:100%;">
                     <ContainBarcodePrint />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "contain-type-setting"))
             {
-                <div style="display:@(activeTabId == "contain-type-setting" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "contain-type-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <ContainTypeSetting />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "contain-history-query"))
             {
-                <div style="display:@(activeTabId == "contain-history-query" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "contain-history-query" ? "flex" : "none"); min-height:0; height:100%;">
                     <ContainHistoryQuery />
                 </div>
             }
             @* ===== 打印管理 - 包装单（1个） ===== *@
             @if (tabs.Any(t => t.Id == "outbound-package"))
             {
-                <div style="display:@(activeTabId == "outbound-package" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "outbound-package" ? "flex" : "none"); min-height:0; height:100%;">
                     <OutboundPackage />
                 </div>
             }
             @* ===== 系统设定 - 批号有效期作业 ===== *@
             @if (tabs.Any(t => t.Id == "batch-validity-operation"))
             {
-                <div style="display:@(activeTabId == "batch-validity-operation" ? "flex" : "none")">
+                <div style="display:@(activeTabId == "batch-validity-operation" ? "flex" : "none"); min-height:0; height:100%;">
                     <BatchValidityOperation />
                 </div>
             }
+
+            @* ===== 三级菜单界面 - 新增页面(14个) ===== *@
+            @if (tabs.Any(t => t.Id == "category-permission-setting"))
+            {
+                <div style="display:@(activeTabId == "category-permission-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <CategoryPermissionSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "category-member-setting"))
+            {
+                <div style="display:@(activeTabId == "category-member-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <CategoryMemberSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "doc-property-setting"))
+            {
+                <div style="display:@(activeTabId == "doc-property-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <DocPropertySetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "custom-report"))
+            {
+                <div style="display:@(activeTabId == "custom-report" ? "flex" : "none"); min-height:0; height:100%;">
+                    <CustomReport />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "emulate-device-setting"))
+            {
+                <div style="display:@(activeTabId == "emulate-device-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <EmulateDeviceSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "warehouse-view-setting"))
+            {
+                <div style="display:@(activeTabId == "warehouse-view-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <WarehouseViewSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "service-log-query"))
+            {
+                <div style="display:@(activeTabId == "service-log-query" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ServiceLogQuery />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "service-exception-query"))
+            {
+                <div style="display:@(activeTabId == "service-exception-query" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ServiceExceptionQuery />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "api-exception-table"))
+            {
+                <div style="display:@(activeTabId == "api-exception-table" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ApiExceptionTable />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "system-device-management"))
+            {
+                <div style="display:@(activeTabId == "system-device-management" ? "flex" : "none"); min-height:0; height:100%;">
+                    <SystemDeviceManagement />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "third-party-call-detail"))
+            {
+                <div style="display:@(activeTabId == "third-party-call-detail" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ThirdPartyCallDetail />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "third-party-call-history"))
+            {
+                <div style="display:@(activeTabId == "third-party-call-history" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ThirdPartyCallHistory />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "third-party-push-detail"))
+            {
+                <div style="display:@(activeTabId == "third-party-push-detail" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ThirdPartyPushDetail />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "third-party-push-history"))
+            {
+                <div style="display:@(activeTabId == "third-party-push-history" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ThirdPartyPushHistory />
+                </div>
+            }
+            @* ===== 三级菜单界面 - 新增页面结束 ===== *@
+
             </CascadingValue>
             </CascadingValue>
             </CascadingValue>
@@ -1315,6 +1446,55 @@
         if (itemTitle == "验收退回单")
         {
             OpenTab("acceptance-return", "验收退回单");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "请检任务单明细表")
+        {
+            OpenTab("inspection-task-detail", "请检任务单明细表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "检验单明细表")
+        {
+            OpenTab("inspection-order-detail", "检验单明细表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "验收退回单明细表")
+        {
+            OpenTab("acceptance-return-detail", "验收退回单明细表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "收货检验时效分析表")
+        {
+            OpenTab("receiving-inspection-analysis", "收货检验时效分析表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "车间入库检验时效分析表")
+        {
+            OpenTab("workshop-inspection-analysis", "车间入库检验时效分析表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "库存检验时效分析表")
+        {
+            OpenTab("stock-inspection-analysis", "库存检验时效分析表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        if (itemTitle == "不合格原因设定")
+        {
+            OpenTab("reject-reason-setting", "不合格原因设定");
             await CloseMegaMenu();
             return;
         }
@@ -2273,6 +2453,41 @@
             OpenTab("acceptance-return", "验收退回单");
             handled = true;
         }
+        else if (result.ThirdLevelTitle == "请检任务单明细表")
+        {
+            OpenTab("inspection-task-detail", "请检任务单明细表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "检验单明细表")
+        {
+            OpenTab("inspection-order-detail", "检验单明细表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "验收退回单明细表")
+        {
+            OpenTab("acceptance-return-detail", "验收退回单明细表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "收货检验时效分析表")
+        {
+            OpenTab("receiving-inspection-analysis", "收货检验时效分析表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "车间入库检验时效分析表")
+        {
+            OpenTab("workshop-inspection-analysis", "车间入库检验时效分析表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "库存检验时效分析表")
+        {
+            OpenTab("stock-inspection-analysis", "库存检验时效分析表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "不合格原因设定")
+        {
+            OpenTab("reject-reason-setting", "不合格原因设定");
+            handled = true;
+        }
         // ===== 打印管理 - 编码规则 =====
         else if (result.ThirdLevelTitle == "货品条码编码规则设定")
         {
@@ -2609,6 +2824,81 @@
         else if (result.ThirdLevelTitle == "导入期初库存")
         {
             OpenTab("import-initial-inventory", "导入期初库存");
+            handled = true;
+        }
+        // ===== 基础资料 - 系统权限 =====
+        else if (result.ThirdLevelTitle == "类别权限设定")
+        {
+            OpenTab("category-permission-setting", "类别权限设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "类别成员设定")
+        {
+            OpenTab("category-member-setting", "类别成员设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "单据属性设定")
+        {
+            OpenTab("doc-property-setting", "单据属性设定");
+            handled = true;
+        }
+        // ===== 基础资料 - 报表+仿真 =====
+        else if (result.ThirdLevelTitle == "自定义报表")
+        {
+            OpenTab("custom-report", "自定义报表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "仿真布局设备设定")
+        {
+            OpenTab("emulate-device-setting", "仿真布局设备设定");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "可视化仓储布局设定")
+        {
+            OpenTab("warehouse-view-setting", "可视化仓储布局设定");
+            handled = true;
+        }
+        // ===== 基础资料 - 服务日志 =====
+        else if (result.ThirdLevelTitle == "服务日志查询表")
+        {
+            OpenTab("service-log-query", "服务日志查询表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "服务异常查询表")
+        {
+            OpenTab("service-exception-query", "服务异常查询表");
+            handled = true;
+        }
+        // ===== 基础资料 - API异常+设备 =====
+        else if (result.ThirdLevelTitle == "API接口异常表")
+        {
+            OpenTab("api-exception-table", "API接口异常表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "系统设备管理")
+        {
+            OpenTab("system-device-management", "系统设备管理");
+            handled = true;
+        }
+        // ===== 基础资料 - 第三方接口 =====
+        else if (result.ThirdLevelTitle == "第三方调用明细表")
+        {
+            OpenTab("third-party-call-detail", "第三方调用明细表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "第三方调用历史表")
+        {
+            OpenTab("third-party-call-history", "第三方调用历史表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "推送第三方明细表")
+        {
+            OpenTab("third-party-push-detail", "推送第三方明细表");
+            handled = true;
+        }
+        else if (result.ThirdLevelTitle == "推送第三方历史表")
+        {
+            OpenTab("third-party-push-history", "推送第三方历史表");
             handled = true;
         }
         // ===== 系统设定 - 超交管制设定 =====

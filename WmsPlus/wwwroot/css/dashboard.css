@@ -253,6 +253,7 @@
     overflow: hidden;
     background: #f0f2f5;
     position: relative;
+    min-height: 0; /* 让flex子项可以正确收缩 */
 }
 
 /* 顶部导航栏 - 匹配参考图 */

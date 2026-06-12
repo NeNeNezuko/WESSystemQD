@@ -12,4 +12,7 @@ public class TfTy
 
     /// <summary>项次（主键之二）</summary>
     public int ITM { get; set; }
+
+    /// <summary>转入单号</summary>
+    public string? BIL_NO { get; set; }
 }

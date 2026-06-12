@@ -138,6 +138,6 @@ public class MfRk
     /// <summary>WMS编号</summary>
     public string? WMS_ID { get; set; }
 
-    /// <summary>暂存区代号</summary>
-    public string? ZC_NO { get; set; }
+    /// <summary>产生入库通知单号/关联检验单</summary>
+    public string? TZ_NO_UO { get; set; }
 }

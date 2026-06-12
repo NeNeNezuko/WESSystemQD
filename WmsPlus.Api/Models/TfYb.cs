@@ -12,4 +12,10 @@ public class TfYb
     public string? PRD_NAME { get; set; }
     public decimal? QTY { get; set; }
     public string? REM { get; set; }
+
+    /// <summary>检验单号</summary>
+    public string? TY_NO { get; set; }
+
+    /// <summary>业务类型</summary>
+    public string? TYPE_ID { get; set; }
 }
