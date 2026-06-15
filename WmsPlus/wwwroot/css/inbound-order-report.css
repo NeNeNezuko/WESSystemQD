@@ -65,6 +65,26 @@
     gap: 4px;
 }
 
+.header-toolbar-btn {
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.3s;
+    background-color: #ffffff;
+    color: #666666;
+}
+
+.header-toolbar-btn:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
 .header-icon-btn {
     background: none;
     border: none;
@@ -727,6 +747,29 @@
     cursor: pointer; padding: 0 2px; line-height: 1;
 }
 .column-settings-close:hover { color: #333333; }
+
+/* ===== 内层选项卡（明细表/统计表 水平排列） ===== */
+.inner-tab-bar-inline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+.inner-tab-item {
+    font-size: 13px;
+    color: #666666;
+    padding: 5px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    user-select: none;
+    position: relative;
+}
+.inner-tab-item:hover { color: #1890ff; }
+.inner-tab-item.active {
+    color: #1890ff;
+    font-weight: 500;
+    border-bottom-color: #1890ff;
+}
 .column-settings-search {
     padding: 12px 18px 8px;
     border-bottom: 1px solid #f5f5f5;
@@ -874,61 +917,54 @@
     border-bottom-color: #1890ff;
 }
 
-/* 2. 融合式起止双栏位 */
+/* 2. 融合式起止双栏位（上下分行） */
 .form-item-fused {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.form-item-fused > .fused-row {
     display: flex;
     flex-direction: row;
     align-items: stretch;
     height: 30px;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    background-color: #ffffff;
-    overflow: visible;
-    position: relative;
 }
-.form-item-fused > .form-label {
-    font-size: 12px;
-    color: #333333;
-    font-weight: 400;
+.form-item-fused > .fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
+}
+.form-item-fused > .fused-row > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.form-item-fused > .fused-row > .form-label {
     padding: 0 8px;
-    white-space: nowrap;
     background-color: #fafafa;
-    border-right: 1px solid #e8e8e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
 }
-.fused-inputs {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    gap: 4px;
-    padding: 0 4px;
-}
-.fused-inputs .form-input {
-    flex: 1;
-    padding: 0 6px;
-    font-size: 12px;
-    color: #333333;
+.form-item-fused > .fused-row > .fused-input {
+    flex: 1; padding: 0 6px; font-size: 12px; color: #333333;
     background-color: transparent;
-    border: none;
-    outline: none;
-    min-width: 0;
+    border: none !important; outline: none !important;
 }
-.fused-separator {
-    color: #999999;
-    font-size: 12px;
-    user-select: none;
-    flex-shrink: 0;
+.form-item-fused > .fused-row > .fused-input-area {
+    flex: 1; display: flex; align-items: center; position: relative;
 }
-/* 重置融合式容器内元素 */
-.form-item-fused > .fused-inputs * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    border: none;
-    outline: none;
+.form-item-fused > .fused-row > .fused-input-area > .fused-input {
+    width: 100%; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
 }
+.fused-search-btn {
+    position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 2px; cursor: pointer; z-index: 1;
+}
+.fused-divider { display: none; }
 
 /* 3. 带模糊复选框的输入 */
 .input-with-fuzzy {
@@ -1100,3 +1136,36 @@
     border-radius: 2px;
     outline: none;
 }
+
+/* ========== 货品选择器对话框 ========== */
+.prd-selector-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.45); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+.prd-selector-dialog { background-color: #ffffff; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.15); width: 900px; max-width: 92vw; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+.prd-selector-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #f0f0f0; font-size: 14px; font-weight: 500; color: #333333; }
+.prd-close-btn { background: none; border: none; font-size: 18px; color: #999999; cursor: pointer; padding: 0 2px; line-height: 1; }
+.prd-close-btn:hover { color: #333333; }
+.prd-selector-body { display: flex; flex: 1; overflow: hidden; min-height: 380px; }
+.prd-left-panel { width: 180px; min-width: 180px; border-right: 1px solid #f0f0f0; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; background-color: #fafafa; }
+.prd-filter-title { font-size: 13px; font-weight: 500; color: #333333; margin-bottom: 4px; }
+.prd-search-input { height: 32px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+.prd-search-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.prd-query-btn { height: 32px; background-color: #1890ff; color: #ffffff; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; transition: background-color 0.2s; }
+.prd-query-btn:hover { background-color: #40a9ff; }
+.prd-right-panel { flex: 1; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; }
+.prd-data-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+.prd-data-table th { background-color: #fafafa; padding: 8px 6px; text-align: left; font-size: 12px; font-weight: 500; color: #666666; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+.prd-data-table td { padding: 7px 6px; font-size: 12px; color: #333333; border-bottom: 1px solid #f5f5f5; vertical-align: middle; white-space: nowrap; }
+.prd-col-action { position: relative; white-space: nowrap; width: 70px !important; min-width: 70px !important; }
+.prd-select-btn { background: none; border: 1px solid #d9d9d9; border-radius: 3px; padding: 2px 10px; font-size: 12px; color: #1890ff; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.prd-select-btn:hover { border-color: #1890ff; color: #1890ff; background-color: #e6f7ff; }
+.prd-pagination { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px 4px; margin-top: auto; }
+.prd-total-info { font-size: 12px; color: #888888; }
+.prd-page-controls { display: flex; align-items: center; gap: 4px; }
+.prd-page-btn { width: 28px; height: 26px; border: 1px solid #d9d9d9; border-radius: 3px; background: #fff; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.prd-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.prd-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.prd-page-input { width: 44px; height: 26px; text-align: center; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 13px; outline: none; }
+.prd-page-input:focus { border-color: #1890ff; }
+.prd-page-controls span { font-size: 12px; color: #666666; }
+.prd-selector-footer { display: flex; justify-content: flex-end; align-items: center; padding: 10px 18px; border-top: 1px solid #f0f0f0; }
+.prd-footer-cancel { height: 30px; padding: 0 20px; border: 1px solid #d9d9d9; border-radius: 4px; background: #ffffff; font-size: 13px; color: #333333; cursor: pointer; }
+.prd-footer-cancel:hover { border-color: #1890ff; color: #1890ff; }

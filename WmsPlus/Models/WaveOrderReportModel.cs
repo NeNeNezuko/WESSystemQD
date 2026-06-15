@@ -26,10 +26,20 @@ namespace WmsPlus.Models
     public class WaveOrderReportQuery
     {
         public string DateRange { get; set; } = "";
-        public DateTime? DateFrom { get; set; }
-        public DateTime? DateTo { get; set; }
-        public string BcNo { get; set; } = "";
+        public string DocNo { get; set; } = "";
+        public bool FuzzyDocNo { get; set; } = false;
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
         public string Wh { get; set; } = "";
-        public string Status { get; set; } = "全部";
+        public bool IncludeChildWh { get; set; } = false;
+        public string NoticeNo { get; set; } = "";
+        public bool FuzzyNoticeNo { get; set; } = false;
+        public string ErpApplyNo { get; set; } = "";
+        public bool FuzzyErpApplyNo { get; set; } = false;
+        public string BizOrderNo { get; set; } = "";
+        public bool FuzzyBizOrderNo { get; set; } = false;
+        public string TaskCloseStatus { get; set; } = "全部";
+        public string PickCloseStatus { get; set; } = "全部";
+        public string OutCloseStatus { get; set; } = "全部";
     }
 }

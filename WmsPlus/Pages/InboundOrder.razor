@@ -148,7 +148,10 @@
                                     <td>@item.VendorName</td>
                                     <td>@item.TransferInId</td>
                                     <td>@item.TransferInOrderNumber</td>
-                                    <td><button class="action-btn" title="查看"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890ff" stroke-width="1.5"><path d="M2 8s3-4.5 6-4.5S14 8 14 8s-3 4.5-6 4.5S2 8 2 8z"/><circle cx="8" cy="8" r="1.5"/></svg></button></td>
+                                    <td>
+                                        <button class="query-link-btn" @onclick="() => HandleEdit(item.OrderNumber)">查询</button>
+                                        <button class="action-btn" title="查看"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890ff" stroke-width="1.5"><path d="M2 8s3-4.5 6-4.5S14 8 14 8s-3 4.5-6 4.5S2 8 2 8z"/><circle cx="8" cy="8" r="1.5"/></svg></button>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -273,5 +276,10 @@
     private async Task HandleQuery()
     {
         await LoadData();
+    }
+
+    private void HandleEdit(string orderNumber)
+    {
+        // TODO: 打开入库单查询/编辑页面
     }
 }

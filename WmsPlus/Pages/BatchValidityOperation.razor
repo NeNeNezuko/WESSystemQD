@@ -79,29 +79,13 @@
                 <!-- 货品代号 起 -->
                 <div class="form-item">
                     <label class="form-label">货品代号 起</label>
-                    <div class="input-with-search">
-                        <ProductCodeInput @bind-Value="query.PrdNoFrom" />
-                        <button class="search-icon-btn" title="搜索货品">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <ProductCodeInput @bind-Value="query.PrdNoFrom" />
                 </div>
 
                 <!-- 货品代号 止 -->
                 <div class="form-item">
                     <label class="form-label">货品代号 止</label>
-                    <div class="input-with-search">
-                        <ProductCodeInput @bind-Value="query.PrdNoTo" />
-                        <button class="search-icon-btn" title="搜索货品">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <ProductCodeInput @bind-Value="query.PrdNoTo" />
                 </div>
 
                 <!-- 批号（带按图索骥按钮） -->
@@ -335,6 +319,37 @@
     </div>
 }
 
+
+<!-- 货品选择器对话框 -->
+@if (showProductDialog)
+{
+    <div class="prd-selector-overlay" @onclick="CloseProductSelector">
+        <div class="prd-selector-dialog" @onclick:stopPropagation>
+            <div class="prd-selector-header">
+                <span>货品(PRDT)</span>
+                <button class="prd-close-btn" @onclick="CloseProductSelector">&times;</button>
+            </div>
+            <div class="prd-selector-body">
+                <div class="prd-left-panel">
+                    <div class="prd-filter-title">过滤</div>
+                    <input type="text" class="prd-search-input" placeholder="输入关键字查询" @bind="productSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchProduct(); })" />
+                    <button class="prd-query-btn" @click="@(() => _ = SearchProduct())">查询</button>
+                </div>
+                <div class="prd-right-panel">
+                    <table class="prd-data-table">
+                        <thead><tr><th class="prd-col-action">操作</th><th style="width:50px">项次</th><th>货品代号</th><th>货品名称</th><th>规格</th><th>单位</th></tr></thead>
+                        <tbody>
+                            @if (productData.Count == 0) { <tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr> }
+                            else { @for (int i = 0; i < productData.Count; i++) { var item = productData[i]; var rowIdx = (productPageIndex - 1) * productPageSize + i + 1; <tr><td><button class="prd-select-btn" @click="() => SelectProduct(item)">选择</button></td><td style="text-align:center">@rowIdx</td><td>@item.PRD_NO</td><td>@item.NAME</td><td>@item.SNM</td><td>@item.UT</td></tr> } }
+                        </tbody>
+                    </table>
+                    <div class="prd-pagination"><span class="prd-total-info">共 @productTotalCount 笔记录</span><div class="prd-page-controls"><button class="prd-page-btn" disabled="@(productPageIndex <= 1)" @click="async () => await GoToPrdPage(productPageIndex - 1)">&lt;</button><input type="number" class="prd-page-input" value="@productPageIndex" min="1" max="@PrdTotalPages" @change="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToPrdPage(p); }" /><span>/ @PrdTotalPages</span><button class="prd-page-btn" disabled="@(productPageIndex >= PrdTotalPages)" @click="async () => await GoToPrdPage(productPageIndex + 1)">&gt;</button></div></div>
+                </div>
+            </div>
+            <div class="prd-selector-footer"><button class="prd-footer-cancel" @click="CloseProductSelector">取消</button></div>
+        </div>
+    </div>
+}
 
 @code {
     private bool isFavorited = false;
@@ -653,5 +668,77 @@
         public string Message { get; set; } = "";
         public T? Data { get; set; }
         public int Total { get; set; }
+    }
+
+    // ===== 货品选择器状态 =====
+    private bool showProductDialog = false;
+    private string activePrdSelector = "";
+    private string productSearchKeyword = "";
+    private List<PrdItem> productData = new();
+    private int productPageIndex = 1;
+    private int productPageSize = 20;
+    private int productTotalCount = 0;
+
+    private class PrdItem
+    {
+        public string PRD_NO { get; set; } = "";
+        public string NAME { get; set; } = "";
+        public string SNM { get; set; } = "";
+        public string UT { get; set; } = "";
+    }
+
+    private class PrdSearchResult
+    {
+        public List<PrdItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    private async Task OpenPrdFromSelector()
+    {
+        activePrdSelector = "from";
+        productSearchKeyword = ""; productPageIndex = 1;
+        await SearchProduct(); showProductDialog = true; StateHasChanged();
+    }
+
+    private async Task OpenPrdToSelector()
+    {
+        activePrdSelector = "to";
+        productSearchKeyword = ""; productPageIndex = 1;
+        await SearchProduct(); showProductDialog = true; StateHasChanged();
+    }
+
+    private void CloseProductSelector() { showProductDialog = false; StateHasChanged(); }
+
+    private async Task SearchProduct()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<PrdSearchResult>(json, jsonOptions);
+                if (result != null) { productData = result.Items ?? new List<PrdItem>(); productTotalCount = result.TotalCount; }
+            }
+        }
+        catch (Exception ex) { Console.WriteLine($"[BatchValidityOperation] 查询货品数据失败: {ex.Message}"); }
+        StateHasChanged();
+    }
+
+    private void SelectProduct(PrdItem item)
+    {
+        if (activePrdSelector == "from") query.PrdNoFrom = item.PRD_NO;
+        else if (activePrdSelector == "to") query.PrdNoTo = item.PRD_NO;
+        showProductDialog = false; StateHasChanged();
+    }
+
+    private int PrdTotalPages => productPageSize > 0 ? (int)Math.Ceiling((double)productTotalCount / productPageSize) : 1;
+
+    private async Task GoToPrdPage(int page)
+    {
+        if (page >= 1 && page <= PrdTotalPages) { productPageIndex = page; await SearchProduct(); }
     }
 }

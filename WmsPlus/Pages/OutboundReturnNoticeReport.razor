@@ -70,40 +70,108 @@
             </div>
 
             <div class="query-form">
-                <!-- 单据日期 -->
-                <DateRangeInput @bind-Value="query.DateRange" />
+                <!-- 制表日期 -->
+                <DateRangeInput @bind-Value="query.DateRange" Label="制表日期" />
 
-                <!-- 退回单号 -->
+                <!-- 单据号码 + 模糊 -->
                 <div class="form-item">
-                    <label class="form-label">退回单号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.ReturnNumber" />
+                    <label class="form-label">单据号码</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.DocNo" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" @bind="query.FuzzyDocNo" />
+                            模糊
+                        </label>
+                    </div>
                 </div>
 
-                <!-- 仓库代号 -->
-                <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
+                <!-- 货品代号 起/止 (form-item-fused) -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 起</label>
+                        <div class="fused-input-area">
+                            <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoFrom" />
+                            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 止</label>
+                        <div class="fused-input-area">
+                            <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoTo" />
+                            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- 结案列示 -->
+                <!-- 货品名称 + 模糊 -->
                 <div class="form-item">
-                    <label class="form-label">结案列示</label>
-                    <div class="select-wrapper">
-                        <select class="form-select" @bind="query.CloseStatus">
-                            <option value="全部">全部</option>
-                            <option value="已结案">已结案</option>
-                            <option value="未结案">未结案</option>
-                        </select>
-                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
-                            <path d="M2 4l4 4 4-4"/>
-                        </svg>
+                    <label class="form-label">货品名称</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" @bind="query.FuzzyPrdName" />
+                            模糊
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 仓库名称 + 模糊 -->
+                <div class="form-item">
+                    <label class="form-label">仓库名称</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.WhName" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" @bind="query.FuzzyWhName" />
+                            模糊
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 业务员名称 + 模糊 -->
+                <div class="form-item">
+                    <label class="form-label">业务员名称</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.OperatorName" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" @bind="query.FuzzyOperatorName" />
+                            模糊
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 业务单号 + 模糊 -->
+                <div class="form-item">
+                    <label class="form-label">业务单号</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.BizOrderNo" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" @bind="query.FuzzyBizOrderNo" />
+                            模糊
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ERP申请单号 + 模糊 -->
+                <div class="form-item">
+                    <label class="form-label">ERP申请单号</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" class="form-input" placeholder="" @bind="query.ErpApplyNo" style="flex:1;" />
+                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
+                            <input type="checkbox" @bind="query.FuzzyErpApplyNo" />
+                            模糊
+                        </label>
                     </div>
                 </div>
 
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleSearch">
-                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
-                            <circle cx="7" cy="7" r="5"/>
-                            <line x1="11" y1="11" x2="15" y2="15"/>
-                        </svg>
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/></svg>
                         <span>查询</span>
                     </button>
                 </div>
@@ -224,6 +292,75 @@
             <div class="export-dialog-footer">
                 <button class="export-btn-cancel" @onclick="CancelExport">取消</button>
                 <button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 货品选择器对话框 -->
+@if (showProductDialog)
+{
+    <div class="prd-selector-overlay" @onclick="CloseProductSelector">
+        <div class="prd-selector-dialog" @onclick:stopPropagation>
+            <div class="prd-selector-header">
+                <span>货品(PRDT)</span>
+                <button class="prd-close-btn" @onclick="CloseProductSelector">&times;</button>
+            </div>
+            <div class="prd-selector-body">
+                <div class="prd-left-panel">
+                    <div class="prd-filter-title">过滤</div>
+                    <input type="text" class="prd-search-input" placeholder="输入关键字查询" @bind="productSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchProduct(); })" />
+                    <button class="prd-query-btn" @onclick="@(() => _ = SearchProduct())">查询</button>
+                </div>
+                <div class="prd-right-panel">
+                    <table class="prd-data-table">
+                        <thead>
+                            <tr>
+                                <th class="prd-col-action">操作</th>
+                                <th style="width:50px">项次</th>
+                                <th>货品代号</th>
+                                <th>货品名称</th>
+                                <th>规格</th>
+                                <th>单位</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (productData.Count == 0)
+                            {
+                                <tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < productData.Count; i++)
+                                {
+                                    var item = productData[i];
+                                    var rowIdx = (productPageIndex - 1) * productPageSize + i + 1;
+                                    <tr>
+                                        <td><button class="prd-select-btn" @onclick="() => SelectProduct(item)">选择</button></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.PRD_NO</td>
+                                        <td>@item.NAME</td>
+                                        <td>@item.SNM</td>
+                                        <td>@item.UT</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="prd-pagination">
+                        <span class="prd-total-info">共 @productTotalCount 笔记录</span>
+                        <div class="prd-page-controls">
+                            <button class="prd-page-btn" disabled="@(productPageIndex <= 1)" @onclick="async () => await GoToPrdPage(productPageIndex - 1)">&lt;</button>
+                            <input type="number" class="prd-page-input" value="@productPageIndex" min="1" max="@PrdTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToPrdPage(p); }" />
+                            <span>/ @PrdTotalPages</span>
+                            <button class="prd-page-btn" disabled="@(productPageIndex >= PrdTotalPages)" @onclick="async () => await GoToPrdPage(productPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="prd-selector-footer">
+                <button class="prd-footer-cancel" @onclick="CloseProductSelector">取消</button>
             </div>
         </div>
     </div>
@@ -396,9 +533,14 @@
             }
             var viewType = activeInnerTab == "summary" ? "summary" : "detail";
             var url = $"{ApiBaseUrl}/api/OutboundReturnNoticeReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&viewType={viewType}";
-            if (!string.IsNullOrWhiteSpace(query.ReturnNumber)) url += $"&returnNumber={Uri.EscapeDataString(query.ReturnNumber)}";
-            if (!string.IsNullOrWhiteSpace(query.WarehouseCode)) url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}";
-            if (!string.IsNullOrWhiteSpace(query.CloseStatus) && query.CloseStatus != "全部") url += $"&closeStatus={Uri.EscapeDataString(query.CloseStatus)}";
+            if (!string.IsNullOrWhiteSpace(query.DocNo)) url += $"&docNo={Uri.EscapeDataString(query.DocNo)}&fuzzyDocNo={query.FuzzyDocNo}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdName)) url += $"&prdName={Uri.EscapeDataString(query.PrdName)}&fuzzyPrdName={query.FuzzyPrdName}";
+            if (!string.IsNullOrWhiteSpace(query.WhName)) url += $"&whName={Uri.EscapeDataString(query.WhName)}&fuzzyWhName={query.FuzzyWhName}";
+            if (!string.IsNullOrWhiteSpace(query.OperatorName)) url += $"&operatorName={Uri.EscapeDataString(query.OperatorName)}&fuzzyOperatorName={query.FuzzyOperatorName}";
+            if (!string.IsNullOrWhiteSpace(query.BizOrderNo)) url += $"&bizOrderNo={Uri.EscapeDataString(query.BizOrderNo)}&fuzzyBizOrderNo={query.FuzzyBizOrderNo}";
+            if (!string.IsNullOrWhiteSpace(query.ErpApplyNo)) url += $"&erpApplyNo={Uri.EscapeDataString(query.ErpApplyNo)}&fuzzyErpApplyNo={query.FuzzyErpApplyNo}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -570,6 +712,106 @@
         "SYS_DATE" => item.SYS_DATE?.ToString("yyyy-MM-dd HH:mm:ss"),
         _ => ""
     };
+
+    // ===== 货品选择器状态 =====
+    private bool showProductDialog = false;
+    private string activePrdSelector = "";
+    private string productSearchKeyword = "";
+    private List<PrdItem> productData = new();
+    private int productPageIndex = 1;
+    private int productPageSize = 20;
+    private int productTotalCount = 0;
+
+    private class PrdItem
+    {
+        public string PRD_NO { get; set; } = "";
+        public string NAME { get; set; } = "";
+        public string SNM { get; set; } = "";
+        public string UT { get; set; } = "";
+    }
+
+    private class PrdSearchResult
+    {
+        public List<PrdItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    // ===== 货品选择器方法 =====
+    private async Task OpenPrdFromSelector()
+    {
+        activePrdSelector = "from";
+        productSearchKeyword = "";
+        productPageIndex = 1;
+        await SearchProduct();
+        showProductDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task OpenPrdToSelector()
+    {
+        activePrdSelector = "to";
+        productSearchKeyword = "";
+        productPageIndex = 1;
+        await SearchProduct();
+        showProductDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseProductSelector()
+    {
+        showProductDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchProduct()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<PrdSearchResult>(json, jsonOptions);
+
+                if (result != null)
+                {
+                    productData = result.Items ?? new List<PrdItem>();
+                    productTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[OutboundReturnNoticeReport] 查询货品数据失败: {ex.Message}");
+        }
+        StateHasChanged();
+    }
+
+    private void SelectProduct(PrdItem item)
+    {
+        if (activePrdSelector == "from")
+            query.PrdNoFrom = item.PRD_NO;
+        else if (activePrdSelector == "to")
+            query.PrdNoTo = item.PRD_NO;
+
+        showProductDialog = false;
+        StateHasChanged();
+    }
+
+    private int PrdTotalPages => productPageSize > 0 ? (int)Math.Ceiling((double)productTotalCount / productPageSize) : 1;
+
+    private async Task GoToPrdPage(int page)
+    {
+        if (page >= 1 && page <= PrdTotalPages)
+        {
+            productPageIndex = page;
+            await SearchProduct();
+        }
+    }
 
     private class ApiResponse<T>
     {

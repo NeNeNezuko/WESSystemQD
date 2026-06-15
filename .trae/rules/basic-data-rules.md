@@ -18,6 +18,32 @@
 - **内容**：全部 88 个页面与数据库表的关联关系，以及 WarehouseDbContext 全部 DbSet 注册表
 - **使用方式**：根据页面名称或选项卡ID在文件中搜索，即可找到该页面关联的所有数据库表名
 
+### 错误排查参考文件
+
+当 Blazor 前端出现报错、异常、404/500 错误时，**必须先读取**错误排查记录，按症状快速匹配历史案例：
+- **文件路径**：`.trae/references/error-troubleshooting.md`
+- **内容**：已解决的历史错误完整记录（症状、根因、修复方法）、通用调试工具箱
+- **触发词**：`报错排查`、`错误记录`、`异常定位`、`Unhandled error`、`404`、`JSON解析异常`
+- **使用方式**：出现前端异常时，在文件中搜索关键词（如 `404`、`渲染崩溃`、`HasKey`）快速定位相似案例
+
+#### 异常修复记录规范（强制执行）
+
+每次修复任何异常/bug 后，**必须**将以下信息补充到错误排查参考文件（[error-troubleshooting.md](../references/error-troubleshooting.md)）：
+
+1. **新增或更新一条错误记录**，包含以下要素：
+   - 症状描述（用户看到的报错现象 + 控制台关键错误信息）
+   - 触发条件（什么操作/场景会触发）
+   - 根因分析（真正的原因，不是表面现象）
+   - 修复方法（具体代码改动或配置修改，附文件路径和行号）
+   - 影响范围（哪些页面/组件可能受同样问题影响）
+   - 预防措施（如何避免再次发生）
+
+2. **同步更新错误索引表**（文件顶部的速查表格），确保新错误可被快速检索
+
+3. **如果该错误属于已知分类**（如 URL 拼接、EF Core 配置等），则在对应章节末尾追加新案例；如果是全新类型的错误，则新建章节
+
+> **目的**：将每次排错过程转化为可复用的知识资产，避免团队成员重复花费时间排查相同问题
+
 ### 21 个选项卡清单
 
 | # | 选项卡名称 | 选项卡ID | 分类 | 关联表 |
@@ -1063,6 +1089,124 @@ SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_F
 ### 整体布局
 - 参照入库通知单（InboundNotice）的左右分栏布局风格
 - 使用项目通用组件：DateRangeInput、WarehouseCodeInput、BizTypeInput、DeptCodeInput、CustomerCodeInput
+
+### 查询表单 — 起/止范围筛选框（form-item-fused）规范
+
+当查询表单中需要"起/止"范围输入时（如转入单号起/止、货品代号起/止），**必须**使用 `form-item-fused` 上下分行融合框模式。
+
+#### 触发条件
+以下场景必须使用此模式：
+- 任何需要 **范围查询** 的字段（从 XX 到 XX）
+- 字段名标签以 **"起"/"止"** 结尾
+
+#### HTML 结构模板
+
+```html
+<!-- 纯文本输入（无放大镜） -->
+<div class="form-item-fused">
+    <div class="fused-row">
+        <label class="form-label">字段名 起</label>
+        <input type="text" class="fused-input" @bind="query.XxxFrom" />
+    </div>
+    <div class="fused-divider"></div>
+    <div class="fused-row">
+        <label class="form-label">字段名 止</label>
+        <input type="text" class="fused-input" @bind="query.XxxTo" />
+    </div>
+</div>
+
+<!-- 带放大镜选择器（如货品代号） -->
+<div class="form-item-fused">
+    <div class="fused-row">
+        <label class="form-label">货品代号 起</label>
+        <div class="fused-input-area">
+            <input type="text" class="fused-input" @bind="query.PrdNoFrom" />
+            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
+                <svg>...</svg>
+            </button>
+        </div>
+    </div>
+    <div class="fused-divider"></div>
+    <div class="fused-row">
+        <label class="form-label">货品代号 止</label>
+        <div class="fused-input-area">
+            <input type="text" class="fused-input" @bind="query.PrdNoTo" />
+            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
+                <svg>...</svg>
+            </button>
+        </div>
+    </div>
+</div>
+```
+
+#### 关键规则
+
+| 规则 | 说明 |
+|------|------|
+| **外层容器** | 必须使用 `class="form-item-fused"`，不可用独立的 `form-item` |
+| **布局方向** | `flex-direction: column`（上下分行），**不是**左右并排 |
+| **内层结构** | 每个 `fused-row` 包含 label + input，两行之间用 `fused-divider` 分隔 |
+| **分隔线实现** | 由 CSS `.fused-row:first-child { border-bottom: 1px solid #e8e8e8; }` 实现，`fused-divider` 设为 `display: none` |
+| **标签格式** | 上行标签以 **"起"** 结尾（如 `转入单号 起`），下行标签以 **"止"** 结尾（如 `转入单号 止`） |
+| **输入框样式** | 使用 `class="fused-input"`（不是 `form-input`） |
+| **禁止嵌套 ProductCodeInput** | ProductCodeInput 组件内部自带 `<div class="form-item">` + label，嵌套会导致**双标签重复显示**。如需放大镜功能，应手写 `<input>` + `<button @onclick="...">` 并在页面 @code 中实现选择器逻辑 |
+| **放大镜按钮事件** | 放大镜按钮**必须绑定 `@onclick` 事件**，不能留空 |
+
+#### CSS 样式（每个使用 form-item-fused 的页面 CSS 文件中必须包含）
+
+```css
+/* ===== 融合式单边框（起止输入框，上下分行） ===== */
+.form-item-fused {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.form-item-fused > .fused-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+}
+.form-item-fused > .fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
+}
+.form-item-fused > .fused-row > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.form-item-fused > .fused-row > .form-label {
+    padding: 0 8px;
+    background-color: #fafafa;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+}
+.form-item-fused > .fused-row > .fused-input {
+    flex: 1; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.form-item-fused > .fused-row > .fused-input-area {
+    flex: 1; display: flex; align-items: center; position: relative;
+}
+.form-item-fused > .fused-row > .fused-input-area > .fused-input {
+    width: 100%; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.fused-search-btn {
+    position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 2px; cursor: pointer; z-index: 1;
+}
+.fused-divider { display: none; }
+```
+
+#### 参考实现
+- **正确示例**: [ReceivingReport.razor](WmsPlus/Pages/ReceivingReport.razor) 第104-156行 + [receiving-report.css](WmsPlus/wwwroot/css/receiving-report.css) 第358-442行
 
 ### 功能实现原则
 - **样式优先**：右上角按钮先做 UI 样式占位，不实现实际功能逻辑

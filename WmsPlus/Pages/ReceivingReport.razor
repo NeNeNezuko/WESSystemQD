@@ -100,39 +100,39 @@
                 <!-- 收货日期 -->
                 <DateRangeInput @bind-Value="query.DateRange" Label="制货日期" />
 
-                <!-- 转入单号 起/止 融合 -->
+                <!-- 转入单号 起/止 -->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <label class="form-label">转入单号</label>
-                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
+                        <label class="form-label">转入单号 起</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.BilNoFrom" />
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <label class="form-label">转入单号</label>
-                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
+                        <label class="form-label">转入单号 止</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.BilNoTo" />
                     </div>
                 </div>
 
-                <!-- 单据号码 起/止 融合 -->
+                <!-- 单据号码 起/止 -->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <label class="form-label">单据号码</label>
-                        <input type="text" class="form-input" placeholder="" @bind="query.ShNoFrom" />
+                        <label class="form-label">单据号码 起</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.ShNoFrom" />
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <label class="form-label">单据号码</label>
-                        <input type="text" class="form-input" placeholder="" @bind="query.ShNoTo" />
+                        <label class="form-label">单据号码 止</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.ShNoTo" />
                     </div>
                 </div>
 
-                <!-- 货品代号 起/止 融合 -->
+                <!-- 货品代号 起/止 -->
                 <div class="form-item-fused">
                     <div class="fused-row">
-                        <label class="form-label">货品代号</label>
-                        <div class="input-with-search">
-                            <input type="text" class="form-input" placeholder="" @bind="query.PrdNoFrom" />
-                            <button class="search-icon-btn" title="搜索货品">
+                        <label class="form-label">货品代号 起</label>
+                        <div class="fused-input-area">
+                            <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoFrom" />
+                            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
                                 <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
                                     <circle cx="6" cy="6" r="4"/>
                                     <line x1="9" y1="9" x2="13" y2="13"/>
@@ -142,10 +142,10 @@
                     </div>
                     <div class="fused-divider"></div>
                     <div class="fused-row">
-                        <label class="form-label">货品代号</label>
-                        <div class="input-with-search">
-                            <input type="text" class="form-input" placeholder="" @bind="query.PrdNoTo" />
-                            <button class="search-icon-btn" title="搜索货品">
+                        <label class="form-label">货品代号 止</label>
+                        <div class="fused-input-area">
+                            <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoTo" />
+                            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
                                 <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
                                     <circle cx="6" cy="6" r="4"/>
                                     <line x1="9" y1="9" x2="13" y2="13"/>
@@ -418,8 +418,100 @@
     </div>
 }
 
+<!-- 货品选择器对话框 -->
+@if (showProductDialog)
+{
+    <div class="prd-selector-overlay" @onclick="CloseProductSelector">
+        <div class="prd-selector-dialog" @onclick:stopPropagation>
+            <div class="prd-selector-header">
+                <span>货品(PRDT)</span>
+                <button class="prd-close-btn" @onclick="CloseProductSelector">&times;</button>
+            </div>
+            <div class="prd-selector-body">
+                <div class="prd-left-panel">
+                    <div class="prd-filter-title">过滤</div>
+                    <input type="text" class="prd-search-input" placeholder="输入关键字查询" @bind="productSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchProduct(); })" />
+                    <button class="prd-query-btn" @onclick="@(() => _ = SearchProduct())">查询</button>
+                </div>
+                <div class="prd-right-panel">
+                    <table class="prd-data-table">
+                        <thead>
+                            <tr>
+                                <th class="prd-col-action">操作</th>
+                                <th style="width:50px">项次</th>
+                                <th>货品代号</th>
+                                <th>货品名称</th>
+                                <th>规格</th>
+                                <th>单位</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (productData.Count == 0)
+                            {
+                                <tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < productData.Count; i++)
+                                {
+                                    var item = productData[i];
+                                    var rowIdx = (productPageIndex - 1) * productPageSize + i + 1;
+                                    <tr>
+                                        <td><button class="prd-select-btn" @onclick="() => SelectProduct(item)">选择</button></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.PRD_NO</td>
+                                        <td>@item.NAME</td>
+                                        <td>@item.SNM</td>
+                                        <td>@item.UT</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="prd-pagination">
+                        <span class="prd-total-info">共 @productTotalCount 笔记录</span>
+                        <div class="prd-page-controls">
+                            <button class="prd-page-btn" disabled="@(productPageIndex <= 1)" @onclick="async () => await GoToPrdPage(productPageIndex - 1)">&lt;</button>
+                            <input type="number" class="prd-page-input" value="@productPageIndex" min="1" max="@PrdTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToPrdPage(p); }" />
+                            <span>/ @PrdTotalPages</span>
+                            <button class="prd-page-btn" disabled="@(productPageIndex >= PrdTotalPages)" @onclick="async () => await GoToPrdPage(productPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="prd-selector-footer">
+                <button class="prd-footer-cancel" @onclick="CloseProductSelector">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
 
 @code {
+    // ===== 货品选择器状态 =====
+    private bool showProductDialog = false;
+    private string activePrdSelector = "";  // "from" 或 "to"，标记当前激活的是哪个选择器
+    private string productSearchKeyword = "";
+    private List<PrdItem> productData = new();
+    private int productPageIndex = 1;
+    private int productPageSize = 20;
+    private int productTotalCount = 0;
+
+    private class PrdItem
+    {
+        public string PRD_NO { get; set; } = "";
+        public string NAME { get; set; } = "";
+        public string SNM { get; set; } = "";
+        public string UT { get; set; } = "";
+    }
+
+    private class PrdSearchResult
+    {
+        public List<PrdItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
     // ===== 状态变量 =====
     private bool isFavorited = false;
     private bool showFavoriteSuccess = false;
@@ -562,9 +654,8 @@
         try
         {
             const string ApiBaseUrl = "http://localhost:5102";
-            var url = activeInnerTab == "detail"
-                ? $"{ApiBaseUrl}/api/ReceivingReport/detail"
-                : $"{ApiBaseUrl}/api/ReceivingReport/summary";
+            var url = $"{ApiBaseUrl}/api/ReceivingReport/search";
+            var tabType = activeInnerTab == "detail" ? "detail" : "summary";
 
             // 构建查询参数
             if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("\u2192"))
@@ -592,8 +683,9 @@
             if (!string.IsNullOrWhiteSpace(query.Wh))
                 url += $"&wh={Uri.EscapeDataString(query.Wh)}&includeOffShelf={query.IncludeOffShelf.ToString().ToLower()}";
 
-            // 分页参数
-            url += $"&page={currentPage}&pageSize={pageSize}";
+            // 分页参数（确保以 ? 或 & 正确连接）
+            var separator = url.Contains("?") ? "&" : "?";
+            url += $"{separator}page={currentPage}&pageSize={pageSize}&tabType={tabType}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -701,8 +793,8 @@
         {
             defaultColumnConfigs = new List<ColumnConfig>
             {
-                new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
-                new() { FieldKey = "LastAcceptTime", OriginalName = "最近验收时间", DisplayName = "最近验收时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+                new() { FieldKey = "RowNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
+                new() { FieldKey = "ShDate", OriginalName = "收货日期", DisplayName = "收货日期", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
                 new() { FieldKey = "BilNo", OriginalName = "转入单号", DisplayName = "转入单号", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
                 new() { FieldKey = "ShNo", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
                 new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
@@ -710,7 +802,7 @@
                 new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 100, DefaultWidth = 100 },
                 new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 100, DefaultWidth = 100 },
                 new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
-                new() { FieldKey = "QtySub", OriginalName = "数量(副)", DisplayName = "数量(副)", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+                new() { FieldKey = "Qty1", OriginalName = "数量(副)", DisplayName = "数量(副)", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
                 new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 60, DefaultWidth = 60 },
                 new() { FieldKey = "DepName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 100, DefaultWidth = 100 }
             };
@@ -719,19 +811,19 @@
         {
             defaultColumnConfigs = new List<ColumnConfig>
             {
-                new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
-                new() { FieldKey = "LastAcceptTime", OriginalName = "最近验收时间", DisplayName = "最近验收时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
-                new() { FieldKey = "DocYear", OriginalName = "制表日期-年", DisplayName = "制表日期-年", Visible = true, Width = 95, DefaultWidth = 95 },
-                new() { FieldKey = "DocQuarter", OriginalName = "制表日期-季", DisplayName = "制表日期-季", Visible = true, Width = 95, DefaultWidth = 95 },
-                new() { FieldKey = "DocMonth", OriginalName = "制表日期-月", DisplayName = "制表日期-月", Visible = true, Width = 95, DefaultWidth = 95 },
-                new() { FieldKey = "DocWeek", OriginalName = "制表日期-周", DisplayName = "制表日期-周", Visible = true, Width = 95, DefaultWidth = 95 },
-                new() { FieldKey = "DocDay", OriginalName = "制表日期-日", DisplayName = "制表日期-日", Visible = true, Width = 90, DefaultWidth = 90 },
+                new() { FieldKey = "RowNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
+                new() { FieldKey = "ShDateYear", OriginalName = "制表日期-年", DisplayName = "制表日期-年", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "ShDateQuarter", OriginalName = "制表日期-季", DisplayName = "制表日期-季", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "ShDateMonth", OriginalName = "制表日期-月", DisplayName = "制表日期-月", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "ShDateWeek", OriginalName = "制表日期-周", DisplayName = "制表日期-周", Visible = true, Width = 95, DefaultWidth = 95 },
+                new() { FieldKey = "ShDateDay", OriginalName = "制表日期-日", DisplayName = "制表日期-日", Visible = true, Width = 90, DefaultWidth = 90 },
                 new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
                 new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
-                new() { FieldKey = "Spec", OriginalName = "规格", DisplayName = "规格", Visible = true, Width = 100, DefaultWidth = 100 },
-                new() { FieldKey = "Ledger", OriginalName = "台账", DisplayName = "台账", Visible = true, Width = 80, DefaultWidth = 80 },
+                new() { FieldKey = "Spc", OriginalName = "规格", DisplayName = "规格", Visible = true, Width = 100, DefaultWidth = 100 },
+                new() { FieldKey = "WhErp", OriginalName = "台账", DisplayName = "台账", Visible = true, Width = 80, DefaultWidth = 80 },
                 new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 100, DefaultWidth = 100 },
-                new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 100, DefaultWidth = 100 }
+                new() { FieldKey = "CusName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 100, DefaultWidth = 100 },
+                new() { FieldKey = "TotalQty", OriginalName = "数量合计", DisplayName = "数量合计", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true }
             };
         }
 
@@ -853,8 +945,8 @@
 
     private object GetDetailCellValue(ReceivingReportDetailModel item, string fieldKey) => fieldKey switch
     {
-        "SeqNo" => item.SeqNo,
-        "LastAcceptTime" => item.LastAcceptTime.HasValue ? item.LastAcceptTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
+        "RowNo" => item.RowNo,
+        "ShDate" => item.ShDate.HasValue ? item.ShDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
         "BilNo" => item.BilNo ?? "",
         "ShNo" => item.ShNo ?? "",
         "PrdNo" => item.PrdNo ?? "",
@@ -862,7 +954,7 @@
         "BatNo" => item.BatNo ?? "",
         "WhName" => item.WhName ?? "",
         "Qty" => item.Qty,
-        "QtySub" => item.QtySub,
+        "Qty1" => item.Qty1,
         "Unit" => item.Unit ?? "",
         "DepName" => item.DepName ?? "",
         _ => ""
@@ -870,19 +962,19 @@
 
     private object GetSummaryCellValue(ReceivingReportSummaryModel item, string fieldKey) => fieldKey switch
     {
-        "SeqNo" => item.SeqNo,
-        "LastAcceptTime" => item.LastAcceptTime.HasValue ? item.LastAcceptTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
-        "DocYear" => item.DocYear ?? "",
-        "DocQuarter" => item.DocQuarter ?? "",
-        "DocMonth" => item.DocMonth ?? "",
-        "DocWeek" => item.DocWeek ?? "",
-        "DocDay" => item.DocDay ?? "",
+        "RowNo" => item.RowNo,
+        "ShDateYear" => item.ShDateYear ?? "",
+        "ShDateQuarter" => item.ShDateQuarter ?? "",
+        "ShDateMonth" => item.ShDateMonth ?? "",
+        "ShDateWeek" => item.ShDateWeek ?? "",
+        "ShDateDay" => item.ShDateDay.HasValue ? item.ShDateDay.Value.ToString("yyyy-MM-dd") : "",
         "PrdNo" => item.PrdNo ?? "",
         "PrdName" => item.PrdName ?? "",
-        "Spec" => item.Spec ?? "",
-        "Ledger" => item.Ledger ?? "",
+        "Spc" => item.Spc ?? "",
+        "WhErp" => item.WhErp ?? "",
         "WhName" => item.WhName ?? "",
-        "CustomerName" => item.CustomerName ?? "",
+        "CusName" => item.CusName ?? "",
+        "TotalQty" => item.TotalQty,
         _ => ""
     };
 
@@ -915,6 +1007,83 @@
         await LoadData();
     }
 
+    // ===== 货品选择器方法 =====
+    private async Task OpenPrdFromSelector()
+    {
+        activePrdSelector = "from";
+        productSearchKeyword = "";
+        productPageIndex = 1;
+        await SearchProduct();
+        showProductDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task OpenPrdToSelector()
+    {
+        activePrdSelector = "to";
+        productSearchKeyword = "";
+        productPageIndex = 1;
+        await SearchProduct();
+        showProductDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseProductSelector()
+    {
+        showProductDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchProduct()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<PrdSearchResult>(json, jsonOptions);
+
+                if (result != null)
+                {
+                    productData = result.Items ?? new List<PrdItem>();
+                    productTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ReceivingReport] 查询货品数据失败: {ex.Message}");
+        }
+        StateHasChanged();
+    }
+
+    private void SelectProduct(PrdItem item)
+    {
+        if (activePrdSelector == "from")
+            query.PrdNoFrom = item.PRD_NO;
+        else if (activePrdSelector == "to")
+            query.PrdNoTo = item.PRD_NO;
+
+        showProductDialog = false;
+        StateHasChanged();
+    }
+
+    private int PrdTotalPages => productPageSize > 0 ? (int)Math.Ceiling((double)productTotalCount / productPageSize) : 1;
+
+    private async Task GoToPrdPage(int page)
+    {
+        if (page >= 1 && page <= PrdTotalPages)
+        {
+            productPageIndex = page;
+            await SearchProduct();
+        }
+    }
+
     // ===== 查询模型 =====
     private class ReceivingReportQuery
     {
@@ -931,39 +1100,40 @@
         public bool IncludeOffShelf { get; set; } = false;
     }
 
-    // ===== 明细表数据模型 =====
+    // ===== 明细表数据模型（与后端 ReceivingReportDetailDto 对齐） =====
     private class ReceivingReportDetailModel
     {
-        public int SeqNo { get; set; }
-        public DateTime? LastAcceptTime { get; set; }
+        public int RowNo { get; set; }
+        public int? Itm { get; set; }
+        public DateTime? ShDate { get; set; }
         public string? BilNo { get; set; }
         public string? ShNo { get; set; }
         public string? PrdNo { get; set; }
         public string? PrdName { get; set; }
         public string? BatNo { get; set; }
         public string? WhName { get; set; }
-        public decimal Qty { get; set; }
-        public decimal QtySub { get; set; }
+        public decimal? Qty { get; set; }
+        public decimal? Qty1 { get; set; }
         public string? Unit { get; set; }
         public string? DepName { get; set; }
     }
 
-    // ===== 统计表数据模型 =====
+    // ===== 统计表数据模型（与后端 ReceivingReportSummaryDto 对齐） =====
     private class ReceivingReportSummaryModel
     {
-        public int SeqNo { get; set; }
-        public DateTime? LastAcceptTime { get; set; }
-        public string? DocYear { get; set; }
-        public string? DocQuarter { get; set; }
-        public string? DocMonth { get; set; }
-        public string? DocWeek { get; set; }
-        public string? DocDay { get; set; }
-        public string? PrdNo { get; set; }
-        public string? PrdName { get; set; }
-        public string? Spec { get; set; }
-        public string? Ledger { get; set; }
-        public string? WhName { get; set; }
-        public string? CustomerName { get; set; }
+        public int RowNo { get; set; }
+        public string? ShDateYear { get; set; }
+        public string? ShDateQuarter { get; set; }
+        public string? ShDateMonth { get; set; }
+        public string? ShDateWeek { get; set; }
+        public DateTime? ShDateDay { get; set; }
+        public string PrdNo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public string Spc { get; set; } = "";
+        public string WhErp { get; set; } = "";
+        public string WhName { get; set; } = "";
+        public string CusName { get; set; } = "";
+        public decimal? TotalQty { get; set; }
     }
 
     // ===== API响应模型 =====

@@ -119,9 +119,9 @@
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
             <!-- 嵌套选项卡（明细表/统计表） -->
-            <div class="sub-tab-bar">
-                <button class="sub-tab-btn @(subTabType == "detail" ? "active" : "")" @onclick=@(() => SwitchSubTab("detail"))>明细表</button>
-                <button class="sub-tab-btn @(subTabType == "statistics" ? "active" : "")" @onclick=@(() => SwitchSubTab("statistics"))>统计表</button>
+            <div class="inner-tab-bar-inline">
+                <div class="inner-tab-item @(subTabType == "detail" ? "active" : "")" @onclick=@(() => SwitchSubTab("detail"))>明细表</div>
+                <div class="inner-tab-item @(subTabType == "statistics" ? "active" : "")" @onclick=@(() => SwitchSubTab("statistics"))>统计表</div>
             </div>
 
             <!-- 工具栏 -->

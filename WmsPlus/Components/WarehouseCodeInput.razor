@@ -271,7 +271,7 @@
 </style>
 
 <!-- 仓库代号输入框 -->
-<div class="form-item">
+<div class="form-item" @attributes="AdditionalAttributes">
     <label class="form-label">仓库代号</label>
     <div class="input-with-search">
         <input type="text" class="form-input" placeholder="" @bind="Value" @bind:event="oninput" />
@@ -431,6 +431,7 @@
     // ===== 参数 =====
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     // ===== 仓库选择器状态 =====
     private bool showWarehouseDialog = false;

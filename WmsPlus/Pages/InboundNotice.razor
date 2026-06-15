@@ -194,7 +194,7 @@
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
                                         <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
                                     }
-                                    <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
+                                    <td><button class="query-link-btn" @onclick="() => HandleEdit(item.DocumentNumber)">查询</button></td>
                                 </tr>
                             }
                         }
@@ -378,6 +378,11 @@
     private void HandleAddNew()
     {
         OpenTabCallback?.Invoke("inbound-notice-add", "入库通知单*新增");
+    }
+
+    private void HandleEdit(string documentNumber)
+    {
+        OpenTabCallback?.Invoke($"inbound-notice-edit-{documentNumber}", $"入库通知单-编辑");
     }
 
     private async Task HandleExport()

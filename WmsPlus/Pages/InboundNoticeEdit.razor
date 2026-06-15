@@ -1,0 +1,644 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<InboundNoticeEdit> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/inbound-notice-edit.css" />
+
+<div class="inbound-notice-edit-page">
+    <!-- 顶部工具栏 -->
+    <div class="page-toolbar">
+        <button class="toolbar-btn primary-btn" @onclick="HandleSave">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 8.28a.75.75 0 011.06-1.06L6 9.94l6.72-6.72a.75.75 0 011.06 0z"/>
+            </svg>
+            <span>保存</span>
+        </button>
+        <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>新增</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleDelete">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M5.5 4h5l.5.5v9l-.5.5h-5L5 13.5v-9l.5-.5zM6 5v8h4V5H6z M4 3.5V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5zm8 0V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5z"/>
+            </svg>
+            <span>删除</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandlePrint">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M5 2h6v2H5V2zm7 2h1a2 2 0 012 2v2h-2V6a1 1 0 00-1-1H4a1 1 0 00-1 1v2H1V6a2 2 0 012-2h1V2a1 1 0 011-1h6a1 1 0 011 1v2zM1 11h14v2a1 1 0 01-1 1H2a1 1 0 01-1-1v-2zm3-3h8v3H4V8z"/>
+            </svg>
+            <span>打印</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleAttachment">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm0 1v10h8V3H4zm2 2h4v1H6V5zm0 2h4v1H6V7zm0 2h3v1H6V9z"/>
+            </svg>
+            <span>附件</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleQuery">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <circle cx="7" cy="7" r="5"/>
+                <line x1="11" y1="11" x2="15" y2="15" stroke="#666666" stroke-width="1.5"/>
+            </svg>
+            <span>查询</span>
+        </button>
+        <!-- 翻页按钮 -->
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn nav-btn" title="上一笔">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M10 4L6 8l4 4" stroke="#666666" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <button class="toolbar-btn nav-btn" title="下一笔">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M6 4l4 4-4 4" stroke="#666666" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 表单区域 - 3列布局 -->
+    <div class="form-area">
+        <div class="form-grid-3col">
+            <!-- ===== 第1列（左侧）===== -->
+            <!-- 单据日期 -->
+            <div class="form-item-add">
+                <label class="form-label-add">单据日期</label>
+                <input type="date" class="form-input-add" @bind="header.DocumentDate" @bind:format="yyyy-MM-dd" />
+            </div>
+
+            <!-- 部门代号* -->
+            <div class="form-item-add">
+                <label class="form-label-add"><span class="required-mark">*</span>部门代号</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.DepartmentCode" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 厂商代号* -->
+            <div class="form-item-add">
+                <label class="form-label-add"><span class="required-mark">*</span>厂商代号</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.VendorCode" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 仓库代号* -->
+            <div class="form-item-add">
+                <label class="form-label-add"><span class="required-mark">*</span>仓库代号</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.WarehouseCode" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 收货者号 -->
+            <div class="form-item-add">
+                <label class="form-label-add">收货者号</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.ReceiveOrderNo" />
+            </div>
+
+            <!-- ERP存档单据生成方式 -->
+            <div class="form-item-add">
+                <label class="form-label-add">ERP存档单据生成方式</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.ErpGenerateMode" />
+            </div>
+
+            <!-- ===== 第2列（中间）===== -->
+            <!-- 单据号码（只读） -->
+            <div class="form-item-add">
+                <label class="form-label-add">单据号码</label>
+                <input type="text" class="form-input-add readonly-field" value="@header.DocumentNumber" readonly />
+            </div>
+
+            <!-- 单据类别 -->
+            <div class="form-item-add">
+                <label class="form-label-add">单据类别</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.DocCategoryCode" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 经办人 -->
+            <div class="form-item-add">
+                <label class="form-label-add">经办人</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.OperatorCode" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 申请单号 -->
+            <div class="form-item-add">
+                <label class="form-label-add">申请单号</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.ApplyOrderNumber" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 外部系统标识 -->
+            <div class="form-item-add">
+                <label class="form-label-add">外部系统标识</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.ExternalSystemId" />
+            </div>
+
+            <!-- 预入日期 -->
+            <div class="form-item-add">
+                <label class="form-label-add">预入日期</label>
+                <input type="date" class="form-input-add" @bind="header.ExpectedDate" @bind:format="yyyy-MM-dd" />
+            </div>
+
+            <!-- 备注（跨行） -->
+            <div class="form-textarea-wrapper">
+                <label class="form-label-add">备注</label>
+                <textarea class="form-textarea-add" placeholder="" @bind="header.Remark"></textarea>
+            </div>
+
+            <!-- ===== 第3列（右侧）===== -->
+            <!-- 业务类型* -->
+            <div class="form-item-add">
+                <label class="form-label-add"><span class="required-mark">*</span>业务类型</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.BusinessType" />
+                <div class="input-search-icon" title="搜索">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 来源单号 -->
+            <div class="form-item-add">
+                <label class="form-label-add">来源单号</label>
+                <input type="text" class="form-input-add" placeholder="" @bind="header.SourceOrderNo" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="action-bar">
+        <button class="action-bar-btn" @onclick="HandleDocInfo">单据讯息</button>
+        <button class="action-bar-btn" @onclick="HandleExcelImport">Excel导入</button>
+        <button class="action-bar-btn" @onclick="HandleSplit">序分</button>
+        <button class="action-bar-btn" @onclick="HandleMore">更多...</button>
+    </div>
+
+    <!-- 明细区域 -->
+    <div class="detail-area">
+        <!-- 横向选项卡 -->
+        <div class="detail-tabs">
+            <div class="detail-tab-item @(activeDetailTab == "product" ? "active" : "")" @onclick="SwitchToProductTab">
+                <svg class="detail-tab-icon" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M2 3h5v5H2V3zm7 0h5v5H9V3zM2 9h5v5H2V9zm7 0h5v5H9V9z"/>
+                </svg>
+                <span>货品信息</span>
+            </div>
+            <div class="detail-tab-item @(activeDetailTab == "barcode" ? "active" : "")" @onclick="SwitchToBarcodeTab">
+                <svg class="detail-tab-icon" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M2 2h2v12H2V2zm3 0h1v12H5V2zm2 0h2v12H7V2zm3 0h1v12h-1V2zm2 0h2v12h-2V2z"/>
+                </svg>
+                <span>条码明细</span>
+            </div>
+        </div>
+
+        <!-- 明细表格容器 -->
+        <div class="detail-table-container">
+            @if (isLoading)
+            {
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <span>加载中...</span>
+                </div>
+            }
+            else if (activeDetailTab == "product")
+            {
+                <!-- 货品信息表格 -->
+                <table class="data-table-edit" style="width:100%;border-collapse:collapse;table-layout:fixed;">
+                    <thead>
+                        <tr style="position:sticky;top:0;z-index:1;">
+                            <th style="width:36px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="#1890ff"><path d="M8 3v10M3 8h10" stroke="#1890ff" stroke-width="2" stroke-linecap="round"/></svg>
+                            </th>
+                            <th style="width:100px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">货品代号</th>
+                            <th style="width:120px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">货品名称</th>
+                            <th style="width:80px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">仓库代号</th>
+                            <th style="width:80px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">单位名称</th>
+                            <th style="width:70px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">数量</th>
+                            <th style="width:90px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">批号</th>
+                            <th style="width:70px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">已入数量</th>
+                            <th style="width:110px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">外部系统单号</th>
+                            <th style="width:100px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">ERP申请单号</th>
+                            <th style="width:100px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">业务单号</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (productItems.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="11" style="text-align:center;padding:40px 0;">
+                                    <div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
+                                        <svg viewBox="0 0 64 64" width="80" height="80" fill="none">
+                                            <rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/>
+                                            <path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                        <p style="font-size:12px;color:#999999;margin:0;">暂无数据</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in productItems)
+                            {
+                                <tr style="border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#ffffff'">
+                                    <td style="text-align:center;padding:3px 4px;font-size:11px;">@item.ItemNo</td>
+                                    <td style="padding:2px 3px;">
+                                        <div class="td-input-group">
+                                            <input type="text" class="td-input" placeholder="" @bind="item.PrdNo" />
+                                            <span class="td-search-icon">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.PrdName" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <div class="td-input-group">
+                                            <input type="text" class="td-input" placeholder="" @bind="item.WhCode" />
+                                            <span class="td-search-icon">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.UnitName" readonly />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.Qty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <div class="td-input-group">
+                                            <input type="text" class="td-input" placeholder="" @bind="item.BatchNo" />
+                                            <span class="td-search-icon">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.ReceivedQty" readonly />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ExtSysOrderNo" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ErpApplyNo" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.BizOrderNo" />
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        <!-- 新增行按钮 -->
+                        <tr>
+                            <td colspan="11" class="add-row-btn-cell" style="background:#fff;cursor:pointer;">
+                                <button class="add-row-btn" @onclick="AddProductRow">
+                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="#1890ff"><path d="M8 3v10M3 8h10" stroke="#1890ff" stroke-width="2" stroke-linecap="round"/></svg>
+                                    新增行
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <!-- 条码明细表格 -->
+                <table class="data-table-edit" style="width:100%;border-collapse:collapse;table-layout:fixed;">
+                    <thead>
+                        <tr style="position:sticky;top:0;z-index:1;">
+                            <th style="width:80px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">条码类型</th>
+                            <th style="width:140px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">条码</th>
+                            <th style="width:70px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">扫描数量</th>
+                            <th style="width:70px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">实品数量</th>
+                            <th style="width:120px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">容器条码</th>
+                            <th style="width:70px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">原箱数量</th>
+                            <th style="width:110px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">箱码条码标签</th>
+                            <th style="width:110px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">容器部件标签</th>
+                            <th style="width:60px;background:#fafafa;font-size:11px;text-align:center;border-bottom:1px solid #e8e8e8;padding:6px 4px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (barcodeItems.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="9" style="text-align:center;padding:40px 0;">
+                                    <div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
+                                        <svg viewBox="0 0 64 64" width="80" height="80" fill="none">
+                                            <rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/>
+                                            <path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                        <p style="font-size:12px;color:#999999;margin:0;">暂无数据</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in barcodeItems)
+                            {
+                                <tr style="border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='#ffffff'">
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.BarcodeType" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.Barcode" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.ScanQty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.ActualQty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ContainerBarcode" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="number" class="td-input td-num-input" step="0.01" min="0" @bind="item.BoxQty" @bind:event="oninput" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.BoxLabelTag" />
+                                    </td>
+                                    <td style="padding:2px 3px;">
+                                        <input type="text" class="td-input" @bind="item.ContainerPartLabel" />
+                                    </td>
+                                    <td style="text-align:center;padding:3px 4px;font-size:11px;">
+                                        <button class="row-action-btn" @onclick="() => RemoveBarcodeRow(item.ItemNo)">删除</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        <!-- 新增行按钮 -->
+                        <tr>
+                            <td colspan="9" class="add-row-btn-cell" style="background:#fff;cursor:pointer;">
+                                <button class="add-row-btn" @onclick="AddBarcodeRow">
+                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="#1890ff"><path d="M8 3v10M3 8h10" stroke="#1890ff" stroke-width="2" stroke-linecap="round"/></svg>
+                                    新增行
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    /// <summary>
+    /// 接收从列表页传来的单据号码参数
+    /// </summary>
+    [Parameter] public string DocumentNumber { get; set; } = "";
+
+    private InboundNoticeEditHeader header = new();
+    private List<InboundNoticeEditProductItem> productItems = new();
+    private List<InboundNoticeEditBarcodeItem> barcodeItems = new();
+    private string activeDetailTab = "product";
+    private bool isLoading = true;
+    private int productItemSeq = 0;
+    private int barcodeItemSeq = 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(DocumentNumber))
+        {
+            await LoadDetailData();
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    // ===== 加载详情数据 =====
+    private async Task LoadDetailData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            const string ApiBaseUrl = "http://localhost:5102";
+            var url = $"{ApiBaseUrl}/api/InboundNotice/{Uri.EscapeDataString(DocumentNumber)}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResult<InboundNoticeDetailResponse>>(jsonOptions);
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                MapHeader(response.Data.Header);
+                MapDetails(response.Data.Details);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载入库通知单详情失败，单据号：{DocumentNumber}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// 映射表头数据到表单模型
+    /// </summary>
+    private void MapHeader(MfRktzDto h)
+    {
+        header.DocumentNumber = h.TZ_NO ?? "";
+        header.DocumentDate = h.TZ_DD ?? DateTime.Today;
+        header.DepartmentCode = h.DEP ?? "";
+        header.VendorCode = h.CUS_NO ?? "";
+        header.WarehouseCode = h.WH ?? "";
+        header.BusinessType = h.BIL_TYPE ?? "";
+        header.ExpectedDate = h.EST_DD;
+        header.Remark = h.REM ?? "";
+    }
+
+    /// <summary>
+    /// 映射明细数据到表格模型
+    /// </summary>
+    private void MapDetails(List<TfRktzDetailDto> details)
+    {
+        productItems = details.Select(d => new InboundNoticeEditProductItem
+        {
+            ItemNo = d.ItemNo,
+            PrdNo = d.PrdNo,
+            PrdName = d.PrdName,
+            WhCode = "",
+            UnitName = d.Unit,
+            Qty = d.Qty,
+            BatchNo = d.LotNo,
+            ReceivedQty = 0m,
+            ExtSysOrderNo = "",
+            ErpApplyNo = "",
+            BizOrderNo = ""
+        }).ToList();
+
+        productItemSeq = details.Count > 0 ? details.Max(d => d.ItemNo) : 0;
+    }
+
+    // ===== 工具栏按钮事件 =====
+    private void HandleSave() { /* TODO: 保存功能 */ }
+    private void HandleAddNew() { /* TODO: 新增功能 */ }
+    private void HandleDelete() { /* TODO: 删除功能 */ }
+    private void HandlePrint() { /* TODO: 打印功能 */ }
+    private void HandleAttachment() { /* TODO: 附件功能 */ }
+    private void HandleQuery() { /* TODO: 查询功能 */ }
+
+    // ===== 底部操作栏事件 =====
+    private void HandleDocInfo() { /* TODO: 单据资讯功能 */ }
+    private void HandleExcelImport() { /* TODO: Excel导入功能 */ }
+    private void HandleSplit() { /* TODO: 序分功能 */ }
+    private void HandleMore() { /* TODO: 更多功能 */ }
+
+    // ===== 明细选项卡切换 =====
+    private void SwitchToProductTab() { activeDetailTab = "product"; StateHasChanged(); }
+    private void SwitchToBarcodeTab() { activeDetailTab = "barcode"; StateHasChanged(); }
+
+    // ===== 货品明细操作 =====
+    private void AddProductRow()
+    {
+        productItemSeq++;
+        productItems.Add(new InboundNoticeEditProductItem { ItemNo = productItemSeq });
+        StateHasChanged();
+    }
+
+    // ===== 条码明细操作 =====
+    private void AddBarcodeRow()
+    {
+        barcodeItemSeq++;
+        barcodeItems.Add(new InboundNoticeEditBarcodeItem { ItemNo = barcodeItemSeq });
+        StateHasChanged();
+    }
+
+    private void RemoveBarcodeRow(int itemNo)
+    {
+        barcodeItems.RemoveAll(x => x.ItemNo == itemNo);
+        StateHasChanged();
+    }
+
+    // ===== 数据模型定义 =====
+
+    /// <summary>表头模型</summary>
+    public class InboundNoticeEditHeader
+    {
+        public DateTime DocumentDate { get; set; } = DateTime.Today;
+        public string DepartmentCode { get; set; } = "";          // 部门代号
+        public string VendorCode { get; set; } = "";              // 厂商代号
+        public string WarehouseCode { get; set; } = "";           // 仓库代号
+        public string ReceiveOrderNo { get; set; } = "";          // 收货者号
+        public string ErpGenerateMode { get; set; } = "";         // ERP存档单据生成方式
+        public string DocumentNumber { get; set; } = "";          // 单据号码(只读)
+        public string DocCategoryCode { get; set; } = "";         // 单据类别
+        public string OperatorCode { get; set; } = "";            // 经办人
+        public string ApplyOrderNumber { get; set; } = "";        // 申请单号
+        public string ExternalSystemId { get; set; } = "";         // 外部系统标识
+        public DateTime? ExpectedDate { get; set; }               // 预入日期
+        public string Remark { get; set; } = "";                  // 备注
+        public string BusinessType { get; set; } = "";            // 业务类型
+        public string SourceOrderNo { get; set; } = "";           // 来源单号
+    }
+
+    /// <summary>货品信息明细行</summary>
+    public class InboundNoticeEditProductItem
+    {
+        public int ItemNo { get; set; }
+        public string PrdNo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public string WhCode { get; set; } = "";
+        public string UnitName { get; set; } = "";
+        public decimal Qty { get; set; }
+        public string BatchNo { get; set; } = "";
+        public decimal ReceivedQty { get; set; }
+        public string ExtSysOrderNo { get; set; } = "";
+        public string ErpApplyNo { get; set; } = "";
+        public string BizOrderNo { get; set; } = "";
+    }
+
+    /// <summary>条码明细行</summary>
+    public class InboundNoticeEditBarcodeItem
+    {
+        public int ItemNo { get; set; }
+        public string BarcodeType { get; set; } = "";
+        public string Barcode { get; set; } = "";
+        public decimal ScanQty { get; set; }
+        public decimal ActualQty { get; set; }
+        public string ContainerBarcode { get; set; } = "";
+        public decimal BoxQty { get; set; }
+        public string BoxLabelTag { get; set; } = "";
+        public string ContainerPartLabel { get; set; } = "";
+    }
+
+    // ===== API响应模型 =====
+    private class ApiResult<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+
+    private class InboundNoticeDetailResponse
+    {
+        public MfRktzDto Header { get; set; } = new();
+        public List<TfRktzDetailDto> Details { get; set; } = new();
+    }
+
+    /// <summary>表头DTO（对应后端 MfRktz 实体字段）</summary>
+    public class MfRktzDto
+    {
+        public string? TZ_NO { get; set; }
+        public DateTime? TZ_DD { get; set; }
+        public string? DEP { get; set; }
+        public string? BIL_TYPE { get; set; }
+        public string? CUS_NO { get; set; }
+        public string? CUS_NAME { get; set; }
+        public string? WH { get; set; }
+        public DateTime? EST_DD { get; set; }
+        public string? CLS_ID { get; set; }
+        public string? REM { get; set; }
+        public string? USR { get; set; }
+        public DateTime? SYS_DATE { get; set; }
+    }
+
+    /// <summary>表身明细DTO（对应后端 TfRktzDto）</summary>
+    public class TfRktzDetailDto
+    {
+        public int ItemNo { get; set; }
+        public string PrdNo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public string PrdSpec { get; set; } = "";
+        public decimal Qty { get; set; }
+        public string Unit { get; set; } = "";
+        public string LotNo { get; set; } = "";
+        public string Rem { get; set; } = "";
+    }
+}

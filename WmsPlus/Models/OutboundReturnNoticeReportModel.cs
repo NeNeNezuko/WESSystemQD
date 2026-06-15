@@ -28,10 +28,19 @@ namespace WmsPlus.Models
     public class OutboundReturnNoticeReportQuery
     {
         public string DateRange { get; set; } = "";
-        public DateTime? DateFrom { get; set; }
-        public DateTime? DateTo { get; set; }
-        public string ReturnNumber { get; set; } = "";
-        public string WarehouseCode { get; set; } = "";
-        public string CloseStatus { get; set; } = "全部";
+        public string DocNo { get; set; } = "";
+        public bool FuzzyDocNo { get; set; } = false;
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string PrdName { get; set; } = "";
+        public bool FuzzyPrdName { get; set; } = false;
+        public string WhName { get; set; } = "";
+        public bool FuzzyWhName { get; set; } = false;
+        public string OperatorName { get; set; } = "";
+        public bool FuzzyOperatorName { get; set; } = false;
+        public string BizOrderNo { get; set; } = "";
+        public bool FuzzyBizOrderNo { get; set; } = false;
+        public string ErpApplyNo { get; set; } = "";
+        public bool FuzzyErpApplyNo { get; set; } = false;
     }
 }

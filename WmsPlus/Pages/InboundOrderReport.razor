@@ -4,7 +4,6 @@
 @inject ILogger<InboundOrderReport> _logger
 @inject TokenProvider TokenProvider
 
-<link rel="stylesheet" href="css/inbound-order-report.css" />
 
 <div class="inbound-order-report-page" style="display:flex;flex-direction:column;flex:1 1 0%;overflow:hidden;">
     <!-- 顶部标题栏 -->
@@ -21,6 +20,34 @@
             <span class="page-title">入库单报表/查询</span>
         </div>
         <div class="header-right">
+            <button class="header-toolbar-btn" @onclick="HandleTypeConfig">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <rect x="1" y="2" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                    <rect x="9" y="2" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                    <rect x="1" y="9" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                    <rect x="9" y="9" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
+                </svg>
+                <span>类别</span>
+            </button>
+            <button class="header-toolbar-btn" @onclick="HandleExport">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span>导出Excel</span>
+            </button>
+            <button class="header-toolbar-btn" @onclick="HandlePrint">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M4 2h8v3H4V2zm10 4H2v7h12V6zM5 13v2h6v-2" stroke="#666666" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
+                </svg>
+                <span>打印</span>
+            </button>
+            <button class="header-toolbar-btn" @onclick="HandleColumnDesign">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" stroke="#666666" stroke-width="1" fill="none"/>
+                </svg>
+                <span>类型设计</span>
+            </button>
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
@@ -85,59 +112,43 @@
                     </div>
                 </div>
 
-                <!-- 单据号码 起 -->
-                <div class="form-item">
-                    <label class="form-label">单据号码 起</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
-                        <button class="search-icon-btn" title="搜索">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
+                <!-- 单据号码 起/止 -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">单据号码 起</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.BilNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">单据号码 止</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.BilNoTo" />
                     </div>
                 </div>
 
-                <!-- 单据号码 止 -->
-                <div class="form-item">
-                    <label class="form-label">单据号码 止</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
-                        <button class="search-icon-btn" title="搜索">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
+                <!-- 货品代号 起/止 -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 起</label>
+                        <div class="fused-input-area">
+                            <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoFrom" />
+                            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                <!-- 货品代号 起 -->
-                <div class="form-item">
-                    <label class="form-label">货品代号 起</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.PrdNoFrom" />
-                        <button class="search-icon-btn" title="搜索货品">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 货品代号 止 -->
-                <div class="form-item">
-                    <label class="form-label">货品代号 止</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.PrdNoTo" />
-                        <button class="search-icon-btn" title="搜索货品">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 止</label>
+                        <div class="fused-input-area">
+                            <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoTo" />
+                            <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                                    <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -165,31 +176,16 @@
                     </div>
                 </div>
 
-                <!-- 储位代号 起 -->
-                <div class="form-item">
-                    <label class="form-label">储位代号 起</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.ChuwFrom" />
-                        <button class="search-icon-btn" title="搜索储位">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
+                <!-- 储位代号 起/止 -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">储位代号 起</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.ChuwFrom" />
                     </div>
-                </div>
-
-                <!-- 储位代号 止 -->
-                <div class="form-item">
-                    <label class="form-label">储位代号 止</label>
-                    <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.ChuwTo" />
-                        <button class="search-icon-btn" title="搜索储位">
-                            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
-                                <circle cx="6" cy="6" r="4"/>
-                                <line x1="9" y1="9" x2="13" y2="13"/>
-                            </svg>
-                        </button>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">储位代号 止</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.ChuwTo" />
                     </div>
                 </div>
 
@@ -211,36 +207,14 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn category-btn">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <rect x="1" y="2" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
-                            <rect x="9" y="2" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
-                            <rect x="1" y="9" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
-                            <rect x="9" y="9" width="6" height="5" rx="1" stroke="#666666" stroke-width="1.2" fill="none"/>
-                        </svg>
-                        <span>类别</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>导出Excel</span>
-                    </button>
-                    <button class="toolbar-btn print-btn">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M4 2h8v3H4V2zm10 4H2v7h12V6zM5 13v2h6v-2" stroke="#666666" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
-                        </svg>
-                        <span>打印</span>
-                    </button>
                 </div>
                 <div class="toolbar-right"></div>
             </div>
 
             <!-- 嵌套选项卡导航 -->
-            <div class="report-tab-nav">
-                <button class="report-tab @(activeReportTab == "detail" ? "active" : "")" @onclick='() => SwitchReportTab("detail")'>明细表</button>
-                <button class="report-tab @(activeReportTab == "stats" ? "active" : "")" @onclick='() => SwitchReportTab("stats")'>统计表</button>
+            <div class="inner-tab-bar-inline">
+                <div class="inner-tab-item @(activeReportTab == "detail" ? "active" : "")" @onclick='() => SwitchReportTab("detail")'>明细表</div>
+                <div class="inner-tab-item @(activeReportTab == "stats" ? "active" : "")" @onclick='() => SwitchReportTab("stats")'>统计表</div>
             </div>
 
             <!-- 数据表格区域 -->
@@ -510,6 +484,38 @@
 }
 
 
+<!-- 货品选择器对话框 -->
+@if (showProductDialog)
+{
+    <div class="prd-selector-overlay" @onclick="CloseProductSelector">
+        <div class="prd-selector-dialog" @onclick:stopPropagation>
+            <div class="prd-selector-header">
+                <span>货品(PRDT)</span>
+                <button class="prd-close-btn" @onclick="CloseProductSelector">&times;</button>
+            </div>
+            <div class="prd-selector-body">
+                <div class="prd-left-panel">
+                    <div class="prd-filter-title">过滤</div>
+                    <input type="text" class="prd-search-input" placeholder="输入关键字查询" @bind="productSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchProduct(); })" />
+                    <button class="prd-query-btn" @click="@(() => _ = SearchProduct())">查询</button>
+                </div>
+                <div class="prd-right-panel">
+                    <table class="prd-data-table">
+                        <thead><tr><th class="prd-col-action">操作</th><th style="width:50px">项次</th><th>货品代号</th><th>货品名称</th><th>规格</th><th>单位</th></tr></thead>
+                        <tbody>
+                            @if (productData.Count == 0) { <tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr> }
+                            else { @for (int i = 0; i < productData.Count; i++) { var item = productData[i]; var rowIdx = (productPageIndex - 1) * productPageSize + i + 1; <tr><td><button class="prd-select-btn" @click="() => SelectProduct(item)">选择</button></td><td style="text-align:center">@rowIdx</td><td>@item.PRD_NO</td><td>@item.NAME</td><td>@item.SNM</td><td>@item.UT</td></tr> } }
+                        </tbody>
+                    </table>
+                    <div class="prd-pagination"><span class="prd-total-info">共 @productTotalCount 笔记录</span><div class="prd-page-controls"><button class="prd-page-btn" disabled="@(productPageIndex <= 1)" @click="async () => await GoToPrdPage(productPageIndex - 1)">&lt;</button><input type="number" class="prd-page-input" value="@productPageIndex" min="1" max="@PrdTotalPages" @change="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToPrdPage(p); }" /><span>/ @PrdTotalPages</span><button class="prd-page-btn" disabled="@(productPageIndex >= PrdTotalPages)" @click="async () => await GoToPrdPage(productPageIndex + 1)">&gt;</button></div></div>
+                </div>
+            </div>
+            <div class="prd-selector-footer"><button class="prd-footer-cancel" @click="CloseProductSelector">取消</button></div>
+        </div>
+    </div>
+}
+
+
 @code {
     // ===== 级联参数 =====
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
@@ -739,6 +745,11 @@
         }
         StateHasChanged();
     }
+
+    // ===== 工具栏按钮（占位） =====
+    private void HandleTypeConfig() { /* TODO: 类型配置 */ }
+    private void HandlePrint() { /* TODO: 打印 */ }
+    private void HandleColumnDesign() { /* TODO: 类型设计 */ }
 
     // ===== 导出 =====
     private async Task HandleExport()
@@ -1156,5 +1167,77 @@
         public string? CusName { get; set; }
         public decimal TotalQty { get; set; }
         public decimal TotalQty1 { get; set; }
+    }
+
+    // ===== 货品选择器状态 =====
+    private bool showProductDialog = false;
+    private string activePrdSelector = "";
+    private string productSearchKeyword = "";
+    private List<PrdItem> productData = new();
+    private int productPageIndex = 1;
+    private int productPageSize = 20;
+    private int productTotalCount = 0;
+
+    private class PrdItem
+    {
+        public string PRD_NO { get; set; } = "";
+        public string NAME { get; set; } = "";
+        public string SNM { get; set; } = "";
+        public string UT { get; set; } = "";
+    }
+
+    private class PrdSearchResult
+    {
+        public List<PrdItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    private async Task OpenPrdFromSelector()
+    {
+        activePrdSelector = "from";
+        productSearchKeyword = ""; productPageIndex = 1;
+        await SearchProduct(); showProductDialog = true; StateHasChanged();
+    }
+
+    private async Task OpenPrdToSelector()
+    {
+        activePrdSelector = "to";
+        productSearchKeyword = ""; productPageIndex = 1;
+        await SearchProduct(); showProductDialog = true; StateHasChanged();
+    }
+
+    private void CloseProductSelector() { showProductDialog = false; StateHasChanged(); }
+
+    private async Task SearchProduct()
+    {
+        try
+        {
+            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<PrdSearchResult>(json, jsonOptions);
+                if (result != null) { productData = result.Items ?? new List<PrdItem>(); productTotalCount = result.TotalCount; }
+            }
+        }
+        catch (Exception ex) { Console.WriteLine($"[InboundOrderReport] 查询货品数据失败: {ex.Message}"); }
+        StateHasChanged();
+    }
+
+    private void SelectProduct(PrdItem item)
+    {
+        if (activePrdSelector == "from") query.PrdNoFrom = item.PRD_NO;
+        else if (activePrdSelector == "to") query.PrdNoTo = item.PRD_NO;
+        showProductDialog = false; StateHasChanged();
+    }
+
+    private int PrdTotalPages => productPageSize > 0 ? (int)Math.Ceiling((double)productTotalCount / productPageSize) : 1;
+
+    private async Task GoToPrdPage(int page)
+    {
+        if (page >= 1 && page <= PrdTotalPages) { productPageIndex = page; await SearchProduct(); }
     }
 }

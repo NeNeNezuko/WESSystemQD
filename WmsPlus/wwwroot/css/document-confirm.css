@@ -1,4 +1,4 @@
-﻿/* ========== 单据确认作业页面样式 ========== */
+/* ========== 单据确认作业页面样式 ========== */
 /* 基础布局复用入库通知单风格，新增内层选项卡和特殊查询框样式 */
 
 .document-confirm-page {
@@ -277,7 +277,7 @@
     padding-top: 8px;
 }
 
-/* ===== 融合式单边框（货品代号 起/止） ===== */
+/* ===== 融合式单边框（货品代号 起/止，上下分行） ===== */
 .form-item-fused {
     display: flex;
     flex-direction: column;
@@ -287,12 +287,15 @@
     overflow: hidden;
 }
 
-/* 复用 .form-item 的子元素重置（与第246行一致），确保input无Bootstrap默认样式 */
 .form-item-fused > .fused-row {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    height: 32px;
+    height: 30px;
+}
+
+.form-item-fused > .fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
 }
 
 .form-item-fused > .fused-row > * {
@@ -303,10 +306,8 @@
     outline: none;
 }
 
-/* label 需要恢复边框和内边距 */
 .form-item-fused > .fused-row > .form-label {
     padding: 0 8px;
-    border-right: 1px solid #e8e8e8;
     background-color: #fafafa;
     font-size: 12px;
     color: #333333;
@@ -315,46 +316,51 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 0;
+    min-width: 70px;
     flex-shrink: 0;
 }
 
-.form-item-fused > .fused-row > .input-with-search {
-    position: relative;
-    display: flex;
-    align-items: stretch;
+.form-item-fused > .fused-row > .fused-input {
     flex: 1;
-    height: 100%;
-    min-height: 0;
-}
-
-.form-item-fused > .fused-row > .input-with-search > .form-input {
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0 24px 0 6px;
+    padding: 0 6px;
     font-size: 12px;
-    line-height: 32px;
     color: #333333;
     background-color: transparent;
-    box-sizing: border-box;
-    vertical-align: top;
     border: none !important;
     outline: none !important;
 }
 
-.form-item-fused > .fused-row > .input-with-search > .search-icon-btn {
+.form-item-fused > .fused-row > .fused-input-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.form-item-fused > .fused-row > .fused-input-area > .fused-input {
+    width: 100%;
+    padding: 0 6px;
+    font-size: 12px;
+    color: #333333;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+}
+
+.fused-search-btn {
     position: absolute;
     right: 2px;
     top: 50%;
     transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
     z-index: 1;
 }
 
 .fused-divider {
-    height: 0;
-    border-bottom: 1px dashed #d9d9d9;
-    margin: 0;
+    display: none;
 }
 
 .form-input {
@@ -631,6 +637,39 @@
     color: #999999;
     margin: 0;
 }
+
+/* ========== 货品选择器对话框 ========== */
+.prd-selector-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.45); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+.prd-selector-dialog { background-color: #ffffff; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.15); width: 900px; max-width: 92vw; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+.prd-selector-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #f0f0f0; font-size: 14px; font-weight: 500; color: #333333; }
+.prd-close-btn { background: none; border: none; font-size: 18px; color: #999999; cursor: pointer; padding: 0 2px; line-height: 1; }
+.prd-close-btn:hover { color: #333333; }
+.prd-selector-body { display: flex; flex: 1; overflow: hidden; min-height: 380px; }
+.prd-left-panel { width: 180px; min-width: 180px; border-right: 1px solid #f0f0f0; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; background-color: #fafafa; }
+.prd-filter-title { font-size: 13px; font-weight: 500; color: #333333; margin-bottom: 4px; }
+.prd-search-input { height: 32px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+.prd-search-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.prd-query-btn { height: 32px; background-color: #1890ff; color: #ffffff; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; transition: background-color 0.2s; }
+.prd-query-btn:hover { background-color: #40a9ff; }
+.prd-right-panel { flex: 1; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; }
+.prd-data-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+.prd-data-table th { background-color: #fafafa; padding: 8px 6px; text-align: left; font-size: 12px; font-weight: 500; color: #666666; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+.prd-data-table td { padding: 7px 6px; font-size: 12px; color: #333333; border-bottom: 1px solid #f5f5f5; vertical-align: middle; white-space: nowrap; }
+.prd-col-action { position: relative; white-space: nowrap; width: 70px !important; min-width: 70px !important; }
+.prd-select-btn { background: none; border: 1px solid #d9d9d9; border-radius: 3px; padding: 2px 10px; font-size: 12px; color: #1890ff; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.prd-select-btn:hover { border-color: #1890ff; color: #1890ff; background-color: #e6f7ff; }
+.prd-pagination { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px 4px; margin-top: auto; }
+.prd-total-info { font-size: 12px; color: #888888; }
+.prd-page-controls { display: flex; align-items: center; gap: 4px; }
+.prd-page-btn { width: 28px; height: 26px; border: 1px solid #d9d9d9; border-radius: 3px; background: #fff; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.prd-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.prd-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.prd-page-input { width: 44px; height: 26px; text-align: center; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 13px; outline: none; }
+.prd-page-input:focus { border-color: #1890ff; }
+.prd-page-controls span { font-size: 12px; color: #666666; }
+.prd-selector-footer { display: flex; justify-content: flex-end; align-items: center; padding: 10px 18px; border-top: 1px solid #f0f0f0; }
+.prd-footer-cancel { height: 30px; padding: 0 20px; border: 1px solid #d9d9d9; border-radius: 4px; background: #ffffff; font-size: 13px; color: #333333; cursor: pointer; }
+.prd-footer-cancel:hover { border-color: #1890ff; color: #1890ff; }
 
 .action-btn {
     background: none;

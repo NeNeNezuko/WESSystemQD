@@ -147,6 +147,12 @@
                     <InboundNoticeAdd />
                 </div>
             }
+            @if (tabs.Any(t => t.Id.StartsWith("inbound-notice-edit")))
+            {
+                <div style="display:@(activeTabId.StartsWith("inbound-notice-edit") ? "flex" : "none"); min-height:0; height:100%;">
+                    <InboundNoticeEdit DocumentNumber="@GetEditDocumentNumber(activeTabId)" />
+                </div>
+            }
             @if (tabs.Any(t => t.Id == "inbound-order"))
             {
                 <div style="display:@(activeTabId == "inbound-order" ? "flex" : "none"); min-height:0; height:100%;">
@@ -1039,6 +1045,14 @@
     {
         _favoriteVersion++;
         StateHasChanged();
+    }
+
+    // ★ 从编辑标签页ID中提取单据号码
+    private string GetEditDocumentNumber(string tabId)
+    {
+        if (tabId.StartsWith("inbound-notice-edit-"))
+            return tabId.Replace("inbound-notice-edit-", "");
+        return "";
     }
 
     // ★ 打开新标签页
@@ -1956,6 +1970,120 @@
         if (itemTitle == "用户设定")
         {
             OpenTab("user-setting", "用户设定");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 系统管理 - 类别权限设定/类别成员设定/单据属性设定 =====
+        if (itemTitle == "类别权限设定")
+        {
+            OpenTab("category-permission-setting", "类别权限设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "类别成员设定")
+        {
+            OpenTab("category-member-setting", "类别成员设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "单据属性设定")
+        {
+            OpenTab("doc-property-setting", "单据属性设定");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 系统管理 - 超额控管/数据替换/批号效期 =====
+        if (itemTitle == "超额控管设定" || itemTitle == "超交管制设定")
+        {
+            OpenTab("exceed-ctrl-setting", "超额控管设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "数据替换" || itemTitle == "资料替换")
+        {
+            OpenTab("data-replace", "数据替换");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "批号效期操作" || itemTitle == "修改批号有效期限作业")
+        {
+            OpenTab("batch-validity-operation", "批号效期操作");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 自定义报表/仿真布局/可视化仓储 =====
+        if (itemTitle == "自定义报表")
+        {
+            OpenTab("custom-report", "自定义报表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "仿真布局设备设定")
+        {
+            OpenTab("emulate-device-setting", "仿真布局设备设定");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "可视化仓库仿真布局设定" || itemTitle == "可视化仓储布局设定")
+        {
+            OpenTab("warehouse-view-setting", "可视化仓库仿真布局设定");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 服务日志/异常查询 =====
+        if (itemTitle == "服务日志查询表")
+        {
+            OpenTab("service-log-query", "服务日志查询表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "服务异常查询表")
+        {
+            OpenTab("service-exception-query", "服务异常查询表");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - API异常表/系统设备管理 =====
+        if (itemTitle == "API接口异常表")
+        {
+            OpenTab("api-exception-table", "API接口异常表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "系统设备管理")
+        {
+            OpenTab("system-device-management", "系统设备管理");
+            await CloseMegaMenu();
+            return;
+        }
+
+        // ===== 基础资料 - 第三方接口(4个) =====
+        if (itemTitle == "第三方调用明细表")
+        {
+            OpenTab("third-party-call-detail", "第三方调用明细表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "第三方调用历史表")
+        {
+            OpenTab("third-party-call-history", "第三方调用历史表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "推送第三方明细表")
+        {
+            OpenTab("third-party-push-detail", "推送第三方明细表");
+            await CloseMegaMenu();
+            return;
+        }
+        if (itemTitle == "推送第三方历史表")
+        {
+            OpenTab("third-party-push-history", "推送第三方历史表");
             await CloseMegaMenu();
             return;
         }

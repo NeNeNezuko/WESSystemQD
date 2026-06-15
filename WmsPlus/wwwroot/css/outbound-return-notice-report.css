@@ -1,4 +1,4 @@
-﻿/* ========== 出库退回通知单报表页面样式 ========== */
+/* ========== 出库退回通知单报表页面样式 ========== */
 .outbound-return-notice-report-page {
     width: 100%;
     height: 100%;
@@ -791,3 +791,174 @@
     border-radius: 2px;
     outline: none;
 }
+
+/* ===== 融合式单边框（起止输入框，上下分行） ===== */
+.form-item-fused {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.form-item-fused > .fused-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+}
+.form-item-fused > .fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
+}
+.form-item-fused > .fused-row > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.form-item-fused > .fused-row > .form-label {
+    padding: 0 8px;
+    background-color: #fafafa;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+}
+.form-item-fused > .fused-row > .fused-input {
+    flex: 1; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.form-item-fused > .fused-row > .fused-input-area {
+    flex: 1; display: flex; align-items: center; position: relative;
+}
+.form-item-fused > .fused-row > .fused-input-area > .fused-input {
+    width: 100%; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.fused-search-btn {
+    position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 2px; cursor: pointer; z-index: 1;
+}
+.fused-divider { display: none; }
+
+/* ===== 货品选择器对话框 ===== */
+.prd-selector-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+}
+.prd-selector-dialog {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    width: 720px;
+    max-height: 80vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.prd-selector-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; font-weight: 500; color: #333333;
+}
+.prd-close-btn {
+    background: none; border: none;
+    font-size: 18px; color: #999999;
+    cursor: pointer; padding: 0 2px; line-height: 1;
+}
+.prd-close-btn:hover { color: #333333; }
+.prd-selector-body {
+    display: flex; flex: 1; overflow: hidden;
+    min-height: 360px;
+}
+.prd-left-panel {
+    width: 180px; min-width: 180px;
+    border-right: 1px solid #f0f0f0;
+    padding: 16px 12px;
+    display: flex; flex-direction: column; gap: 10px;
+    background-color: #fafafa;
+}
+.prd-filter-title {
+    font-size: 13px; font-weight: 500; color: #333333;
+    margin-bottom: 4px;
+}
+.prd-search-input {
+    width: 100%; height: 32px; padding: 0 10px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    font-size: 13px; color: #333333; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.prd-search-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
+}
+.prd-query-btn {
+    width: 100%; height: 30px;
+    background-color: #1890ff; color: #ffffff; border: none; border-radius: 4px;
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.prd-query-btn:hover { background-color: #40a9ff; }
+.prd-right-panel {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    padding: 0;
+}
+.prd-data-table {
+    width: 100%; border-collapse: collapse; table-layout: fixed;
+    flex: 1; overflow: auto;
+}
+.prd-data-table thead th {
+    background-color: #fafafa; padding: 8px 6px;
+    text-align: left; font-size: 12px; font-weight: 500; color: #666666;
+    border-bottom: 1px solid #e8e8e8; white-space: nowrap;
+}
+.prd-data-table tbody td {
+    padding: 6px 4px; font-size: 12px; color: #333333;
+    border-bottom: 1px solid #f5f5f5; vertical-align: middle;
+}
+.prd-col-action { width: 55px; text-align: center; }
+.prd-select-btn {
+    height: 24px; padding: 0 12px;
+    border: 1px solid #1890ff; border-radius: 4px;
+    background-color: #1890ff; color: #ffffff; font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
+}
+.prd-select-btn:hover { background-color: #40a9ff; border-color: #40a9ff; }
+.prd-pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; border-top: 1px solid #f0f0f0;
+    background-color: #ffffff; flex-shrink: 0;
+}
+.prd-total-info { font-size: 12px; color: #999999; }
+.prd-page-controls {
+    display: flex; align-items: center; gap: 4px;
+}
+.prd-page-btn {
+    width: 26px; height: 26px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background-color: #ffffff; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.prd-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.prd-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.prd-page-input {
+    width: 40px; height: 26px; text-align: center;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    font-size: 12px; color: #333333; outline: none;
+    -moz-appearance: textfield;
+}
+.prd-page-input::-webkit-inner-spin-button,
+.prd-page-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.prd-page-controls span { font-size: 12px; color: #666666; }
+.prd-selector-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 12px 18px; border-top: 1px solid #f0f0f0;
+}
+.prd-footer-cancel {
+    height: 30px; padding: 0 20px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background-color: #ffffff; font-size: 13px; color: #333333;
+    cursor: pointer; transition: all 0.2s;
+}
+.prd-footer-cancel:hover { border-color: #1890ff; color: #1890ff; }
