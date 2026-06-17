@@ -530,7 +530,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -544,7 +543,7 @@
                 }
             }
             var viewType = activeInnerTab == "summary" ? "summary" : "detail";
-            var url = $"{ApiBaseUrl}/api/OutboundNoticeReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&viewType={viewType}";
+            var url = $"{ApiConfig.BaseUrl}/api/OutboundNoticeReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&viewType={viewType}";
             if (!string.IsNullOrWhiteSpace(query.DocNo)) url += $"&docNo={Uri.EscapeDataString(query.DocNo)}&fuzzyDocNo={query.FuzzyDocNo}";
             if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
             if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
@@ -797,7 +796,7 @@
     private async Task SearchProduct()
     {
         try {
-            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);

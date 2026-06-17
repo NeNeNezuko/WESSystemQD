@@ -400,7 +400,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -413,7 +412,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/OutboundOrder/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/OutboundOrder/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.CkTzNo))
@@ -499,6 +498,8 @@
             new() { FieldKey = "CustomerCode", OriginalName = "客户代号", DisplayName = "客户代号", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
             new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "BatId", OriginalName = "批混", DisplayName = "批混", Visible = true, Width = 50, DefaultWidth = 50, Sortable = true },
+            new() { FieldKey = "SourceDocType", OriginalName = "来源单据别", DisplayName = "来源单据别", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "SourceDocNo", OriginalName = "来源单号", DisplayName = "来源单号", Visible = true, Width = 110, DefaultWidth = 110, Sortable = true },
             new() { FieldKey = "PrdNo", OriginalName = "料号/品号", DisplayName = "料号/品号", Visible = false, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "PrdName", OriginalName = "品名", DisplayName = "品名", Visible = false, Width = 120, DefaultWidth = 120 },
             new() { FieldKey = "PrdSpec", OriginalName = "规格型号", DisplayName = "规格型号", Visible = false, Width = 100, DefaultWidth = 100 },
@@ -621,6 +622,8 @@
         "CustomerCode" => item.CustomerCode,
         "CustomerName" => item.CustomerName,
         "BatId" => item.BatId,
+        "SourceDocType" => item.SourceDocType,
+        "SourceDocNo" => item.SourceDocNo,
         "PrdNo" => item.PrdNo,
         "PrdName" => item.PrdName,
         "PrdSpec" => item.PrdSpec,

@@ -444,8 +444,7 @@
 
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/InboundNotice/{Uri.EscapeDataString(DocumentNumber)}";
+            var url = $"{ApiConfig.BaseUrl}/api/InboundNotice/{Uri.EscapeDataString(DocumentNumber)}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);

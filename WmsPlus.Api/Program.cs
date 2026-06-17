@@ -53,7 +53,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5196", "http://localhost:5193", "http://localhost:5192", "http://localhost:5000", "http://localhost:5001")
+        var origins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:5196", "http://localhost:5193", "http://localhost:5192" };
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -66,6 +68,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// 启用静态文件服务（用于测试和调试）
+app.UseStaticFiles();
 
 app.UseCors("AllowBlazorApp");
 app.UseAuthentication();

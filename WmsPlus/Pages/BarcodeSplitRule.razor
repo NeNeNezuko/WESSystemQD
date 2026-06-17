@@ -363,8 +363,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodeSplitRule/search";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodeSplitRule/search";
             if (!string.IsNullOrWhiteSpace(query.RuleCode))
                 url += $"&ruleCode={Uri.EscapeDataString(query.RuleCode)}";
             if (!string.IsNullOrWhiteSpace(query.RuleName))
@@ -429,7 +428,7 @@
         {
             new() { FieldKey = "RuleCode", OriginalName = "规则代号", DisplayName = "规则代号", Visible = true, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "RuleName", OriginalName = "规则名称", DisplayName = "规则名称", Visible = true, Width = 120, DefaultWidth = 120 },
-            new() { FieldKey = "BaseBarcode", OriginalName = "条码基准", DisplayName = "条码基准", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "BaseBarcode", OriginalName = "条码类型", DisplayName = "条码类型", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "EncodingMethod", OriginalName = "编码方式", DisplayName = "编码方式", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "Separator", OriginalName = "分隔符", DisplayName = "分隔符", Visible = true, Width = 60, DefaultWidth = 60 },
             new() { FieldKey = "TotalLength", OriginalName = "总码长", DisplayName = "总码长", Visible = true, Width = 70, DefaultWidth = 70 },

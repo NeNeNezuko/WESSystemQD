@@ -97,7 +97,8 @@ public class WaveOrderController : ControllerBase
                 DeptCode = x.M?.DEP ?? "",
                 DeptName = "",
                 HandlerName = x.M?.USR ?? "",
-                TicketRemark = x.M?.REM ?? ""
+                TicketRemark = x.M?.REM ?? "",
+                Priority = x.M?.PRIORITY ?? 0
             }).ToList();
 
             return Ok(new ApiResult<List<WaveOrderDto>>
@@ -187,6 +188,7 @@ public class WaveOrderDto
     public string DeptName { get; set; } = "";
     public string HandlerName { get; set; } = "";
     public string TicketRemark { get; set; } = "";
+    public int Priority { get; set; }
 }
 
 /// <summary>波次单详情（含表头+表身）</summary>

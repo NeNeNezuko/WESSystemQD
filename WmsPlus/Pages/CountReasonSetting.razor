@@ -383,7 +383,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/CountReasonSetting/search?bilId={Uri.EscapeDataString(query.BilId)}";
+            var url = $"{ApiConfig.BaseUrl}/api/CountReasonSetting/search?bilId={Uri.EscapeDataString(query.BilId)}";
             if (!string.IsNullOrWhiteSpace(query.IjReason))
                 url += $"&ijReason={Uri.EscapeDataString(query.IjReason)}";
 

@@ -32,7 +32,9 @@ public class InboundNoticeController : ControllerBase
         [FromQuery] string? vendorCode,
         [FromQuery] string? closeStatus,
         [FromQuery] string? applyOrderNumber,
-        [FromQuery] string? businessType)
+        [FromQuery] string? businessType,
+        [FromQuery] string? creatorName,
+        [FromQuery] bool fuzzyCreatorName = false)
     {
         try
         {
@@ -70,6 +72,15 @@ public class InboundNoticeController : ControllerBase
             if (!string.IsNullOrWhiteSpace(businessType))
                 query = query.Where(x => x.M != null && (x.M.BIL_TYPE != null && x.M.BIL_TYPE.Contains(businessType)));
 
+            // 制单人名称筛选（实际按制单人代号USR筛选）
+            if (!string.IsNullOrWhiteSpace(creatorName))
+            {
+                if (fuzzyCreatorName)
+                    query = query.Where(x => x.M != null && (x.M.USR != null && x.M.USR.Contains(creatorName)));
+                else
+                    query = query.Where(x => x.M != null && x.M.USR == creatorName);
+            }
+
             // 按单据号+项次排序
             query = query.OrderBy(x => x.T.TZ_NO).ThenBy(x => x.T.ITM);
 
@@ -86,6 +97,7 @@ public class InboundNoticeController : ControllerBase
                 VendorCode = x.M?.CUS_NO ?? "",
                 VendorName = x.M?.CUS_NAME ?? "",
                 ApplyOrderNumber = "",
+                ApplyDocType = x.M?.BIL_TYPE ?? "",
                 OrderNumber = x.T.TZ_NO,
                 IsClosed = (x.M?.CLS_ID ?? "N") == "Y",
                 // 表身明细字段
@@ -181,6 +193,7 @@ public class InboundNoticeDto
     public string VendorCode { get; set; } = "";
     public string VendorName { get; set; } = "";
     public string ApplyOrderNumber { get; set; } = "";
+    public string ApplyDocType { get; set; } = "";
     public string OrderNumber { get; set; } = "";
     public bool IsClosed { get; set; }
     // 表身明细字段

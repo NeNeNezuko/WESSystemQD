@@ -1,0 +1,558 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<WarehouseCodeSettingAdd> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/warehouse-code-setting-add.css" />
+
+<div class="whadd-page">
+    <!-- 顶部工具栏 -->
+    <div class="page-toolbar">
+        <button class="toolbar-btn primary-btn" @onclick="HandleSave">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 8.28a.75.75 0 011.06-1.06L6 9.94l6.72-6.72a.75.75 0 011.06 0z"/>
+            </svg>
+            <span>保存</span>
+        </button>
+        @if (IsEditMode)
+        {
+            <button class="toolbar-btn primary-btn" @onclick="HandleSaveAndNew">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                    <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>新增</span>
+            </button>
+            <button class="toolbar-btn" @onclick="HandleDelete">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M5.5 4h5l.5.5v9l-.5.5h-5L5 13.5v-9l.5-.5zM6 5v8h4V5H6z M4 3.5V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5zm8 0V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5z"/>
+                </svg>
+                <span>删除</span>
+            </button>
+        }
+        <button class="toolbar-btn" @onclick="HandleColumnSettings">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+            </svg>
+            <span>栏位</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleQuery">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <circle cx="7" cy="7" r="5"/>
+                <line x1="11" y1="11" x2="15" y2="15" stroke="#666666" stroke-width="1.5"/>
+            </svg>
+            <span>查询</span>
+        </button>
+    </div>
+
+    <!-- 子选项卡 -->
+    <div class="sub-tabs">
+        <div class="sub-tab-item @(activeSubTab == "general" ? "active" : "")" @onclick="@(() => SwitchSubTab("general"))">仓库资料</div>
+        @if (IsEditMode)
+        {
+            <div class="sub-tab-item @(activeSubTab == "zone" ? "active" : "")" @onclick="@(() => SwitchSubTab("zone"))">区域设定</div>
+            <div class="sub-tab-item @(activeSubTab == "capacity" ? "active" : "")" @onclick="@(() => SwitchSubTab("capacity"))">储位容量设定</div>
+        }
+    </div>
+
+    <!-- 表单区域 -->
+    <div class="form-area-scroll">
+
+        @* ===== 仓库资料 ===== *@
+        @if (activeSubTab == "general")
+        {
+            // ===== 基本信息 =====
+            <div class="form-section">
+                <div class="form-section-title">基本信息</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add"><span class="required-mark">*</span>仓库代号</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Wh" @bind:event="oninput" disabled="@IsEditMode" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add"><span class="required-mark">*</span>仓库名称</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Name" />
+                        <div class="input-search-icon" title="拼音搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">属性</label>
+                        <select class="form-select-add" @bind="model.Attrib">
+                            <option value=""></option>
+                            <option value="成品仓">成品仓</option>
+                            <option value="原料仓">原料仓</option>
+                            <option value="半成品仓">半成品仓</option>
+                            <option value="物料仓">物料仓</option>
+                            <option value="制成品仓">制成品仓</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">上层仓库*</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.UpWh" />
+                        <div class="input-search-icon" title="选择上层仓库">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">联系人</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.CntMan" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">电话</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.TelNo" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">传真</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.FaxNo" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">停用日期</label>
+                        <input type="date" class="form-input-add" @bind="model.StopDd" @bind:format="yyyy-MM-dd" placeholder="请选择日期" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">所属部门</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Dep" />
+                        <div class="input-search-icon" title="选择部门">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">部门群组</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.DeproNo" />
+                        <div class="input-search-icon" title="选择部门群组">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-textarea-wrapper-full">
+                        <label class="form-label-add">备注</label>
+                        <textarea class="form-textarea-add" rows="3" placeholder="" @bind="model.Rem"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            // ===== 仓库管理 =====
+            <div class="form-section">
+                <div class="form-section-title">仓库管理</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">出库流程</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.RkFlow" readonly />
+                        <div class="input-search-icon" title="选择出库流程">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">库存不足管制</label>
+                        <select class="form-select-add" @bind="model.CkFlow">
+                            <option value=""></option>
+                            <option value="管制">管制</option>
+                            <option value="不管制">不管制</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">波次策略</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.RuleIdBc" />
+                        <div class="input-search-icon" title="选择波次策略">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">拣货流程</label>
+                        <select class="form-select-add" @bind="model.PkFlow">
+                            <option value=""></option>
+                            <option value="1">总拣-分拣</option>
+                            <option value="2">直接拣货</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">拣货派工方式</label>
+                        <select class="form-select-add" @bind="model.ModePgPk">
+                            <option value=""></option>
+                            <option value="1">按任务单派工</option>
+                            <option value="2">按通知单派工</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">下架策略</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.RuleIdXj" />
+                        <div class="input-search-icon" title="选择下架策略">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">依来源单配货-配位仓库依据</label>
+                        <select class="form-select-add" @bind="model.XjPwckyj">
+                            <option value=""></option>
+                            <option value="1">下属仓库</option>
+                            <option value="2">指定仓库</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">依来源单配货-指定仓库</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.XjWhs" />
+                        <div class="input-search-icon" title="选择仓库">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">盘点方式</label>
+                        <select class="form-select-add" @bind="model.PdMth">
+                            <option value=""></option>
+                            <option value="1">直接盘点</option>
+                            <option value="2">依任务盘点</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            // ===== 储位管理 =====
+            <div class="form-section">
+                <div class="form-section-title">储位管理</div>
+                <div class="form-grid-3col">
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="cwFlag" @bind="model.CwFlag" />
+                        <label for="cwFlag">启用储位管理</label>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货架分类</label>
+                        <select class="form-select-add" @bind="model.Hjfl">
+                            <option value=""></option>
+                            <option value="1">非穿梭式</option>
+                            <option value="2">穿梭式</option>
+                            <option value="3">移动货架</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="shuttleAqycf" @bind="model.ShuttleAqycf" />
+                        <label for="shuttleAqycf">按区域设定存放规则</label>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">入库储位配位排序</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.RkChuwSort" />
+                        <div class="input-search-icon" title="选择储位配位排序">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">预留空储位数</label>
+                        <input type="number" class="form-input-add" min="0" @bind="model.QtyKeepCw" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">上下架模式</label>
+                        <select class="form-select-add" @bind="model.WhType">
+                            <option value=""></option>
+                            <option value="1">手持PDA模式</option>
+                            <option value="2">自动化接口模式</option>
+                            <option value="3">叉车任务模式</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">自动化接口</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.LkifId" />
+                        <div class="input-search-icon" title="选择立库接口">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">允许上架的检验状态</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.AllowStatusJy" />
+                        <div class="input-search-icon" title="选择检验状态">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">地图编号</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.MapNo" />
+                        <div class="input-search-icon" title="选择地图编号">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ===== 区域设定（仅编辑模式） ===== *@
+        @if (IsEditMode && activeSubTab == "zone")
+        {
+            <div class="form-section">
+                <div class="form-section-title">区域设定</div>
+                <div class="zone-toolbar">
+                    <button class="zone-add-btn" @onclick="HandleAddZone">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 3v10M3 8h10"/></svg>
+                        <span>新增</span>
+                    </button>
+                    <button class="zone-refresh-btn" @onclick="LoadZoneData">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M13.65 2.35A8 8 0 1014.93 9h-2.13A6 6 0 112.34 8 6 6 0 019 2.07V4l4-4-4-4v2.07A8 8 0 0013.65 2.35z"/></svg>
+                        <span>刷新</span>
+                    </button>
+                </div>
+                <div class="zone-table-container">
+                    <table class="zone-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:200px;">区域代号*</th>
+                                <th style="width:300px;">区域名称*</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (zoneData.Count == 0)
+                            {
+                                <tr><td colspan="2" class="empty-zone-cell">
+                                    <div class="empty-zone-data">
+                                        <svg viewBox="0 0 64 64" width="60" height="60" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg>
+                                        <p class="empty-zone-text">暂无数据</p>
+                                    </div>
+                                </td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in zoneData)
+                                {
+                                    <tr>
+                                        <td>@item.ZoneId</td>
+                                        <td>@item.ZoneName</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        @* ===== 储位容量设定（仅编辑模式） ===== *@
+        @if (IsEditMode && activeSubTab == "capacity")
+        {
+            <div class="form-section">
+                <div class="form-section-title">储位容量设定</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">客套管制方式</label>
+                        <select class="form-select-add" @bind="model.CapacityType">
+                            <option value="">不管制</option>
+                            <option value="按容器类型">按容器类型</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    private WarehouseCodeSettingAddModel model = new();
+    private string activeSubTab = "general";
+    private bool isSaving = false;
+    private bool isLoading = false;
+
+    [Parameter] public string? EditWh { get; set; }
+
+    private bool IsEditMode => !string.IsNullOrWhiteSpace(EditWh);
+
+    // 区域数据（编辑模式）
+    private List<ZoneItem> zoneData = new();
+
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTab { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            await LoadDataForEdit();
+            await LoadZoneData();
+        }
+    }
+
+    // ===== 编辑模式：加载仓库详情 =====
+    private async Task LoadDataForEdit()
+    {
+        isLoading = true;
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/WarehouseCodeSetting/getByWh?wh={Uri.EscapeDataString(EditWh!)}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<WarehouseCodeSettingAddModel>>(jsonOptions);
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                model = response.Data;
+            }
+            else
+            {
+                var msg = response?.Message ?? "加载数据失败";
+                await JS.InvokeVoidAsync("alert", $"加载失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载仓库详情时发生错误");
+            await JS.InvokeVoidAsync("alert", $"加载失败: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // ===== 加载区域数据 =====
+    private async Task LoadZoneData()
+    {
+        try
+        {
+            // TODO: 后续对接 MY_WH_ZONE 表的查询接口
+            zoneData = new List<ZoneItem>();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载区域数据时发生错误");
+        }
+    }
+
+    // ===== 子选项卡切换 =====
+    private void SwitchSubTab(string tab)
+    {
+        activeSubTab = tab;
+        StateHasChanged();
+    }
+
+    // ===== 工具栏按钮事件 =====
+    private async Task HandleSave()
+    {
+        if (isSaving) return;
+
+        // 必填校验
+        if (string.IsNullOrWhiteSpace(model.Wh))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入仓库代号");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入仓库名称");
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var url = IsEditMode
+                ? $"{ApiConfig.BaseUrl}/api/WarehouseCodeSetting/update"
+                : $"{ApiConfig.BaseUrl}/api/WarehouseCodeSetting/create";
+            var httpMethod = IsEditMode ? HttpMethod.Put : HttpMethod.Post;
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+            var jsonContent = System.Text.Json.JsonSerializer.Serialize(model, jsonOptions);
+            var request = AuthHttpClient.CreateRequest(httpMethod, url, TokenProvider.Token);
+            request.Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", IsEditMode ? "修改成功" : "保存成功");
+            }
+            else
+            {
+                var msg = response?.Message ?? (IsEditMode ? "修改失败" : "保存失败");
+                await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, $"{(IsEditMode ? "修改" : "保存")}仓库代号设定时发生错误");
+            await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task HandleSaveAndNew()
+    {
+        await HandleSave();
+        // 重置表单
+        model = new WarehouseCodeSettingAddModel();
+        activeSubTab = "general";
+        StateHasChanged();
+    }
+
+    private async Task HandleDelete()
+    {
+        if (!IsEditMode) return;
+
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"确定要删除仓库 [{model.Wh}] 吗？");
+        if (!confirm) return;
+
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/WarehouseCodeSetting/{Uri.EscapeDataString(model.Wh)}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Delete, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", "删除成功");
+                OpenTab?.Invoke("warehouse-code-setting", "仓库代号设定");
+            }
+            else
+            {
+                var msg = response?.Message ?? "删除失败";
+                await JS.InvokeVoidAsync("alert", $"删除失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "删除仓库代号设定时发生错误");
+            await JS.InvokeVoidAsync("alert", $"删除失败: {ex.Message}");
+        }
+    }
+
+    private void HandleColumnSettings() { /* TODO: 栏位设置功能 */ }
+    private void HandleQuery() { /* TODO: 查询功能 */ }
+    private void HandleAddZone() { /* TODO: 新增区域 */ }
+
+    // ===== 区域数据模型 =====
+    public class ZoneItem
+    {
+        public string ZoneId { get; set; } = "";
+        public string ZoneName { get; set; } = "";
+    }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+}

@@ -54,13 +54,24 @@ public class ContainHistoryQueryController : ControllerBase
                 ContainCode = x.CONTAIN_CODE ?? "",
                 ContainStatus = x.CONTAIN_STATUS ?? "",
                 ContainType = x.CONTAIN_TYPE ?? "",
-                WarehouseName = "",  // 需要关联MY_WH获取
+                WarehouseName = "",
                 TransitFlag = x.TRANSIT_FLAG ?? "",
                 InspectFlag = x.INSPECT_FLAG ?? "",
                 ChangeDocName = x.CHANGE_DOC_NAME ?? "",
                 ChangeNo = x.CHANGE_NO ?? "",
                 ChangeMan = x.CHANGE_MAN ?? "",
-                ChangeTime = x.CHANGE_TIME
+                ChangeTime = x.CHANGE_TIME,
+                ScatterItm = x.SCATTER_ITM ?? "",
+                BarcodeType = x.BARCODE_TYPE ?? "",
+                Barcode = x.BARCODE ?? "",
+                PieceCount = x.PIECE_COUNT ?? 0,
+                ScatterQty = x.SCATTER_QTY ?? 0,
+                OuterBoxCode = x.OUTER_BOX_CODE ?? "",
+                CwCode = x.CW_CODE ?? "",
+                CwName = x.CW_NAME ?? "",
+                CwPosition = x.CW_POSITION ?? "",
+                PickFlag = x.PICK_FLAG ?? "",
+                IsScatter = x.IS_SCATTER ?? ""
             }).ToList();
 
             return Ok(new ApiResult<List<ContainHistoryQueryDto>>
@@ -97,4 +108,15 @@ public class ContainHistoryQueryDto
     public string ChangeNo { get; set; } = "";
     public string ChangeMan { get; set; } = "";
     public DateTime? ChangeTime { get; set; }
+    public string ScatterItm { get; set; } = "";
+    public string BarcodeType { get; set; } = "";
+    public string Barcode { get; set; } = "";
+    public decimal PieceCount { get; set; }
+    public decimal ScatterQty { get; set; }
+    public string OuterBoxCode { get; set; } = "";
+    public string CwCode { get; set; } = "";
+    public string CwName { get; set; } = "";
+    public string CwPosition { get; set; } = "";
+    public string PickFlag { get; set; } = "";
+    public string IsScatter { get; set; } = "";
 }

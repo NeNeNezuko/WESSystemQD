@@ -124,12 +124,6 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span>新增</span>
-                    </button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -394,8 +388,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var today = DateTime.Today;
+
+var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
             if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
@@ -407,7 +401,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/OutboundReturnNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/OutboundReturnNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.OutboundNoticeNumber))
@@ -491,6 +485,9 @@
             new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "ErpBillId", OriginalName = "ERP单据编号", DisplayName = "ERP单据编号", Visible = true, Width = 95, DefaultWidth = 95 },
             new() { FieldKey = "ErpBillNo", OriginalName = "ERP号", DisplayName = "ERP号", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "ErpApplyId", OriginalName = "ERP申请单ID", DisplayName = "ERP申请单ID", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "ErpApplyNo", OriginalName = "ERP申请单号", DisplayName = "ERP申请单号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "EntryDate", OriginalName = "输单日期", DisplayName = "输单日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
             new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = false, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = false, Width = 120, DefaultWidth = 120 },
             new() { FieldKey = "PrdMark", OriginalName = "特征", DisplayName = "特征", Visible = false, Width = 100, DefaultWidth = 100 },
@@ -613,6 +610,9 @@
         "CustomerName" => item.CustomerName,
         "ErpBillId" => item.ErpBillId,
         "ErpBillNo" => item.ErpBillNo,
+        "ErpApplyId" => item.ErpApplyId,
+        "ErpApplyNo" => item.ErpApplyNo,
+        "EntryDate" => item.EntryDate.ToString("yyyy-MM-dd"),
         "PrdNo" => item.PrdNo,
         "PrdName" => item.PrdName,
         "PrdMark" => item.PrdMark,

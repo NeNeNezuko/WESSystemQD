@@ -23,7 +23,11 @@ namespace WmsPlus.Models
         public string DateRange { get; set; } = "";
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
-        public string PrdNo { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string BatNo { get; set; } = "";
         public string WarehouseCode { get; set; } = "";
+        public bool IncludeZero { get; set; } = false;
+        public bool IncludeStopped { get; set; } = false;
     }
 }

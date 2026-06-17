@@ -77,9 +77,80 @@
                     <input type="text" class="form-input" placeholder="" @bind="query.NoticeNumber" />
                 </div>
 
+                <div class="form-item">
+                    <label class="form-label">部门名称</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.DepName" />
+                </div>
+
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 起</label>
+                        <input type="text" class="fused-input" @bind="query.PrdNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 止</label>
+                        <input type="text" class="fused-input" @bind="query.PrdNoTo" />
+                    </div>
+                </div>
+
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">货品名称 起</label>
+                        <input type="text" class="fused-input" @bind="query.PrdNameFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">货品名称 止</label>
+                        <input type="text" class="fused-input" @bind="query.PrdNameTo" />
+                    </div>
+                </div>
+
                 <WarehouseCodeInput @bind-Value="query.WhOut" />
 
                 <WarehouseCodeInput @bind-Value="query.WhIn" />
+
+                <div class="form-item">
+                    <label class="form-label">ERP申请单号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.ErpApplyNo" />
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">业务单号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.BizNo" />
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">第三方系统单号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.ThirdPartyNo" />
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">波次结案</label>
+                    <select class="form-input" @bind="query.ClsIdBc">
+                        <option value="">全部</option>
+                        <option value="Y">是</option>
+                        <option value="N">否</option>
+                    </select>
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">拣货结案</label>
+                    <select class="form-input" @bind="query.ClsIdPk">
+                        <option value="">全部</option>
+                        <option value="Y">是</option>
+                        <option value="N">否</option>
+                    </select>
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">出库结案</label>
+                    <select class="form-input" @bind="query.ClsIdCk">
+                        <option value="">全部</option>
+                        <option value="Y">是</option>
+                        <option value="N">否</option>
+                    </select>
+                </div>
 
                 <div class="form-item query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleSearch">
@@ -337,7 +408,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -347,10 +417,21 @@
                 if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
             }
             var viewType = activeInnerTab == "summary" ? "summary" : "detail";
-            var url = $"{ApiBaseUrl}/api/TransferNoticeReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&viewType={viewType}";
+            var url = $"{ApiConfig.BaseUrl}/api/TransferNoticeReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&viewType={viewType}";
             if (!string.IsNullOrWhiteSpace(query.NoticeNumber)) url += $"&noticeNumber={Uri.EscapeDataString(query.NoticeNumber)}";
+            if (!string.IsNullOrWhiteSpace(query.DepName)) url += $"&depName={Uri.EscapeDataString(query.DepName)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom)) url += $"&prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo)) url += $"&prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNameFrom)) url += $"&prdNameFrom={Uri.EscapeDataString(query.PrdNameFrom)}";
+            if (!string.IsNullOrWhiteSpace(query.PrdNameTo)) url += $"&prdNameTo={Uri.EscapeDataString(query.PrdNameTo)}";
             if (!string.IsNullOrWhiteSpace(query.WhOut)) url += $"&whOut={Uri.EscapeDataString(query.WhOut)}";
             if (!string.IsNullOrWhiteSpace(query.WhIn)) url += $"&whIn={Uri.EscapeDataString(query.WhIn)}";
+            if (!string.IsNullOrWhiteSpace(query.ErpApplyNo)) url += $"&erpApplyNo={Uri.EscapeDataString(query.ErpApplyNo)}";
+            if (!string.IsNullOrWhiteSpace(query.BizNo)) url += $"&bizNo={Uri.EscapeDataString(query.BizNo)}";
+            if (!string.IsNullOrWhiteSpace(query.ThirdPartyNo)) url += $"&thirdPartyNo={Uri.EscapeDataString(query.ThirdPartyNo)}";
+            if (!string.IsNullOrWhiteSpace(query.ClsIdBc)) url += $"&clsIdBc={Uri.EscapeDataString(query.ClsIdBc)}";
+            if (!string.IsNullOrWhiteSpace(query.ClsIdPk)) url += $"&clsIdPk={Uri.EscapeDataString(query.ClsIdPk)}";
+            if (!string.IsNullOrWhiteSpace(query.ClsIdCk)) url += $"&clsIdCk={Uri.EscapeDataString(query.ClsIdCk)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);

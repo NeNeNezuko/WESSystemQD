@@ -403,8 +403,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/RegistrationInfo/search?serialNo={Uri.EscapeDataString(query.SerialNo)}&applyDate={Uri.EscapeDataString(query.ApplyDate)}&version={Uri.EscapeDataString(query.Version)}&contractExpireDate={Uri.EscapeDataString(query.ContractExpireDate)}&stopDate={Uri.EscapeDataString(query.StopDate)}&stopFlag={query.StopFlag}&moduleTab={activeInnerTab}";
+
+var url = $"{ApiConfig.BaseUrl}/api/RegistrationInfo/search?serialNo={Uri.EscapeDataString(query.SerialNo)}&applyDate={Uri.EscapeDataString(query.ApplyDate)}&version={Uri.EscapeDataString(query.Version)}&contractExpireDate={Uri.EscapeDataString(query.ContractExpireDate)}&stopDate={Uri.EscapeDataString(query.StopDate)}&stopFlag={query.StopFlag}&moduleTab={activeInnerTab}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);

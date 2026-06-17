@@ -20,4 +20,13 @@ public class Indx
 
     /// <summary>备注</summary>
     public string? REM { get; set; }
+
+    /// <summary>制单人</summary>
+    public string? USR { get; set; }
+
+    /// <summary>输入日期</summary>
+    public DateTime? SYS_DATE { get; set; }
+
+    /// <summary>上次更新时间</summary>
+    public DateTime? UP_DD { get; set; }
 }

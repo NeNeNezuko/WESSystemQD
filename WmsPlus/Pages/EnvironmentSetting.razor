@@ -395,7 +395,7 @@
         try
         {
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get,
-                $"http://localhost:5102/api/EnvironmentSetting/account-sets", TokenProvider.Token);
+                $"{ApiConfig.BaseUrl}/api/EnvironmentSetting/account-sets", TokenProvider.Token);
 
             var response = await Http.SendAsync(request);
             if (response.IsSuccessStatusCode)
@@ -446,7 +446,7 @@
         try
         {
             var request = AuthHttpClient.CreateRequest(HttpMethod.Post,
-                "http://localhost:5102/api/EnvironmentSetting/test-connection", TokenProvider.Token);
+                $"{ApiConfig.BaseUrl}/api/EnvironmentSetting/test-connection", TokenProvider.Token);
 
             request.Content = JsonContent.Create(new
             {
@@ -496,7 +496,7 @@
         try
         {
             var request = AuthHttpClient.CreateRequest(HttpMethod.Post,
-                "http://localhost:5102/api/EnvironmentSetting/save", TokenProvider.Token);
+                $"{ApiConfig.BaseUrl}/api/EnvironmentSetting/save", TokenProvider.Token);
 
             request.Content = JsonContent.Create(new
             {

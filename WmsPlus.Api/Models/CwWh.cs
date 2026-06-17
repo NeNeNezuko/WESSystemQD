@@ -39,8 +39,31 @@ namespace WmsPlus.Api.Models
         [StringLength(1)]
         public string? LOCK_CW { get; set; }
 
+        [Column("LAYER_PROP")]
+        [StringLength(10)]
+        public string? LAYER_PROP { get; set; }
+
         [Column("AREA_ID")]
         [StringLength(30)]
         public string? AREA_ID { get; set; }
+
+        [Column("LKHJ_TYPE")]
+        [StringLength(10)]
+        public string? LKHJ_TYPE { get; set; }
+
+        [Column("CW_UNMATCH")]
+        [StringLength(10)]
+        public string? CW_UNMATCH { get; set; }
+
+        [Column("GS_PAT")]
+        [StringLength(30)]
+        public string? GS_PAT { get; set; }
+
+        [Column("REM")]
+        [StringLength(200)]
+        public string? REM { get; set; }
+
+        [Column("UP_DD")]
+        public DateTime? UP_DD { get; set; }
     }
 }

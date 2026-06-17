@@ -28,7 +28,11 @@ namespace WmsPlus.Models
     public class WarehouseInventoryReportQuery
     {
         public string WarehouseCode { get; set; } = "";
-        public string PrdNo { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
         public string BatNo { get; set; } = "";
+        public string QtyOperator { get; set; } = "";
+        public decimal? QtyValue { get; set; }
+        public string IdxNo { get; set; } = "";
     }
 }

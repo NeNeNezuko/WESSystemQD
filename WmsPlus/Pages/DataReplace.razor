@@ -430,7 +430,7 @@
 
         try
         {
-            var url = $"http://localhost:5102/api/DataReplace/search?baseType={Uri.EscapeDataString(query.BaseType)}";
+            var url = $"{ApiConfig.BaseUrl}/api/DataReplace/search?baseType={Uri.EscapeDataString(query.BaseType)}";
             if (!string.IsNullOrWhiteSpace(query.ReplaceType))
                 url += $"&replaceType={Uri.EscapeDataString(query.ReplaceType)}";
 

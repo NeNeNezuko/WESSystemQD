@@ -299,6 +299,7 @@
     private List<MidClassSettingModel> dataSource = new();
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -347,8 +348,8 @@
     }
 
     private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
-    private void HandleEdit(MidClassSettingModel item) { }
+    private void HandleAddNew() { OpenTabCallback?.Invoke("mid-class-setting-add", "中类代号设定*新增"); }
+    private void HandleEdit(MidClassSettingModel item) { OpenTabCallback?.Invoke($"mid-class-setting-edit-{item.IdxNo}", $"中类代号设定*编辑"); }
 
     private async Task HandleExport()
     {
@@ -374,7 +375,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/MidClassSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/MidClassSetting/search";
             if (!string.IsNullOrWhiteSpace(query.IdxNo))
                 url += $"?idxNo={Uri.EscapeDataString(query.IdxNo)}";
             if (!string.IsNullOrWhiteSpace(query.Name))

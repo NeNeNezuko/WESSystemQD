@@ -12,6 +12,7 @@ namespace WmsPlus.Models
         public string ExecuteStatus { get; set; } = "";
         public string Creator { get; set; } = "";
         public string CreatorName { get; set; } = "";
+        public DateTime? MakeTime { get; set; }
     }
 
     public class InboundNoticeChangeQuery
@@ -19,9 +20,6 @@ namespace WmsPlus.Models
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         public string ChangeNumber { get; set; } = "";
-        public string DocType { get; set; } = "全部";
-        public string WarehouseCode { get; set; } = "";
-        public string DeptCode { get; set; } = "";
         public string BusinessType { get; set; } = "";
     }
 }

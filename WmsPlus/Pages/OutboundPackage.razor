@@ -73,9 +73,9 @@
                 <!-- 包装日期 - 日期范围选择器 -->
                 <DateRangeInput @bind-Value="query.DateRange" Label="包装日期" />
 
-                <!-- 包装箱码 -->
+                <!-- 包装码 -->
                 <div class="form-item">
-                    <label class="form-label">包装箱码</label>
+                    <label class="form-label">包装码</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.PackageNo" />
                 </div>
 
@@ -84,6 +84,9 @@
                     <label class="form-label">出库业务单号</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.OutBilNo" />
                 </div>
+
+                <!-- 仓库代号 -->
+                <WarehouseCodeInput @bind-Value="query.Wh" />
 
                 <!-- 出库状态 -->
                 <div class="form-item">
@@ -377,26 +380,27 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-                var today = DateTime.Today;
-                var dateFromStr = today.ToString("yyyy-MM-dd");
-                var dateToStr = today.ToString("yyyy-MM-dd");
-                if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+            var today = DateTime.Today;
+            var dateFromStr = today.ToString("yyyy-MM-dd");
+            var dateToStr = today.ToString("yyyy-MM-dd");
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+            {
+                var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
                 {
-                    var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
-                    if (parts.Length >= 2)
-                    {
-                        dateFromStr = parts[0];
-                        dateToStr = parts[1];
-                    }
+                    dateFromStr = parts[0];
+                    dateToStr = parts[1];
                 }
-                var url = $"{ApiBaseUrl}/api/OutboundPackage/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            }
+            var url = $"{ApiConfig.BaseUrl}/api/OutboundPackage/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.PackageNo))
                 url += $"&packageNo={Uri.EscapeDataString(query.PackageNo)}";
             if (!string.IsNullOrWhiteSpace(query.OutBilNo))
                 url += $"&outBilNo={Uri.EscapeDataString(query.OutBilNo)}";
             if (!string.IsNullOrWhiteSpace(query.OutStatus))
                 url += $"&outStatus={Uri.EscapeDataString(query.OutStatus)}";
+            if (!string.IsNullOrWhiteSpace(query.Wh))
+                url += $"&wh={Uri.EscapeDataString(query.Wh)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -456,7 +460,7 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "SeqNo", OriginalName = "坯次", DisplayName = "坯次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
             new() { FieldKey = "PackageNo", OriginalName = "包装箱", DisplayName = "包装箱", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "PackageDate", OriginalName = "包装日期", DisplayName = "包装日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
             new() { FieldKey = "BusinessType", OriginalName = "业务类型", DisplayName = "业务类型", Visible = true, Width = 80, DefaultWidth = 80 },

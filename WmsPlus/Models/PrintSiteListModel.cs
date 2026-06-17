@@ -16,7 +16,8 @@ namespace WmsPlus.Models
     {
         public string SiteName { get; set; } = "";
         public string MachineIp { get; set; } = "";
-        public bool? StopFlag { get; set; }
+        public string StopFlagText { get; set; } = "";
+        public bool StopFlag { get; set; }
     }
 
     // 打印网点资料查询模型
@@ -41,6 +42,7 @@ namespace WmsPlus.Models
         public string DateRange { get; set; } = "";
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
+        public string MakeDateRange { get; set; } = "";
         public string VersionCode { get; set; } = "";
         public string PrinterUser { get; set; } = "";
         public string SiteName { get; set; } = "";

@@ -390,7 +390,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -403,7 +402,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/PickReturn/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/PickReturn/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.PickReturnNo))
                 url += $"&pickReturnNo={Uri.EscapeDataString(query.PickReturnNo)}";
             if (!string.IsNullOrWhiteSpace(query.OutboundNoticeNo))

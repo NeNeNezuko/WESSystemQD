@@ -406,8 +406,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodeTemplateProduct/search";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodeTemplateProduct/search";
             if (!string.IsNullOrWhiteSpace(query.BarType))
                 url += $"?barType={Uri.EscapeDataString(query.BarType)}";
 

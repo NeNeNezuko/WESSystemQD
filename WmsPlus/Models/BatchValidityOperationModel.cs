@@ -11,13 +11,15 @@ public class BatchValidityOperationModel
     public string PrdNo { get; set; } = "";
     public string PrdName { get; set; } = "";
     public string BatNo { get; set; } = "";
-    public string PrdMark { get; set; } = "";
     public DateTime? ValidDDCur { get; set; }
     public DateTime? ValidDDOrg { get; set; }
-    public string UpUser { get; set; } = "";
-    public DateTime? UpdDate { get; set; }
-    public string ConNo { get; set; } = "";
-    public string TaskNo { get; set; } = "";
+    public DateTime? LastOutDate { get; set; }      // 最近出库日
+    public DateTime? LastInDate { get; set; }        // 最近入库日
+    public DateTime? LastInspectDate { get; set; }   // 最近检验日期
+    public DateTime? ProduceDate { get; set; }       // 生产日期
+    public string IdxNo { get; set; } = "";          // 中类代号
+    public string IdxName { get; set; } = "";        // 中类名称
+    public decimal Qty { get; set; }                 // 数量
 }
 
 /// <summary>

@@ -11,6 +11,7 @@ namespace WmsPlus.Models
         public decimal Qty { get; set; }
         public decimal Qty1 { get; set; }
         public DateTime? LstTyd { get; set; }
+        public string ContainerBarcode { get; set; } = "";
     }
 
     public class KcInspectExpiryQuery
@@ -19,5 +20,7 @@ namespace WmsPlus.Models
         public string PrdNo { get; set; } = "";
         public string PrdName { get; set; } = "";
         public int ExceedDays { get; set; } = 0;
+        public int AdvanceDays { get; set; } = 0;
+        public bool FuzzySearch { get; set; }
     }
 }

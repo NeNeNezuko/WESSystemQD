@@ -518,7 +518,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/warehouse/search?keyword={Uri.EscapeDataString(warehouseSearchKeyword ?? "")}&pageIndex={warehousePageIndex}&pageSize={warehousePageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/search?keyword={Uri.EscapeDataString(warehouseSearchKeyword ?? "")}&pageIndex={warehousePageIndex}&pageSize={warehousePageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);

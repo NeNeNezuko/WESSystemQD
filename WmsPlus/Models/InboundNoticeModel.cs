@@ -10,6 +10,7 @@ namespace WmsPlus.Models
         public string VendorCode { get; set; } = "";
         public string VendorName { get; set; } = "";
         public string ApplyOrderNumber { get; set; } = "";
+        public string ApplyDocType { get; set; } = "";
         public string OrderNumber { get; set; } = "";
         public bool IsClosed { get; set; }
         // 表身明细字段
@@ -31,5 +32,7 @@ namespace WmsPlus.Models
         public string CloseStatus { get; set; } = "全部";
         public string ApplyOrderNumber { get; set; } = "";
         public string BusinessType { get; set; } = "";
+        public string CreatorName { get; set; } = "";
+        public bool FuzzyCreatorName { get; set; }
     }
 }

@@ -25,6 +25,12 @@ namespace WmsPlus.Models
         public DateTime? DateTo { get; set; }
         public string CjNo { get; set; } = "";
         public string Wh { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string ShHoursOperator { get; set; } = "";
+        public double? ShHoursValue { get; set; }
+        public string JyHoursOperator { get; set; } = "";
+        public double? JyHoursValue { get; set; }
         public string SalNo { get; set; } = "";
         public string FlagJy { get; set; } = "全部";
     }

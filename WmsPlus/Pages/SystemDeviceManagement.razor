@@ -372,7 +372,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/SystemDeviceManagement/search";
+            var url = $"{ApiConfig.BaseUrl}/api/SystemDeviceManagement/search";
             if (!string.IsNullOrWhiteSpace(query.HwNo))
                 url += $"?hwNo={Uri.EscapeDataString(query.HwNo)}";
             if (!string.IsNullOrWhiteSpace(query.Name))

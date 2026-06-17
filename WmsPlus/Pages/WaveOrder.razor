@@ -130,12 +130,6 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span>新增</span>
-                    </button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -400,7 +394,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -413,7 +406,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/WaveOrder/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/WaveOrder/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.BcNo))
                 url += $"&bcNo={Uri.EscapeDataString(query.BcNo)}";
             if (!string.IsNullOrWhiteSpace(query.OutboundNoticeNo))
@@ -495,6 +488,7 @@
             new() { FieldKey = "DeptName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "HandlerName", OriginalName = "经办人名称", DisplayName = "经办人名称", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "TicketRemark", OriginalName = "检票备注", DisplayName = "检票备注", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "Priority", OriginalName = "排单等级", DisplayName = "排单等级", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
             new() { FieldKey = "WarehouseCode", OriginalName = "仓库代号", DisplayName = "仓库代号", Visible = false, Width = 70, DefaultWidth = 70 },
             new() { FieldKey = "DeptCode", OriginalName = "部门代号", DisplayName = "部门代号", Visible = false, Width = 70, DefaultWidth = 70 },
             new() { FieldKey = "OutboundNoticeNo", OriginalName = "出库通知单号", DisplayName = "出库通知单号", Visible = false, Width = 110, DefaultWidth = 110 },
@@ -616,6 +610,7 @@
         "DeptName" => item.DeptName,
         "HandlerName" => item.HandlerName,
         "TicketRemark" => item.TicketRemark,
+        "Priority" => item.Priority switch { 0 => "低", 1 => "中", 2 => "高", _ => item.Priority.ToString() },
         "OutboundNoticeNo" => "",
         "BusinessNo" => "",
         "ApplyNo" => "",

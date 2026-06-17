@@ -370,7 +370,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ForkliftManagement/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ForkliftManagement/search";
             if (!string.IsNullOrWhiteSpace(query.TruckNo))
                 url += $"?truckNo={Uri.EscapeDataString(query.TruckNo)}";
             if (!string.IsNullOrWhiteSpace(query.Wh))

@@ -472,22 +472,75 @@
     font-weight: 500;
 }
 
-/* 标签页栏 - 基于参考图精确分析 */
-.dashboard-tags {
+/* 标签页导航容器（箭头 + 标签栏） */
+.tags-nav-wrapper {
+    display: flex;
+    align-items: flex-end;
     height: 36px;
     min-height: 36px;
     background: #f0f0f0;
+}
+
+/* 固定的工作台标签 */
+.fixed-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    height: 32px;
+    background: #e6e6e6;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    border: 1px solid #c0c0c0;
+    border-bottom: none;
+    transition: all 0.15s ease;
+    position: relative;
+    margin-right: 2px;
+    flex-shrink: 0;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    z-index: 5;
+}
+
+.fixed-tag:hover {
+    color: #1890ff;
+    background-color: #eeeeee;
+    border-color: #b0b0b0;
+}
+
+.fixed-tag.active {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    background-color: #ffffff;
+    border-color: #c0c0c0;
+    border-bottom: none;
+    z-index: 10;
+    position: relative;
+}
+
+/* 可滚动的标签容器 */
+.dashboard-tags-scrollable {
+    flex: 1;
+    height: 32px;
+    min-height: 32px;
+    background: #f0f0f0;
     display: flex;
     align-items: flex-end;
-    padding: 0 8px;
+    padding: 0 4px;
     gap: 2px;
     border-bottom: none;
     overflow-x: auto;
     overflow-y: hidden;
     position: relative;
+    scroll-behavior: smooth;
 }
 
-.dashboard-tags::-webkit-scrollbar {
+.dashboard-tags-scrollable::-webkit-scrollbar {
     height: 0;
     display: none;
 }
@@ -516,6 +569,11 @@
     box-sizing: border-box;
 }
 
+/* 可滚动标签的特殊样式 */
+.scrollable-tag {
+    /* 继承 .tag-item 的所有样式 */
+}
+
 .tag-item:hover {
     color: #1890ff;
     background-color: #eeeeee;
@@ -530,6 +588,15 @@
     border-bottom: none;
     z-index: 10;
     position: relative;
+}
+
+/* 标签文字区域：允许收缩 + 超长省略，确保关闭按钮不被挤出 */
+.tag-item > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
 }
 
 .tag-close {
@@ -551,6 +618,35 @@
 .tag-close:hover {
     background-color: #e6f7ff;
     color: #1890ff;
+}
+
+/* 标签栏左右箭头导航按钮 */
+.tag-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 32px;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s ease;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.tag-nav-btn:hover:not(.disabled) {
+    background-color: #e0e0e0;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.tag-nav-btn.disabled {
+    color: rgba(0, 0, 0, 0.15);
+    cursor: default;
+    pointer-events: none;
 }
 
 /* 内容区域 - 匹配参考图 */

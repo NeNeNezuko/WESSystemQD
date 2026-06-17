@@ -15,6 +15,7 @@
 | 页面底部弹出 "An unhandled error has occurred. Reload" | `does not have a property matching the name 'xxx'` | [#1 组件不支持透传属性导致渲染崩溃](#1-组件不支持透传属性导致渲染崩溃) |
 | API 返回 404 Not Found + JSON 解析异常 | `JsonException: ExpectedJsonTokens`, `Status=404 Body=` | [#2 URL 查询字符串缺少 ? 分隔符](#2-url-查询字符串缺少--分隔符导致-404) |
 | 选择器弹窗空白无数据 | 控制台 401/500 错误 | [#3 EF Core 实体缺少 HasKey 配置](#3-ef-core-实体缺少-haskey-配置导致查询崩溃) |
+| 登录成功后页面卡死（白屏转圈） | 无报错，页面无限加载 | [#4 OnAfterRenderAsync + StateHasChanged 导致无限循环渲染](#4-onafterrenderasync--statehaschanged-导致无限循环渲染) |
 
 ---
 
@@ -192,6 +193,99 @@ modelBuilder.Entity<SomeNewEntity>(entity =>
 
 - 新增实体类的** checklist**：①写实体类 ②注册 DbSet ③写 Fluent API 配置（含 HasKey）④重启后端冒烟测试
 - 参考修复文件：[WarehouseDbContext.cs](../../WmsPlus.Data/WarehouseDbContext.cs)
+
+---
+
+## 4. OnAfterRenderAsync + StateHasChanged 导致无限循环渲染
+
+### 症状
+
+- 用户登录成功后，页面跳转到 `/dashboard` 后**白屏卡死**（一直显示加载中/转圈）
+- **浏览器控制台无任何报错信息**——不是异常导致的崩溃
+- 页面完全无响应，无法进行任何操作
+
+### 触发条件
+
+在 Blazor 组件的 `OnAfterRenderAsync` 方法中调用 JS Interop 获取数据后，无条件调用 `StateHasChanged()` 触发重渲染：
+
+```csharp
+// BUG 模式：每次渲染完成后都执行 JS + 触发重渲染 → 无限循环
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    var result = await JS.InvokeAsync<bool[]>("getTagsScrollState", tagsContainerRef);
+    canScrollLeft = result[0];
+    canScrollRight = result[1];
+    StateHasChanged(); // ← 无条件触发重渲染！
+}
+```
+
+**循环链路**：
+```
+OnAfterRenderAsync → JS.InvokeAsync → 更新状态 → StateHasChanged() 
+→ 重新渲染 → OnAfterRenderAsync → ... (死循环)
+```
+
+### 根因
+
+Blazor 的 `OnAfterRenderAsync` 在**每次组件渲染完成后**都会被调用。如果在该方法中无条件调用 `StateHasChanged()`，会立即触发下一次渲染，而下次渲染又会再次调用 `OnAfterRenderAsync`，形成**无限递归渲染循环**。
+
+这种问题与普通异常不同——不会抛出错误、不会触发 ErrorBoundary，只是页面永远处于"正在渲染"状态，表现为白屏转圈。
+
+### 影响范围
+
+所有使用 `OnAfterRenderAsync` + `StateHasChanged()` 组合的 Blazor 组件都可能受影响。本项目中的具体位置：
+
+- [DashboardLayout.razor](../../WmsPlus/Layout/DashboardLayout.razor) 第 1154-1168 行（`OnAfterRenderAsync`）
+- [DashboardLayout.razor](../../WmsPlus/Layout/DashboardLayout.razor) 第 1139-1159 行（`UpdateArrowVisibility`）
+
+### 修复方法
+
+**双重防护**：限制执行时机 + 状态变更检测
+
+```csharp
+// 修复1: OnAfterRenderAsync - 仅首次渲染时执行
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)  // ✅ 只在首次渲染后执行，后续不再调用
+    {
+        try
+        {
+            await UpdateArrowVisibility();
+        }
+        catch { /* JS 未就绪时忽略 */ }
+    }
+}
+
+// 修复2: UpdateArrowVisibility - 状态未变时不触发重渲染
+private async Task UpdateArrowVisibility()
+{
+    try
+    {
+        var result = await JS.InvokeAsync<bool[]>("getTagsScrollState", tagsContainerRef);
+        if (result != null && result.Length >= 2)
+        {
+            bool newCanScrollLeft = result[0];
+            bool newCanScrollRight = result[1];
+
+            // ✅ 只有状态真正改变时才更新并触发重渲染
+            if (canScrollLeft != newCanScrollLeft || canScrollRight != newCanScrollRight)
+            {
+                canScrollLeft = newCanScrollLeft;
+                canScrollRight = newCanScrollRight;
+                StateHasChanged();
+            }
+        }
+    }
+    catch { /* 忽略 SSR 等异常 */ }
+}
+```
+
+### 预防措施
+
+- **`OnAfterRenderAsync` 中调用 `StateHasChanged()` 必须有条件守卫**：要么用 `firstRender` 限定只执行一次，要么用状态比较确保只在值变化时触发
+- **JS Interop 返回值更新组件状态前先做 diff 比较**：避免不必要的渲染开销
+- **开发调试技巧**：如果页面白屏无报错，优先检查 `OnAfterRenderAsync` / `OnParametersSetAsync` 中是否存在无条件 `StateHasChanged()` 调用
+- 参考修复文件：[DashboardLayout.razor](../../WmsPlus/Layout/DashboardLayout.razor) 第 1139-1168 行
 
 ---
 

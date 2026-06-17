@@ -1,0 +1,179 @@
+/* ===== 中类代号设定*新增/编辑 页面样式 ===== */
+
+.mcsadd-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* ===== 顶部工具栏（复用通用样式） ===== */
+.mcsadd-page .page-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 6px 12px;
+    gap: 6px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #fafafa;
+    min-height: 38px;
+}
+
+.mcsadd-page .toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background: #fff;
+    color: #333333;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.mcsadd-page .toolbar-btn:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+.mcsadd-page .toolbar-btn.primary-btn {
+    background: #1890ff;
+    border-color: #1890ff;
+    color: #ffffff;
+}
+
+.mcsadd-page .toolbar-btn.primary-btn:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+    color: #ffffff;
+}
+
+/* ===== 表单滚动区域 ===== */
+.mcsadd-page .form-area-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px 20px;
+    background: #f5f5f5;
+}
+
+/* ===== 表单分组标题 ===== */
+.mcsadd-page .form-section {
+    margin-bottom: 16px;
+}
+
+.mcsadd-page .form-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333333;
+    padding: 6px 0 8px 0;
+    border-left: 3px solid #1890ff;
+    padding-left: 8px;
+    margin-bottom: 8px;
+    background: transparent;
+}
+
+/* ===== 表单区域 - 4列网格布局 ===== */
+.mcsadd-page .form-grid-4col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px 24px;
+    background: #ffffff;
+    padding: 12px 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+}
+
+/* ===== 表单项 ===== */
+.mcsadd-page .form-item-add {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
+}
+
+.mcsadd-page .form-label-add {
+    display: flex;
+    align-items: center;
+    min-width: 80px;
+    max-width: 110px;
+    height: 100%;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #666666;
+    background: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.mcsadd-page .form-label-add .required-mark {
+    color: #ff4d4f;
+    margin-right: 2px;
+}
+
+.mcsadd-page .form-input-add {
+    flex: 1;
+    height: 100%;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #333333;
+    border: none !important;
+    outline: none !important;
+    background: transparent;
+    box-sizing: border-box;
+}
+
+.mcsadd-page .form-input-add:focus {
+    background: transparent;
+}
+
+/* 放大镜搜索图标 */
+.mcsadd-page .input-search-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 100%;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+/* 备注文本域 - 全宽 */
+.mcsadd-page .form-textarea-wrapper-full {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
+    padding: 6px 8px;
+}
+
+.mcsadd-page .form-textarea-wrapper-full > label {
+    font-size: 12px;
+    color: #666666;
+    margin-bottom: 4px;
+}
+
+.mcsadd-page .form-textarea-add {
+    width: 100%;
+    min-height: 60px;
+    padding: 6px 8px;
+    font-size: 12px;
+    color: #333333;
+    border: 1px solid #d9d9d9 !important;
+    outline: none !important;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+}

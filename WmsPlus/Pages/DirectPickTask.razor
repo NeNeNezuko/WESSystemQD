@@ -379,7 +379,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
                 var today = DateTime.Today;
                 var dateFromStr = today.ToString("yyyy-MM-dd");
                 var dateToStr = today.ToString("yyyy-MM-dd");
@@ -392,7 +391,7 @@
                         dateToStr = parts[1];
                     }
                 }
-                var url = $"{ApiBaseUrl}/api/DirectPickTask/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                var url = $"{ApiConfig.BaseUrl}/api/DirectPickTask/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.NoticeNumber))

@@ -329,8 +329,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/ContainTypeSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ContainTypeSetting/search";
 
             if (!string.IsNullOrWhiteSpace(query.TypeCode))
                 url += $"?typeCode={Uri.EscapeDataString(query.TypeCode)}";
@@ -376,12 +375,12 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "RowNo", OriginalName = "#序号", DisplayName = "#序号", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "RowNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
             new() { FieldKey = "TypeCode", OriginalName = "类型代号", DisplayName = "类型代号", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
             new() { FieldKey = "TypeName", OriginalName = "类型名称", DisplayName = "类型名称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
             new() { FieldKey = "CodePrefix", OriginalName = "编码前缀", DisplayName = "编码前缀", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "StopFlag", OriginalName = "停用否", DisplayName = "停用否", Visible = true, Width = 60, DefaultWidth = 60 },
-            new() { FieldKey = "IsSystem", OriginalName = "是系统标准框", DisplayName = "是系统标准框", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "IsSystem", OriginalName = "是系统标准档", DisplayName = "是系统标准档", Visible = true, Width = 95, DefaultWidth = 95 },
             new() { FieldKey = "RcsType", OriginalName = "RCS容器类型", DisplayName = "RCS容器类型", Visible = true, Width = 95, DefaultWidth = 95 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig

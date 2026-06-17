@@ -35,4 +35,37 @@ public class MfContainHis
 
     /// <summary>变动时间</summary>
     public DateTime? CHANGE_TIME { get; set; }
+
+    /// <summary>散件项次</summary>
+    public string? SCATTER_ITM { get; set; }
+
+    /// <summary>条码类型</summary>
+    public string? BARCODE_TYPE { get; set; }
+
+    /// <summary>条码</summary>
+    public string? BARCODE { get; set; }
+
+    /// <summary>件数</summary>
+    public decimal? PIECE_COUNT { get; set; }
+
+    /// <summary>箱条码散出数量</summary>
+    public decimal? SCATTER_QTY { get; set; }
+
+    /// <summary>外箱码</summary>
+    public string? OUTER_BOX_CODE { get; set; }
+
+    /// <summary>储位代号</summary>
+    public string? CW_CODE { get; set; }
+
+    /// <summary>储位名称</summary>
+    public string? CW_NAME { get; set; }
+
+    /// <summary>储位位置</summary>
+    public string? CW_POSITION { get; set; }
+
+    /// <summary>拣货标记</summary>
+    public string? PICK_FLAG { get; set; }
+
+    /// <summary>是否散出</summary>
+    public string? IS_SCATTER { get; set; }
 }

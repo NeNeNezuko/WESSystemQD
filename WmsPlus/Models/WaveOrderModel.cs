@@ -11,6 +11,7 @@ namespace WmsPlus.Models
         public string DeptName { get; set; } = "";
         public string HandlerName { get; set; } = "";
         public string TicketRemark { get; set; } = "";
+        public int Priority { get; set; }
     }
 
     public class WaveOrderQuery

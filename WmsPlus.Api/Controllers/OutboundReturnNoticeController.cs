@@ -95,6 +95,9 @@ public class OutboundReturnNoticeController : ControllerBase
                 CustomerName = x.M?.CUS_NAME ?? "",
                 ErpBillId = x.M?.ERP_BIL_ID ?? "",
                 ErpBillNo = x.M?.ERP_BIL_NO ?? "",
+                ErpApplyId = x.M?.ERP_BIL_ID ?? "",
+                ErpApplyNo = x.M?.ERP_BIL_NO ?? "",
+                EntryDate = x.M?.SYS_DATE ?? DateTime.MinValue,
                 // 表身明细字段
                 PrdNo = x.T.PRD_NO ?? "",
                 PrdName = x.T.PRD_NAME ?? "",
@@ -191,6 +194,9 @@ public class OutboundReturnNoticeDto
     public string CustomerName { get; set; } = "";
     public string ErpBillId { get; set; } = "";
     public string ErpBillNo { get; set; } = "";
+    public string ErpApplyId { get; set; } = "";
+    public string ErpApplyNo { get; set; } = "";
+    public DateTime EntryDate { get; set; }
     // 表身明细字段
     public string PrdNo { get; set; } = "";
     public string PrdName { get; set; } = "";

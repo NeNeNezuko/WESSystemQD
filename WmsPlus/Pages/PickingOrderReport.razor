@@ -310,8 +310,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var today = DateTime.Today;
+
+var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
             if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("\u2192"))
@@ -320,7 +320,7 @@
                 if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
             }
             var tabType = activeInnerTab == "summary" ? "summary" : "detail";
-            var url = $"{ApiBaseUrl}/api/PickingOrderReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&tabType={tabType}";
+            var url = $"{ApiConfig.BaseUrl}/api/PickingOrderReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&tabType={tabType}";
             if (!string.IsNullOrWhiteSpace(query.JrNo)) url += $"&jrNo={Uri.EscapeDataString(query.JrNo)}";
             if (!string.IsNullOrWhiteSpace(query.Wh)) url += $"&wh={Uri.EscapeDataString(query.Wh)}";
 

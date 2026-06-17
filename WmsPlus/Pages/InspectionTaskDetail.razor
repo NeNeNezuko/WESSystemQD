@@ -73,11 +73,39 @@
                 <!-- 单据日期 - 日期范围选择器 -->
                 <DateRangeInput @bind-Value="query.DateRange" />
 
-                <!-- 单据号码 -->
-                <div class="form-item">
-                    <label class="form-label">单据号码</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.QjNo" />
+                <!-- 单据号码 起/止 -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">单据号码 起</label>
+                        <input type="text" class="fused-input" @bind="query.QjNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">单据号码 止</label>
+                        <input type="text" class="fused-input" @bind="query.QjNoTo" />
+                    </div>
                 </div>
+
+                <!-- 容器条码 -->
+                <div class="form-item">
+                    <label class="form-label">容器条码</label>
+                    <input type="text" class="form-input" @bind="query.ConBarcode" />
+                </div>
+
+                <!-- 货品代号 -->
+                <div class="form-item">
+                    <label class="form-label">货品代号</label>
+                    <input type="text" class="form-input" @bind="query.PrdNo" />
+                </div>
+
+                <!-- 批号 -->
+                <div class="form-item">
+                    <label class="form-label">批号</label>
+                    <input type="text" class="form-input" @bind="query.BatNo" />
+                </div>
+
+                <!-- 仓库 -->
+                <WarehouseCodeInput @bind-Value="query.Wh" />
 
                 <!-- 检验仓库 -->
                 <WarehouseCodeInput @bind-Value="query.WhTy" />
@@ -460,7 +488,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -473,15 +500,28 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/InspectionTaskDetail/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
-            if (!string.IsNullOrWhiteSpace(query.QjNo))
-                url += $"&qjNo={Uri.EscapeDataString(query.QjNo)}";
+            var url = $"{ApiConfig.BaseUrl}/api/InspectionTaskDetail/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var queryParams = new List<string>();
+            if (!string.IsNullOrWhiteSpace(query.QjNoFrom))
+                queryParams.Add($"qjNoFrom={Uri.EscapeDataString(query.QjNoFrom)}");
+            if (!string.IsNullOrWhiteSpace(query.QjNoTo))
+                queryParams.Add($"qjNoTo={Uri.EscapeDataString(query.QjNoTo)}");
+            if (!string.IsNullOrWhiteSpace(query.ConBarcode))
+                queryParams.Add($"conBarcode={Uri.EscapeDataString(query.ConBarcode)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdNo))
+                queryParams.Add($"prdNo={Uri.EscapeDataString(query.PrdNo)}");
+            if (!string.IsNullOrWhiteSpace(query.BatNo))
+                queryParams.Add($"batNo={Uri.EscapeDataString(query.BatNo)}");
+            if (!string.IsNullOrWhiteSpace(query.Wh))
+                queryParams.Add($"wh={Uri.EscapeDataString(query.Wh)}");
             if (!string.IsNullOrWhiteSpace(query.WhTy))
-                url += $"&whTy={Uri.EscapeDataString(query.WhTy)}";
+                queryParams.Add($"whTy={Uri.EscapeDataString(query.WhTy)}");
             if (!string.IsNullOrWhiteSpace(query.Usr))
-                url += $"&usr={Uri.EscapeDataString(query.Usr)}";
+                queryParams.Add($"usr={Uri.EscapeDataString(query.Usr)}");
             if (!string.IsNullOrWhiteSpace(query.Tywz) && query.Tywz != "全部")
-                url += $"&tywz={Uri.EscapeDataString(query.Tywz)}";
+                queryParams.Add($"tywz={Uri.EscapeDataString(query.Tywz)}");
+            if (queryParams.Count > 0)
+                url += "&" + string.Join("&", queryParams);
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);

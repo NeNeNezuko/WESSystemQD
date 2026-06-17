@@ -372,7 +372,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/UnshelveStrategy/search?ruleId={Uri.EscapeDataString(query.RuleId)}&name={Uri.EscapeDataString(query.Name)}";
+            var url = $"{ApiConfig.BaseUrl}/api/UnshelveStrategy/search?ruleId={Uri.EscapeDataString(query.RuleId)}&name={Uri.EscapeDataString(query.Name)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);

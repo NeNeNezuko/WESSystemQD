@@ -13,6 +13,8 @@ namespace WmsPlus.Models
         public string CustomerCode { get; set; } = "";
         public string CustomerName { get; set; } = "";
         public string BatId { get; set; } = "";
+        public string SourceDocType { get; set; } = "";
+        public string SourceDocNo { get; set; } = "";
         public bool IsClosed { get; set; }
         // 表身明细字段
         public string PrdNo { get; set; } = "";

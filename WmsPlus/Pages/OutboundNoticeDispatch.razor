@@ -130,6 +130,21 @@
                     </div>
                 </div>
 
+                <!-- 拣货结案标记 -->
+                <div class="form-item">
+                    <label class="form-label">拣货结案</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.PickCloseStatus">
+                            <option value="全部">全部</option>
+                            <option value="未派工">未派工</option>
+                            <option value="已派工">已派工</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleSearch">
@@ -148,19 +163,19 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn" @onclick="HandleAssignPicker" title="指定拣货员">
+                    <button class="toolbar-btn" disabled @onclick="HandleAssignPicker" title="指定拣货员">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M8 2a3 3 0 100 6 3 3 0 000-6zM4 10c-2 0-4 1-4 3v1h16v-1c0-2-2-3-4-3H4z" stroke="#666666" stroke-width="1.2" fill="none"/>
                         </svg>
                         <span>指定拣货员</span>
                     </button>
-                    <button class="toolbar-btn" @onclick="HandleDispatch" title="派工">
+                    <button class="toolbar-btn" disabled @onclick="HandleDispatch" title="派工">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M2 8h12M8 2v12" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                         <span>派工</span>
                     </button>
-                    <button class="toolbar-btn" @onclick="HandleCancelDispatch" title="取消派工">
+                    <button class="toolbar-btn" disabled @onclick="HandleCancelDispatch" title="取消派工">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M4 4l8 8M12 4l-8 8" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
@@ -188,6 +203,7 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th style="width:35px"><input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" /></th>
                                     @foreach (var col in mainColumnConfigs.Where(c => c.Visible))
                                     {
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
@@ -226,6 +242,7 @@
                                     @foreach (var item in mainDataSource)
                                     {
                                         <tr>
+                                            <td style="width:35px;text-align:center;"><input type="checkbox" checked="@item.IsSelected" @onchange="@((ChangeEventArgs e) => item.IsSelected = (bool)e.Value!)" /></td>
                                             @foreach (var col in mainColumnConfigs.Where(c => c.Visible))
                                             {
                                                 var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
@@ -565,6 +582,17 @@
         // TODO: 批量变更优先级功能待实现
     }
 
+    // ===== 勾选框逻辑 =====
+    private bool IsAllSelected => mainDataSource.Count > 0 && mainDataSource.All(x => x.IsSelected);
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        var isChecked = (bool)e.Value!;
+        foreach (var item in mainDataSource)
+            item.IsSelected = isChecked;
+        StateHasChanged();
+    }
+
     // ===== 导出 =====
     private async Task HandleExport()
     {
@@ -587,7 +615,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
+            
 
             // 构建来源单据类别参数
             var sourceTypes = BuildSourceTypesParam();
@@ -619,7 +647,7 @@
                 }
             }
 
-            var url = $"{ApiBaseUrl}/api/OutboundNoticeDispatch/search?sourceTypes={Uri.EscapeDataString(sourceTypes)}";
+            var url = $"{ApiConfig.BaseUrl}/api/OutboundNoticeDispatch/search?sourceTypes={Uri.EscapeDataString(sourceTypes)}";
             if (!string.IsNullOrWhiteSpace(estDateFromStr))
                 url += $"&estDateFrom={estDateFromStr}";
             if (!string.IsNullOrWhiteSpace(estDateToStr))
@@ -637,6 +665,8 @@
                 url += $"&bizOrderNo={Uri.EscapeDataString(query.BizOrderNo)}";
             if (!string.IsNullOrWhiteSpace(query.DispatchStatus) && query.DispatchStatus != "全部")
                 url += $"&dispatchStatus={Uri.EscapeDataString(query.DispatchStatus)}";
+            if (!string.IsNullOrWhiteSpace(query.PickCloseStatus) && query.PickCloseStatus != "全部")
+                url += $"&pickCloseStatus={Uri.EscapeDataString(query.PickCloseStatus)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -719,9 +749,10 @@
             new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "HandlerName", OriginalName = "经办人名称", DisplayName = "经办人名称", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
             new() { FieldKey = "BillCategory", OriginalName = "单据类别", DisplayName = "单据类别", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
-            new() { FieldKey = "CustomerCode", OriginalName = "客户代号", DisplayName = "客户代号", Visible = false, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "CustomerCode", OriginalName = "客户代号", DisplayName = "客户代号", Visible = true, Width = 70, DefaultWidth = 70 },
             new() { FieldKey = "IsClosed", OriginalName = "结案否", DisplayName = "结案否", Visible = false, Width = 55, DefaultWidth = 55 },
-            new() { FieldKey = "DispatchStatus", OriginalName = "派工状态", DisplayName = "派工状态", Visible = false, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "DispatchStatus", OriginalName = "派工状态", DisplayName = "派工状态", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "PickerName", OriginalName = "拣货员名称", DisplayName = "拣货员名称", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "Remark", OriginalName = "单据说明", DisplayName = "单据说明", Visible = false, Width = 120, DefaultWidth = 120 }
         };
         mainColumnConfigs = defaultMainColumnConfigs.Select(c => new ColumnConfig
@@ -842,7 +873,12 @@
             new() { FieldKey = "Unit", OriginalName = "单位", DisplayName = "单位", Visible = true, Width = 50, DefaultWidth = 50 },
             new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 60, DefaultWidth = 60 },
             new() { FieldKey = "PlannedDeductionQty", OriginalName = "已转计划出库量", DisplayName = "已转计划出库量", Visible = true, Width = 110, DefaultWidth = 110 },
-            new() { FieldKey = "PickedQty", OriginalName = "已提数量", DisplayName = "已提数量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "ReturnedQty", OriginalName = "已退数量", DisplayName = "已退数量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "PickedQty", OriginalName = "已拣货量", DisplayName = "已拣货量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "OutboundQty", OriginalName = "已出库量", DisplayName = "已出库量", Visible = true, Width = 75, DefaultWidth = 75 },
+            new() { FieldKey = "ErpApplyItemNo", OriginalName = "ERP申请单项次", DisplayName = "ERP申请单项次", Visible = true, Width = 105, DefaultWidth = 105 },
+            new() { FieldKey = "BizOrderNo", OriginalName = "业务单号", DisplayName = "业务单号", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "Summary", OriginalName = "摘要", DisplayName = "摘要", Visible = true, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "WarehouseCode", OriginalName = "仓库代号", DisplayName = "仓库代号", Visible = false, Width = 70, DefaultWidth = 70 }
         };
         detailColumnConfigs = defaultDetailColumnConfigs.Select(c => new ColumnConfig
@@ -965,6 +1001,7 @@
         "CustomerCode" => item.CustomerCode,
         "IsClosed" => item.IsClosed ? "是" : "否",
         "DispatchStatus" => item.DispatchStatus,
+        "PickerName" => item.PickerName,
         "Remark" => item.Remark,
         _ => ""
     };
@@ -982,7 +1019,12 @@
         "Unit" => item.Unit,
         "Qty" => item.Qty,
         "PlannedDeductionQty" => item.PlannedDeductionQty,
+        "ReturnedQty" => item.ReturnedQty,
         "PickedQty" => item.PickedQty,
+        "OutboundQty" => item.OutboundQty,
+        "ErpApplyItemNo" => item.ErpApplyItemNo > 0 ? item.ErpApplyItemNo : "",
+        "BizOrderNo" => item.BizOrderNo,
+        "Summary" => item.Summary,
         _ => ""
     };
 

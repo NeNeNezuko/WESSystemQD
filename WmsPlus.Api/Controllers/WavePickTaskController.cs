@@ -35,6 +35,7 @@ public class WavePickTaskController : ControllerBase
         [FromQuery] string? warehouseCode,
         [FromQuery] string? areaSh,
         [FromQuery] string? pkFlowMark,
+        [FromQuery] string? clsMark,
         [FromQuery] string? businessType)
     {
         try
@@ -82,6 +83,12 @@ public class WavePickTaskController : ControllerBase
             if (!string.IsNullOrWhiteSpace(pkFlowMark) && pkFlowMark != "全部")
             {
                 query = query.Where(x => x.M != null && x.M.PK_FLOW == pkFlowMark);
+            }
+
+            // 拣货结案标记筛选（CLS_ID: Y已结案 N未结案）
+            if (!string.IsNullOrWhiteSpace(clsMark) && clsMark != "全部")
+            {
+                query = query.Where(x => x.M != null && x.M.CLS_ID == clsMark);
             }
 
             // 业务类型筛选

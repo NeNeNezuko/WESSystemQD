@@ -22,52 +22,60 @@ public class ApiExceptionTableController : ControllerBase
 
     [HttpGet("search")]
     public async Task<ActionResult<ApiResult<List<ApiExceptionTableDto>>>> Search(
-        [FromQuery] string? actNo,
-        [FromQuery] string? bilNo,
-        [FromQuery] string? method,
-        [FromQuery] string? status,
-        [FromQuery] string? startDate,
-        [FromQuery] string? endDate)
+        [FromQuery] string? dateFrom,
+        [FromQuery] string? dateTo,
+        [FromQuery] string? wh,
+        [FromQuery] string? sourceNo,
+        [FromQuery] bool taskTypeLk = false,
+        [FromQuery] bool taskTypeLkPush = false,
+        [FromQuery] bool taskTypeErp = false,
+        [FromQuery] bool taskTypeErpPush = false)
     {
         try
         {
             var query = _context.ApiActionIs.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(actNo))
-                query = query.Where(x => x.ACT_NO != null && x.ACT_NO.Contains(actNo));
-
-            if (!string.IsNullOrWhiteSpace(bilNo))
-                query = query.Where(x => x.BIL_NO != null && x.BIL_NO.Contains(bilNo));
-
-            if (!string.IsNullOrWhiteSpace(method))
-                query = query.Where(x => x.METHOD_NO != null && x.METHOD_NO.Contains(method));
-
-            if (!string.IsNullOrWhiteSpace(status) && status != "全部")
-                query = query.Where(x => x.STATUS_ID == status);
-
-            if (!string.IsNullOrWhiteSpace(startDate) && DateTime.TryParse(startDate, out var sd))
+            // 日期范围筛选
+            if (!string.IsNullOrWhiteSpace(dateFrom) && DateTime.TryParse(dateFrom, out var sd))
                 query = query.Where(x => x.START_DATE >= sd);
+            if (!string.IsNullOrWhiteSpace(dateTo) && DateTime.TryParse(dateTo, out var ed))
+                query = query.Where(x => x.END_DATE <= ed.AddDays(1).AddSeconds(-1));
 
-            if (!string.IsNullOrWhiteSpace(endDate) && DateTime.TryParse(endDate, out var ed))
-                query = query.Where(x => x.END_DATE <= ed);
+            // 仓库代号模糊匹配
+            if (!string.IsNullOrWhiteSpace(wh))
+                query = query.Where(x => x.WH != null && x.WH.Contains(wh));
+
+            // 来源单号模糊匹配
+            if (!string.IsNullOrWhiteSpace(sourceNo))
+                query = query.Where(x => x.BIL_NO != null && x.BIL_NO.Contains(sourceNo));
+
+            // 任务类型筛选（通过ACT_NO前缀匹配）
+            var taskTypes = new List<string>();
+            if (taskTypeLk) taskTypes.Add("LK");
+            if (taskTypeLkPush) taskTypes.Add("LK_PUSH");
+            if (taskTypeErp) taskTypes.Add("ERP");
+            if (taskTypeErpPush) taskTypes.Add("ERP_PUSH");
+            if (taskTypes.Count > 0)
+                query = query.Where(x => x.ACT_NO != null && taskTypes.Any(t => x.ACT_NO.StartsWith(t)));
 
             query = query.OrderByDescending(x => x.START_DATE).Take(500);
 
-            var list = await query.Select(x => new ApiExceptionTableDto
+            var rawList = await query.ToListAsync();
+
+            var list = rawList.Select((x, idx) => new ApiExceptionTableDto
             {
-                ActNo = x.ACT_NO ?? "",
-                MethodNo = x.METHOD_NO ?? "",
-                HttpMethod = x.HTTP_METHOD ?? "",
-                Path = x.PATH ?? "",
-                BilId = x.BIL_ID ?? "",
-                BilNo = x.BIL_NO ?? "",
+                Itm = (idx + 1).ToString(),
+                TaskType = x.ACT_NO ?? "",
+                ProcessNo = x.METHOD_NO ?? "",
+                ApiCode = x.PATH ?? "",
+                SourceDocName = x.BIL_ID ?? "",
+                SourceNo = x.BIL_NO ?? "",
                 Wh = x.WH ?? "",
-                ConNo = x.CON_NO ?? "",
-                StatusId = x.STATUS_ID ?? "",
-                ErrCode = x.ERR_CODE ?? "",
-                StartDate = x.START_DATE,
-                EndDate = x.END_DATE
-            }).ToListAsync();
+                ContainCode = x.CONTAIN_CODE ?? x.CON_NO ?? "",
+                ExecCount = 0,
+                ErrMsg = x.ERR_MSG ?? x.ERR_CODE ?? "",
+                HttpErrMsg = x.STATUS_ID ?? ""
+            }).ToList();
 
             return Ok(new ApiResult<List<ApiExceptionTableDto>>
             {
@@ -93,16 +101,15 @@ public class ApiExceptionTableController : ControllerBase
 /// <summary>API接口异常列表行数据</summary>
 public class ApiExceptionTableDto
 {
-    public string ActNo { get; set; } = "";
-    public string MethodNo { get; set; } = "";
-    public string HttpMethod { get; set; } = "";
-    public string Path { get; set; } = "";
-    public string BilId { get; set; } = "";
-    public string BilNo { get; set; } = "";
+    public string Itm { get; set; } = "";
+    public string TaskType { get; set; } = "";
+    public string ProcessNo { get; set; } = "";
+    public string ApiCode { get; set; } = "";
+    public string SourceDocName { get; set; } = "";
+    public string SourceNo { get; set; } = "";
     public string Wh { get; set; } = "";
-    public string ConNo { get; set; } = "";
-    public string StatusId { get; set; } = "";
-    public string ErrCode { get; set; } = "";
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public string ContainCode { get; set; } = "";
+    public int ExecCount { get; set; }
+    public string ErrMsg { get; set; } = "";
+    public string HttpErrMsg { get; set; } = "";
 }

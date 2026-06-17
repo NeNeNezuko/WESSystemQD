@@ -12,6 +12,8 @@ namespace WmsPlus.Models
         public string PrintBarcode { get; set; } = "";
         public string CusNo { get; set; } = "";
         public string SoNo { get; set; } = "";
+        public string NoPickFlag { get; set; } = "";
+        public string SourceNo { get; set; } = "";
     }
 
     public class BarcodePrintProductSourceQuery
@@ -20,5 +22,6 @@ namespace WmsPlus.Models
         public string SourceNo { get; set; } = "";
         public string PrdNo { get; set; } = "";
         public string CusName { get; set; } = "";
+        public bool FuzzySearch { get; set; }
     }
 }

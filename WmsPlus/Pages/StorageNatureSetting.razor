@@ -374,7 +374,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/StorageNatureSetting/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/StorageNatureSetting/search?";
             if (!string.IsNullOrWhiteSpace(query.CwxzNo))
                 url += $"cwxzNo={Uri.EscapeDataString(query.CwxzNo)}&";
             if (!string.IsNullOrWhiteSpace(query.Name))

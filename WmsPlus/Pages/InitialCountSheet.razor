@@ -385,8 +385,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-                var today = DateTime.Today;
+
+    var today = DateTime.Today;
                 var dateFromStr = today.ToString("yyyy-MM-dd");
                 var dateToStr = today.ToString("yyyy-MM-dd");
                 if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
@@ -398,7 +398,7 @@
                         dateToStr = parts[1];
                     }
                 }
-                var url = $"{ApiBaseUrl}/api/InitialCountSheet/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                var url = $"{ApiConfig.BaseUrl}/api/InitialCountSheet/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.CountStaff))

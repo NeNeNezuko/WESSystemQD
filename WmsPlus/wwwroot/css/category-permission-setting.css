@@ -460,6 +460,44 @@
     background-color: #e6f7ff;
 }
 
+/* 操作列 - 链接按钮（设置权限/设置成员/设置属性） */
+.action-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.action-link-btn {
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #1890ff;
+    background: none;
+    border: 1px solid #91d5ff;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.action-link-btn:hover {
+    color: #ffffff;
+    background-color: #1890ff;
+    border-color: #1890ff;
+}
+
+/* 删除按钮 */
+.toolbar-btn.delete-btn:hover {
+    border-color: #ff4d4f;
+    color: #ff4d4f;
+}
+
+.toolbar-btn.delete-btn:hover svg {
+    fill: #ff4d4f;
+    stroke: #ff4d4f;
+}
+
 /* ========== 空数据提示 ========== */
 
 .empty-data-cell {

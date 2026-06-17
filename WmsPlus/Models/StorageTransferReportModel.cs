@@ -27,5 +27,11 @@ namespace WmsPlus.Models
         public DateTime? DateTo { get; set; }
         public string DB_NO { get; set; } = "";
         public string WarehouseCode { get; set; } = "";
+        public string BilNo { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string OutChuw { get; set; } = "";
+        public string InChuw { get; set; } = "";
+        public string SourceNo { get; set; } = "";
     }
 }

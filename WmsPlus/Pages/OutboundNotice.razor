@@ -83,10 +83,7 @@
                 <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
 
                 <!-- 客户代号（核心筛选项） -->
-                <div class="form-item">
-                    <label class="form-label">客户代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.CustomerCode" />
-                </div>
+                <CustomerCodeInput @bind-Value="query.CustomerCode" />
 
                 <!-- 结案列示（核心筛选项） -->
                 <div class="form-item">
@@ -106,8 +103,29 @@
                 <!-- 业务类型（核心筛选项，使用出库业务类型选择器） -->
                 <CkTypeInput @bind-Value="query.BusinessType" />
 
-                <!-- 预计交货日期（样式占位，后续补充功能） -->
-                <DateRangeInput @bind-Value="query.DeliveryDateRange" />
+                <!-- 收货点 -->
+                <div class="form-item">
+                    <label class="form-label">收货点</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.ReceivePoint" />
+                </div>
+
+                <!-- 波次/拣货/出库结案 -->
+                <div class="form-item">
+                    <label class="form-label">结案列示</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.CloseCaseType">
+                            <option value="全部">全部</option>
+                            <option value="未结案">未结案</option>
+                            <option value="已结案">已结案</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 预计到货时间（日期范围选择器） -->
+                <DateRangeInput @bind-Value="query.DeliveryDateRange" Label="预计到货时间" />
 
                 <!-- 客户名称（样式占位） -->
                 <div class="form-item">
@@ -506,8 +524,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var today = DateTime.Today;
+
+var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
             if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("\u2192"))
@@ -519,7 +537,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/OutboundNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/OutboundNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.WarehouseCode))
@@ -530,6 +548,24 @@
                 url += $"&closeStatus={Uri.EscapeDataString(query.CloseStatus)}";
             if (!string.IsNullOrWhiteSpace(query.BusinessType))
                 url += $"&businessType={Uri.EscapeDataString(query.BusinessType)}";
+
+            // 预计到货时间范围
+            if (!string.IsNullOrWhiteSpace(query.DeliveryDateRange) && query.DeliveryDateRange.Contains("\u2192"))
+            {
+                var dParts = query.DeliveryDateRange.Split("\u2192", StringSplitOptions.TrimEntries);
+                if (dParts.Length >= 2)
+                {
+                    url += $"&deliveryDateFrom={dParts[0]}&deliveryDateTo={dParts[1]}";
+                }
+            }
+
+            // 收货点
+            if (!string.IsNullOrWhiteSpace(query.ReceivePoint))
+                url += $"&receivePoint={Uri.EscapeDataString(query.ReceivePoint)}";
+
+            // 波次/拣货/出库结案
+            if (!string.IsNullOrWhiteSpace(query.CloseCaseType) && query.CloseCaseType != "全部")
+                url += $"&closeCaseType={Uri.EscapeDataString(query.CloseCaseType)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -595,6 +631,9 @@
             new() { FieldKey = "WarehouseName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "CustomerCode", OriginalName = "客户代号", DisplayName = "客户代号", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
             new() { FieldKey = "CustomerName", OriginalName = "客户名称", DisplayName = "客户名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "ErpApplyId", OriginalName = "ERP申请单ID", DisplayName = "ERP申请单ID", Visible = true, Width = 105, DefaultWidth = 105, Sortable = true },
+            new() { FieldKey = "DispatchStatus", OriginalName = "派工状态", DisplayName = "派工状态", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
+            new() { FieldKey = "PickerName", OriginalName = "拣货员名称", DisplayName = "拣货员名称", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "IsClosed", OriginalName = "结案否", DisplayName = "结案否", Visible = true, Width = 55, DefaultWidth = 55, Sortable = true },
             new() { FieldKey = "PrdNo", OriginalName = "料号/品号", DisplayName = "料号/品号", Visible = false, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "PrdName", OriginalName = "品名", DisplayName = "品名", Visible = false, Width = 120, DefaultWidth = 120 },
@@ -714,6 +753,9 @@
         "WarehouseName" => item.WarehouseName,
         "CustomerCode" => item.CustomerCode,
         "CustomerName" => item.CustomerName,
+        "ErpApplyId" => item.ErpApplyId,
+        "DispatchStatus" => item.DispatchStatus,
+        "PickerName" => item.PickerName,
         "IsClosed" => item.IsClosed ? "\u662f" : "\u5426",
         "PrdNo" => item.PrdNo,
         "PrdName" => item.PrdName,

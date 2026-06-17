@@ -385,8 +385,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/ConClose/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ConClose/search";
 
             if (!string.IsNullOrWhiteSpace(query.ConNo))
                 url += $"&conNo={Uri.EscapeDataString(query.ConNo)}";

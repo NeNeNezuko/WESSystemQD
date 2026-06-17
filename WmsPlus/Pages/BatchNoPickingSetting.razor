@@ -45,6 +45,25 @@
         </div>
     }
 
+    <!-- 内层选项卡栏 -->
+    <div class="inner-tab-bar">
+        <div class="tab-list">
+            @foreach (var tab in innerTabs)
+            {
+                <div class="tab-item @(tab.Id == activeInnerTabId ? "active" : "")" @onclick="() => SwitchInnerTab(tab.Id)">
+                    @tab.Title
+                </div>
+            }
+        </div>
+        <div class="tab-toolbar">
+            @if (activeInnerTabId == "set-record")
+            {
+                <button class="toolbar-action-btn primary" @onclick="HandleSetRecord">设置不能参与配位记录</button>
+                <button class="toolbar-action-btn" @onclick="HandleExport">导出</button>
+            }
+        </div>
+    </div>
+
     <!-- 主内容区域 -->
     <div class="page-content">
         <!-- 左侧查询区域 -->
@@ -70,20 +89,109 @@
             </div>
 
             <div class="query-form">
-                <!-- 仓库代号 -->
-                <WarehouseCodeInput @bind-Value="query.Wh" />
+                @if (activeInnerTabId == "set-record")
+                {
+                    <!-- ====== Tab1: 设置不能参与配位记录 查询条件 ====== -->
+                    <!-- 仓库代号 + 含下属 -->
+                    <WarehouseCodeInput @bind-Value="query.Wh" />
 
-                <!-- 货品代号 -->
-                <div class="form-item">
-                    <label class="form-label">货品代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.PrdNo" />
-                </div>
+                    <!-- 起止货品 (融合式起止输入框) -->
+                    <div class="form-item-fused">
+                        <div class="fused-row">
+                            <label class="form-label">货品代号 起</label>
+                            <div class="fused-input-area">
+                                <input type="text" class="fused-input" @bind="query.PrdNoFrom" />
+                                <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
+                                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="fused-divider"></div>
+                        <div class="fused-row">
+                            <label class="form-label">货品代号 止</label>
+                            <div class="fused-input-area">
+                                <input type="text" class="fused-input" @bind="query.PrdNoTo" />
+                                <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
+                                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- 批号 -->
-                <div class="form-item">
-                    <label class="form-label">批号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.BatNo" />
-                </div>
+                    <!-- 货品名称 -->
+                    <div class="form-item">
+                        <label class="form-label">货品名称</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" />
+                    </div>
+
+                    <!-- 批号 -->
+                    <div class="form-item">
+                        <label class="form-label">批号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.BatNo" />
+                    </div>
+
+                    <!-- 数量 (运算符+数字) -->
+                    <div class="form-item" style="gap:0;">
+                        <label class="form-label">数量</label>
+                        <div class="select-wrapper" style="width:60px;flex-shrink:0;">
+                            <select class="form-select" @bind="query.QtyOperator" style="padding-right:18px;">
+                                <option value="=">=</option>
+                                <option value="&gt;">&gt;</option>
+                                <option value="&lt;">&lt;</option>
+                                <option value="&gt;=">&gt;=</option>
+                                <option value="&lt;=">&lt;=</option>
+                                <option value="!=">!=</option>
+                            </select>
+                            <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                                <path d="M2 4l4 4 4-4"/>
+                            </svg>
+                        </div>
+                        <input type="number" class="form-input" style="flex:1;border-left:1px solid #e8e8e8;" placeholder="" @bind="query.QtyValue" />
+                    </div>
+
+                    <!-- 中类代号 + 含下属 -->
+                    <div class="form-item">
+                        <label class="form-label">中类代号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.IdxNo" />
+                    </div>
+                }
+                else if (activeInnerTabId == "cancel-record")
+                {
+                    <!-- ====== Tab2: 取消不能参与配位记录 查询条件 ====== -->
+                    <WarehouseCodeInput @bind-Value="query.Wh" />
+
+                    <div class="form-item-fused">
+                        <div class="fused-row">
+                            <label class="form-label">货品代号 起</label>
+                            <div class="fused-input-area">
+                                <input type="text" class="fused-input" @bind="query.PrdNoFrom" />
+                                <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
+                                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="fused-divider"></div>
+                        <div class="fused-row">
+                            <label class="form-label">货品代号 止</label>
+                            <div class="fused-input-area">
+                                <input type="text" class="fused-input" @bind="query.PrdNoTo" />
+                                <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
+                                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">货品名称</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" />
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">批号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.BatNo" />
+                    </div>
+                }
 
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
@@ -103,18 +211,27 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span>新增</span>
-                    </button>
-                    <button class="toolbar-btn delete-btn" @onclick="HandleDelete">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M4 4l8 8M12 4l-8 8" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        <span>删除</span>
-                    </button>
+                    @if (activeInnerTabId == "set-record")
+                    {
+                        <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                                <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>新增</span>
+                        </button>
+                        <button class="toolbar-btn delete-btn" @onclick="HandleDelete">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                                <path d="M4 4l8 8M12 4l-8 8" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <span>删除</span>
+                        </button>
+                    }
+                    else if (activeInnerTabId == "cancel-record")
+                    {
+                        <button class="toolbar-btn primary-btn" @onclick="HandleCancelRecord">
+                            <span>取消不能参与配位记录</span>
+                        </button>
+                    }
                 </div>
             </div>
 
@@ -300,6 +417,21 @@
     private BatchNoPickingSettingQuery query = new();
     private List<BatchNoPickingSettingModel> dataSource = new();
 
+    // ====== 内层选项卡 ======
+    private class InnerTab
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+        public bool IsActive { get; set; }
+    }
+
+    private List<InnerTab> innerTabs = new()
+    {
+        new() { Id = "set-record", Title = "设置不能参与配位记录", IsActive = true },
+        new() { Id = "cancel-record", Title = "取消不能参与配位记录", IsActive = false }
+    };
+    private string activeInnerTabId = "set-record";
+
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -308,6 +440,15 @@
         await LoadColumnSettings();
         await LoadFavoriteStatus();
         await LoadData();
+    }
+
+    // ====== 内层选项卡切换 ======
+    private void SwitchInnerTab(string tabId)
+    {
+        activeInnerTabId = tabId;
+        foreach (var tab in innerTabs)
+            tab.IsActive = (tab.Id == tabId);
+        StateHasChanged();
     }
 
     // ===== 原有方法 =====
@@ -352,6 +493,10 @@
     private void HandleAddNew() { }
     private void HandleDelete() { }
     private void HandleEdit(BatchNoPickingSettingModel item) { }
+    private void HandleSetRecord() { /* TODO */ }
+    private void HandleCancelRecord() { /* TODO */ }
+    private void OpenPrdFromSelector() { /* TODO */ }
+    private void OpenPrdToSelector() { /* TODO */ }
 
     private async Task HandleExport()
     {
@@ -377,14 +522,20 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/BatchNoPickingSetting/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/BatchNoPickingSetting/search?";
             var queryParams = new List<string>();
             if (!string.IsNullOrWhiteSpace(query.Wh))
                 queryParams.Add($"wh={Uri.EscapeDataString(query.Wh)}");
-            if (!string.IsNullOrWhiteSpace(query.PrdNo))
-                queryParams.Add($"prdNo={Uri.EscapeDataString(query.PrdNo)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom))
+                queryParams.Add($"prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo))
+                queryParams.Add($"prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdName))
+                queryParams.Add($"prdName={Uri.EscapeDataString(query.PrdName)}");
             if (!string.IsNullOrWhiteSpace(query.BatNo))
                 queryParams.Add($"batNo={Uri.EscapeDataString(query.BatNo)}");
+            if (!string.IsNullOrWhiteSpace(query.IdxNo))
+                queryParams.Add($"idxNo={Uri.EscapeDataString(query.IdxNo)}");
             url += string.Join("&", queryParams);
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -442,10 +593,14 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50, Sortable = false },
             new() { FieldKey = "Wh", OriginalName = "仓库代号", DisplayName = "仓库代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 100, DefaultWidth = 100, Sortable = false },
             new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = false },
             new() { FieldKey = "PrdMark", OriginalName = "货品特征", DisplayName = "货品特征", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
             new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 80, DefaultWidth = 80, Sortable = false },
             new() { FieldKey = "Usr", OriginalName = "制单人", DisplayName = "制单人", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
             new() { FieldKey = "SysDate", OriginalName = "制单时间", DisplayName = "制单时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
             new() { FieldKey = "Rem", OriginalName = "备注", DisplayName = "备注", Visible = true, Width = 160, DefaultWidth = 160, Sortable = false }
@@ -555,10 +710,14 @@
     // 获取单元格渲染值
     private object GetCellValue(BatchNoPickingSettingModel item, string fieldKey) => fieldKey switch
     {
+        "ItemNo" => item.ItemNo,
         "Wh" => item.Wh,
+        "WhName" => item.WhName,
         "PrdNo" => item.PrdNo,
+        "PrdName" => item.PrdName,
         "PrdMark" => item.PrdMark,
         "BatNo" => item.BatNo,
+        "Qty" => item.Qty,
         "Usr" => item.Usr,
         "SysDate" => item.SysDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
         "Rem" => item.Rem,

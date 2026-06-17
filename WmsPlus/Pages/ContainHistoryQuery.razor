@@ -310,7 +310,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.AddMonths(-1).ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -323,7 +322,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/ContainHistoryQuery/search?changeTimeFrom={dateFromStr}&changeTimeTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/ContainHistoryQuery/search?changeTimeFrom={dateFromStr}&changeTimeTo={dateToStr}";
 
             if (!string.IsNullOrWhiteSpace(query.ContainCode))
                 url += $"&containCode={Uri.EscapeDataString(query.ContainCode)}";
@@ -372,11 +371,22 @@
             new() { FieldKey = "ContainType", OriginalName = "容器类型", DisplayName = "容器类型", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "WarehouseName", OriginalName = "所在仓库", DisplayName = "所在仓库", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "TransitFlag", OriginalName = "在途标记", DisplayName = "在途标记", Visible = true, Width = 70, DefaultWidth = 70 },
-            new() { FieldKey = "InspectFlag", OriginalName = "述检标记", DisplayName = "述检标记", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "InspectFlag", OriginalName = "送检标记", DisplayName = "送检标记", Visible = true, Width = 70, DefaultWidth = 70 },
             new() { FieldKey = "ChangeDocName", OriginalName = "变动单据别名", DisplayName = "变动单据别名", Visible = true, Width = 95, DefaultWidth = 95 },
             new() { FieldKey = "ChangeNo", OriginalName = "变动单号", DisplayName = "变动单号", Visible = true, Width = 110, DefaultWidth = 110, Sortable = true },
             new() { FieldKey = "ChangeMan", OriginalName = "变动人", DisplayName = "变动人", Visible = true, Width = 70, DefaultWidth = 70 },
-            new() { FieldKey = "ChangeTime", OriginalName = "变动时间", DisplayName = "变动时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true }
+            new() { FieldKey = "ChangeTime", OriginalName = "变动时间", DisplayName = "变动时间", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+            new() { FieldKey = "ScatterItm", OriginalName = "散件项次", DisplayName = "散件项次", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "BarcodeType", OriginalName = "条码类型", DisplayName = "条码类型", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "Barcode", OriginalName = "条码", DisplayName = "条码", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "PieceCount", OriginalName = "件数", DisplayName = "件数", Visible = true, Width = 60, DefaultWidth = 60, Sortable = true },
+            new() { FieldKey = "ScatterQty", OriginalName = "箱条码散出数量", DisplayName = "箱条码散出数量", Visible = true, Width = 110, DefaultWidth = 110 },
+            new() { FieldKey = "OuterBoxCode", OriginalName = "外箱码", DisplayName = "外箱码", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "CwCode", OriginalName = "储位代号", DisplayName = "储位代号", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
+            new() { FieldKey = "CwName", OriginalName = "储位名称", DisplayName = "储位名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "CwPosition", OriginalName = "储位位置", DisplayName = "储位位置", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "PickFlag", OriginalName = "拣货标记", DisplayName = "拣货标记", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "IsScatter", OriginalName = "是否散出", DisplayName = "是否散出", Visible = true, Width = 70, DefaultWidth = 70 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -492,6 +502,17 @@
         "ChangeNo" => item.ChangeNo,
         "ChangeMan" => item.ChangeMan,
         "ChangeTime" => item.ChangeTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
+        "ScatterItm" => item.ScatterItm,
+        "BarcodeType" => item.BarcodeType,
+        "Barcode" => item.Barcode,
+        "PieceCount" => item.PieceCount,
+        "ScatterQty" => item.ScatterQty,
+        "OuterBoxCode" => item.OuterBoxCode,
+        "CwCode" => item.CwCode,
+        "CwName" => item.CwName,
+        "CwPosition" => item.CwPosition,
+        "PickFlag" => item.PickFlag,
+        "IsScatter" => item.IsScatter,
         _ => ""
     };
 

@@ -21,6 +21,7 @@ namespace WmsPlus.Models
         public DateTime? DateTo { get; set; }
         public string PackageNo { get; set; } = "";
         public string OutBilNo { get; set; } = "";
+        public string Wh { get; set; } = "";
         public string OutStatus { get; set; } = "";
     }
 }

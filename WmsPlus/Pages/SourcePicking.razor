@@ -103,31 +103,41 @@
                         <input type="text" class="form-input" placeholder="" @bind="batchQuery.ReceivePoint" />
                     </div>
 
-                    <!-- 起止货品 -->
-                    <div class="form-item">
-                        <label class="form-label">起止货品</label>
-                        <div style="display:flex;align-items:center;flex:1;gap:4px;padding:0 6px;">
-                            <input type="text" style="width:45%;font-size:11px;border:none;outline:none;" placeholder="" @bind="batchQuery.ProductFrom" />
-                            <span style="color:#999;font-size:11px;">~</span>
-                            <input type="text" style="width:45%;font-size:11px;border:none;outline:none;" placeholder="" @bind="batchQuery.ProductTo" />
-                            <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999" style="cursor:pointer;flex-shrink:0;">
-                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
-                            </svg>
+                    <!-- 起止货品 (融合式起止输入框) -->
+                    <div class="form-item-fused">
+                        <div class="fused-row">
+                            <label class="form-label">货品代号 起</label>
+                            <div class="fused-input-area">
+                                <input type="text" class="fused-input" @bind="batchQuery.ProductFrom" />
+                                <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdFromSelector">
+                                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="fused-divider"></div>
+                        <div class="fused-row">
+                            <label class="form-label">货品代号 止</label>
+                            <div class="fused-input-area">
+                                <input type="text" class="fused-input" @bind="batchQuery.ProductTo" />
+                                <button class="fused-search-btn" title="选择货品" @onclick="OpenPrdToSelector">
+                                    <svg viewBox="0 0 16 16" width="13" height="13" fill="#999999"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 不手唤已下架任务量 Toggle -->
+                    <!-- 不考虑已下架任务量 Toggle -->
                     <div class="form-item toggle-row">
-                        <span class="toggle-row-label">不手唤已下架任务量</span>
+                        <span class="toggle-row-label">不考虑已下架任务量</span>
                         <label class="mini-toggle-switch">
                             <input type="checkbox" @bind="batchQuery.ExcludeShelvedTasks" />
                             <span class="mini-toggle-slider"></span>
                         </label>
                     </div>
 
-                    <!-- 家源单据到 Checkbox组 -->
+                    <!-- 来源单据别 Checkbox组 -->
                     <div class="form-item" style="height:auto;min-height:30px;align-items:center;flex-direction:column;gap:4px;">
-                        <label class="form-label" style="width:100%;">家源单据到</label>
+                        <label class="form-label" style="width:100%;">来源单据别</label>
                         <div class="checkbox-group">
                             <label class="checkbox-label"><input type="checkbox" checked="@batchQuery.SourceNoticeOutbound" @onchange="(e) => batchQuery.SourceNoticeOutbound = (bool)e.Value!" /> 出库通知单</label>
                             <label class="checkbox-label"><input type="checkbox" checked="@batchQuery.SourceTransferNotice" @onchange="(e) => batchQuery.SourceTransferNotice = (bool)e.Value!" /> 调拨通知单</label>
@@ -208,6 +218,7 @@
                     </div>
                     @if (activeInnerTabId == "batch-shelving")
                     {
+                        <button class="toolbar-btn primary-btn" @onclick="HandleBatchShelving">批量下架</button>
                         <button class="toolbar-btn export-btn" @onclick="HandleConfigDownload">配置下载</button>
                         <button class="toolbar-btn primary-btn" @onclick="HandleBatchExport">导出</button>
                     }
@@ -493,7 +504,7 @@
     // ====== 内层选项卡 ======
     private List<InnerTab> innerTabs = new()
     {
-        new() { Id = "batch-shelving", Title = "批量上架", IsActive = true },
+        new() { Id = "batch-shelving", Title = "批量下架", IsActive = true },
         new() { Id = "direct-pick-task", Title = "直接拣货任务单", IsActive = false }
     };
     private string activeInnerTabId = "batch-shelving";
@@ -578,6 +589,9 @@
     private void HandleConfigDownload() { /* TODO */ }
     private void HandlePrint() { /* TODO */ }
     private void HandleAddNew() { /* TODO */ }
+    private void HandleBatchShelving() { /* TODO */ }
+    private void OpenPrdFromSelector() { /* TODO */ }
+    private void OpenPrdToSelector() { /* TODO */ }
 
     // ====== 查询 ======
     private async Task HandleSearch() { await LoadData(); }
@@ -586,16 +600,16 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
             if (activeInnerTabId == "batch-shelving")
             {
-                await LoadBatchData(ApiBaseUrl, jsonOptions);
+                await LoadBatchData(ApiConfig.BaseUrl, jsonOptions);
             }
             else
             {
-                await LoadPickData(ApiBaseUrl, jsonOptions);
+                await LoadPickData(ApiConfig.BaseUrl, jsonOptions);
             }
         }
         catch (Exception ex)

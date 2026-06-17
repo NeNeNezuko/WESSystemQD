@@ -1,0 +1,129 @@
+# 报表页面布局规范
+
+## 🚀 何时读取本规则
+
+开发报表类页面（收货单报表、入库单报表等含内层选项卡/功能按钮的页面）时。
+
+---
+
+## 一、明细表/统计表内层选项卡
+
+**适用场景**：报表类页面（如收货单报表、入库单报表等）需要在表格上方提供"明细表"和"统计表"两种数据视图切换时。
+
+**正确实现方式（以收货单报表 ReceivingReport.razor 为参考标准）**：
+
+选项卡必须放置在**右侧内容区（table-panel）的顶部工具栏（table-toolbar）内部左侧**，使用 `.inner-tab-bar-inline` 容器包裹，与操作按钮同行分布。
+
+**HTML 结构**：
+```razor
+<!-- 右侧数据表格区域 -->
+<div class="table-panel">
+    <!-- 顶部工具栏：内层选项卡 -->
+    <div class="table-toolbar">
+        <div class="toolbar-left">
+            <!-- 内层选项卡：明细表 | 统计表 -->
+            <div class="inner-tab-bar-inline">
+                <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
+                    明细表
+                </div>
+                <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
+                    统计表
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 数据表格 ... -->
+</div>
+```
+
+**CSS 样式**：
+```css
+/* 内层选项卡（内嵌于工具栏中） */
+.inner-tab-bar-inline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.inner-tab-item {
+    font-size: 13px;
+    color: #666666;
+    padding: 5px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.inner-tab-item:hover { color: #1890ff; }
+
+.inner-tab-item.active {
+    color: #1890ff;
+    font-weight: 500;
+    border-bottom-color: #1890ff;
+}
+```
+
+**错误做法**：不要使用独立的 `.inner-tab-bar` 容器放在 page-header 和 page-content 之间。选项卡必须在 table-toolbar 内部。
+
+---
+
+## 二、功能按钮位置规范
+
+**适用场景**：所有三级菜单页面的功能操作按钮（类型、导出Excel、打印、类型设计/栏位设计等）。
+
+**正确实现方式**：功能按钮必须放在**页面标题栏（page-header）的右侧区域（header-right）**，与收藏按钮、折叠按钮同一行。
+
+**HTML 结构**：
+```razor
+<div class="page-header">
+    <div class="header-left">
+        <button class="favorite-btn ...">...</button>
+        <span class="page-title">页面标题</span>
+    </div>
+    <div class="header-right">
+        <!-- 功能按钮放在这里 -->
+        <button class="header-toolbar-btn" @onclick="HandleTypeConfig">
+            <svg ...>...</svg><span>类型</span>
+        </button>
+        <button class="header-toolbar-btn" @onclick="HandleExport">
+            <svg ...>...</svg><span>导出Excel</span>
+        </button>
+        <button class="header-toolbar-btn" @onclick="HandlePrint">
+            <svg ...>...</svg><span>打印</span>
+        </button>
+        <button class="header-toolbar-btn" @onclick="HandleColumnDesign">
+            <svg ...>...</svg><span>类型设计</span>
+        </button>
+        <!-- 折叠按钮放最后 -->
+        <button class="collapse-btn-fixed ...">...</button>
+    </div>
+</div>
+```
+
+**CSS 样式**：
+```css
+.header-toolbar-btn {
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.3s;
+    background-color: #ffffff;
+    color: #666666;
+}
+
+.header-toolbar-btn:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+```
+
+**错误做法**：不要把功能按钮放在 table-toolbar 的 toolbar-left 或 toolbar-right 中。table-toolbar 仅用于放置内层选项卡（如有）。
+
+**注意**：收藏按钮和折叠按钮不需要改动规则，保持原有位置即可。

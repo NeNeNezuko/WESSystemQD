@@ -12,6 +12,13 @@ namespace WmsPlus.Models
         public int? StandardBoxQty { get; set; }
         public int? TailBoxQty { get; set; }
         public int? LabelCount { get; set; }
+        public string PrintBarcode { get; set; } = "";
+        public string CusNo { get; set; } = "";
+        public string SoNo { get; set; } = "";
+        public string NoPickFlag { get; set; } = "";
+        public string SourceNo { get; set; } = "";
+        public string ApplyDocType { get; set; } = "";
+        public string ApplyNo { get; set; } = "";
     }
 
     public class BarcodePrintBoxSourceQuery
@@ -20,5 +27,6 @@ namespace WmsPlus.Models
         public string SourceNo { get; set; } = "";
         public string PrdNo { get; set; } = "";
         public string CusName { get; set; } = "";
+        public bool FuzzySearch { get; set; }
     }
 }

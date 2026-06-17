@@ -120,6 +120,7 @@ public class OutboundTaskAssignmentQuery
     public string TrackFlag { get; set; } = "";        // 跟踪否
     public string ReceivePoint { get; set; } = "";     // 收货点
     public string CustomerCode { get; set; } = "";     // 客户代号
+    public string PickerName { get; set; } = "";       // 拣货员
 
     // Tab2: 波次管理 特有
     public string WaveNumber { get; set; } = "";       // 波次单号

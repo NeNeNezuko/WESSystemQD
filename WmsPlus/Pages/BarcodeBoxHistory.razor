@@ -111,7 +111,7 @@
                     <button class="toolbar-btn export-btn" @onclick="HandleType">类型</button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">导出Excel</button>
                     <button class="toolbar-btn export-btn" @onclick="HandlePrint">打印</button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleCategoryDesign">类别设计</button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleCategoryDesign">类型设计</button>
                 </div>
             </div>
 
@@ -363,8 +363,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodeBoxHistory/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodeBoxHistory/search?";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -423,14 +422,14 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "SeqNo", OriginalName = "坯次", DisplayName = "坯次", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
             new() { FieldKey = "ChangeTime", OriginalName = "变更时间", DisplayName = "变更时间", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
             new() { FieldKey = "BoxBarcode", OriginalName = "箱条码", DisplayName = "箱条码", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
             new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
             new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "SourceDocType", OriginalName = "来源单据别", DisplayName = "来源单据别", Visible = true, Width = 85, DefaultWidth = 85 },
-            new() { FieldKey = "DocName", OriginalName = "单据名称", DisplayName = "单据名称", Visible = true, Width = 100, DefaultWidth = 100 }
+            new() { FieldKey = "DocName", OriginalName = "现仓库", DisplayName = "现仓库", Visible = true, Width = 100, DefaultWidth = 100 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {

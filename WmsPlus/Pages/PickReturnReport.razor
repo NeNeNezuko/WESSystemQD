@@ -99,11 +99,10 @@ private async Task ConfirmExport(){showExportDialog=false;try{await ExportToExce
 
 private async Task LoadData(){
 try{
-const string ApiBaseUrl="http://localhost:5102";
 var today=DateTime.Today;var dateFromStr=today.ToString("yyyy-MM-dd");var dateToStr=today.ToString("yyyy-MM-dd");
 if(!string.IsNullOrWhiteSpace(query.DateRange)&&query.DateRange.Contains("\u2192")){var parts=query.DateRange.Split("\u2192",StringSplitOptions.TrimEntries);if(parts.Length>=2){dateFromStr=parts[0];dateToStr=parts[1];}}
 var tabType=activeInnerTab=="summary"?"summary":"detail";
-var url=$"{ApiBaseUrl}/api/PickReturnReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&tabType={tabType}";
+var url=$"{ApiConfig.BaseUrl}/api/PickReturnReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&tabType={tabType}";
 if(!string.IsNullOrWhiteSpace(query.JtNo))url+=$"&jtNo={Uri.EscapeDataString(query.JtNo)}";
 if(!string.IsNullOrWhiteSpace(query.Wh))url+=$"&wh={Uri.EscapeDataString(query.Wh)}";
 var jsonOptions=new System.Text.Json.JsonSerializerOptions{PropertyNameCaseInsensitive=true};

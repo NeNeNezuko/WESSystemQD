@@ -282,7 +282,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/EmulateDeviceSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/EmulateDeviceSetting/search";
             if (!string.IsNullOrWhiteSpace(query.DeviceId)) url += $"?deviceId={Uri.EscapeDataString(query.DeviceId)}";
             if (!string.IsNullOrWhiteSpace(query.TypeId) && query.TypeId != "全部") url += (url.Contains("?") ? "&" : "?") + $"typeId={Uri.EscapeDataString(query.TypeId)}";
 

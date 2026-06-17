@@ -19,6 +19,8 @@ namespace WmsPlus.Models
         public bool IsClosed { get; set; }
         public string DispatchStatus { get; set; } = "";     // 派工状态：未派工/已派工
         public string Remark { get; set; } = "";             // 单据说明
+        public string PickerName { get; set; } = "";         // 拣货员名称
+        public bool IsSelected { get; set; }                 // 勾选状态
     }
 
     /// <summary>
@@ -38,6 +40,11 @@ namespace WmsPlus.Models
         public decimal Qty { get; set; }                     // 数量
         public decimal PlannedDeductionQty { get; set; }     // 已转计划出库量（数据来源待确认，先留空）
         public decimal PickedQty { get; set; }               // 已提数量（数据来源待确认，先留空）
+        public decimal ReturnedQty { get; set; }             // 已退数量
+        public decimal OutboundQty { get; set; }             // 已出库量
+        public int ErpApplyItemNo { get; set; }              // ERP申请单项次
+        public string BizOrderNo { get; set; } = "";         // 业务单号
+        public string Summary { get; set; } = "";            // 摘要
     }
 
     /// <summary>
@@ -62,5 +69,8 @@ namespace WmsPlus.Models
 
         /// <summary>派工状态：全部/未派工/已派工</summary>
         public string DispatchStatus { get; set; } = "全部";
+
+        /// <summary>拣货结案标记：全部/未派工/已派工</summary>
+        public string PickCloseStatus { get; set; } = "未派工";
     }
 }

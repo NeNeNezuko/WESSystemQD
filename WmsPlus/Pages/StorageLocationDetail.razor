@@ -79,6 +79,24 @@
                 <!-- 仓库代号 -->
                 <WarehouseCodeInput @bind-Value="query.Wh" />
 
+                <!-- 排 -->
+                <div class="form-item">
+                    <label class="form-label">排</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.Gs" />
+                </div>
+
+                <!-- 列 -->
+                <div class="form-item">
+                    <label class="form-label">列</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.Gl" />
+                </div>
+
+                <!-- 层 -->
+                <div class="form-item">
+                    <label class="form-label">层</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.Layer" />
+                </div>
+
                 <!-- 储位状态 -->
                 <div class="form-item">
                     <label class="form-label">储位状态</label>
@@ -87,6 +105,69 @@
                             <option value="全部">全部</option>
                             <option value="正常">正常</option>
                             <option value="故障">故障</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 锁定状态 -->
+                <div class="form-item">
+                    <label class="form-label">锁定状态</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.LockCw">
+                            <option value="全部">全部</option>
+                            <option value="正常">正常</option>
+                            <option value="锁定">锁定</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 层属性 -->
+                <div class="form-item">
+                    <label class="form-label">层属性</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.LayerProp">
+                            <option value="全部">全部</option>
+                            <option value="0">空</option>
+                            <option value="1">低层</option>
+                            <option value="2">中层</option>
+                            <option value="3">高层</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 储位位置 -->
+                <div class="form-item">
+                    <label class="form-label">储位位置</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.LkhjType">
+                            <option value="全部">全部</option>
+                            <option value="1">单深位</option>
+                            <option value="2">双深位外侧</option>
+                            <option value="3">双深位里侧</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 存储状态 -->
+                <div class="form-item">
+                    <label class="form-label">存储状态</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.CwUnmatch">
+                            <option value="全部">全部</option>
+                            <option value="T">不可配位</option>
+                            <option value="F">可配位</option>
                         </select>
                         <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
                             <path d="M2 4l4 4 4-4"/>
@@ -112,11 +193,26 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <button class="toolbar-btn export-btn" @onclick="HandleType">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M3 3h10v10H3z" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6 6h4M6 8h4M6 10h2" stroke="#666666" stroke-width="1" stroke-linecap="round"/>
                         </svg>
-                        <span>新增</span>
+                        <span>类型</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandlePrint">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M4 6V2h8v4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="2" y="6" width="12" height="6" rx="1" stroke="#666666" stroke-width="1.5" fill="none"/>
+                            <path d="M4 12v2h8v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>打印</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleTypeDesign">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                        </svg>
+                        <span>类型设计</span>
                     </button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
@@ -357,7 +453,9 @@
     }
 
     private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
+    private void HandleType() { }
+    private void HandlePrint() { }
+    private void HandleTypeDesign() { }
     private void HandleEdit(StorageLocationDetailModel item) { }
 
     private async Task HandleExport()
@@ -384,14 +482,30 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/StorageLocationDetail/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/StorageLocationDetail/search";
+            var queryParams = new List<string>();
             if (!string.IsNullOrWhiteSpace(query.Chuw))
-                url += $"chuw={Uri.EscapeDataString(query.Chuw)}&";
+                queryParams.Add($"chuw={Uri.EscapeDataString(query.Chuw)}");
             if (!string.IsNullOrWhiteSpace(query.Wh))
-                url += $"wh={Uri.EscapeDataString(query.Wh)}&";
+                queryParams.Add($"wh={Uri.EscapeDataString(query.Wh)}");
             if (!string.IsNullOrWhiteSpace(query.CwStatus) && query.CwStatus != "全部")
-                url += $"cwStatus={Uri.EscapeDataString(query.CwStatus)}&";
-            url = url.TrimEnd('&');
+                queryParams.Add($"cwStatus={Uri.EscapeDataString(query.CwStatus)}");
+            if (!string.IsNullOrWhiteSpace(query.Gs))
+                queryParams.Add($"gs={Uri.EscapeDataString(query.Gs)}");
+            if (!string.IsNullOrWhiteSpace(query.Gl))
+                queryParams.Add($"gl={Uri.EscapeDataString(query.Gl)}");
+            if (!string.IsNullOrWhiteSpace(query.Layer))
+                queryParams.Add($"layer={Uri.EscapeDataString(query.Layer)}");
+            if (!string.IsNullOrWhiteSpace(query.LockCw) && query.LockCw != "全部")
+                queryParams.Add($"lockCw={Uri.EscapeDataString(query.LockCw)}");
+            if (!string.IsNullOrWhiteSpace(query.LayerProp) && query.LayerProp != "全部")
+                queryParams.Add($"layerProp={Uri.EscapeDataString(query.LayerProp)}");
+            if (!string.IsNullOrWhiteSpace(query.LkhjType) && query.LkhjType != "全部")
+                queryParams.Add($"lkhjType={Uri.EscapeDataString(query.LkhjType)}");
+            if (!string.IsNullOrWhiteSpace(query.CwUnmatch) && query.CwUnmatch != "全部")
+                queryParams.Add($"cwUnmatch={Uri.EscapeDataString(query.CwUnmatch)}");
+            if (queryParams.Count > 0)
+                url += "?" + string.Join("&", queryParams);
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -400,6 +514,8 @@
             if (response != null && response.Success && response.Data != null)
             {
                 dataSource = response.Data;
+                for (int i = 0; i < dataSource.Count; i++)
+                    dataSource[i].Seq = i + 1;
             }
             else
             {
@@ -448,14 +564,20 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
+            new() { FieldKey = "Seq", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50, Sortable = false },
             new() { FieldKey = "Chuw", OriginalName = "储位代号", DisplayName = "储位代号", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
             new() { FieldKey = "Name", OriginalName = "储位名称", DisplayName = "储位名称", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
-            new() { FieldKey = "Wh", OriginalName = "仓库", DisplayName = "仓库", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "Wh", OriginalName = "仓库", DisplayName = "仓库", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+            new() { FieldKey = "WhName", OriginalName = "仓库名称", DisplayName = "仓库名称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
             new() { FieldKey = "Gs", OriginalName = "排", DisplayName = "排", Visible = true, Width = 60, DefaultWidth = 60, Sortable = false },
             new() { FieldKey = "Gl", OriginalName = "列", DisplayName = "列", Visible = true, Width = 60, DefaultWidth = 60, Sortable = false },
             new() { FieldKey = "Layer", OriginalName = "层", DisplayName = "层", Visible = true, Width = 60, DefaultWidth = 60, Sortable = false },
             new() { FieldKey = "CwStatus", OriginalName = "储位状态", DisplayName = "储位状态", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
             new() { FieldKey = "LockCw", OriginalName = "锁定状态", DisplayName = "锁定状态", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+            new() { FieldKey = "LayerProp", OriginalName = "层属性", DisplayName = "层属性", Visible = true, Width = 80, DefaultWidth = 80, Sortable = false },
+            new() { FieldKey = "LkhjType", OriginalName = "储位位置", DisplayName = "储位位置", Visible = true, Width = 100, DefaultWidth = 100, Sortable = false },
+            new() { FieldKey = "CwUnmatch", OriginalName = "存储状态", DisplayName = "存储状态", Visible = true, Width = 80, DefaultWidth = 80, Sortable = false },
+            new() { FieldKey = "GsPat", OriginalName = "货架分类", DisplayName = "货架分类", Visible = true, Width = 100, DefaultWidth = 100, Sortable = false },
             new() { FieldKey = "AreaId", OriginalName = "区域代号", DisplayName = "区域代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
@@ -562,14 +684,20 @@
 
     private object GetCellValue(StorageLocationDetailModel item, string fieldKey) => fieldKey switch
     {
+        "Seq" => item.Seq,
         "Chuw" => item.Chuw,
         "Name" => item.Name,
         "Wh" => item.Wh,
+        "WhName" => item.WhName,
         "Gs" => item.Gs,
         "Gl" => item.Gl,
         "Layer" => item.Layer,
         "CwStatus" => item.CwStatus,
         "LockCw" => item.LockCw,
+        "LayerProp" => item.LayerProp,
+        "LkhjType" => item.LkhjType,
+        "CwUnmatch" => item.CwUnmatch,
+        "GsPat" => item.GsPat,
         "AreaId" => item.AreaId,
         _ => ""
     };

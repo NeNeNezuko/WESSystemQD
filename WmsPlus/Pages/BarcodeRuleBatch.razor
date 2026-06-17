@@ -375,7 +375,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/BarcodeRule/search?ruleType={Uri.EscapeDataString(ruleType)}";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodeRule/search?ruleType={Uri.EscapeDataString(ruleType)}";
             if (!string.IsNullOrWhiteSpace(query.RuleCode))
                 url += $"&ruleCode={Uri.EscapeDataString(query.RuleCode)}";
             if (!string.IsNullOrWhiteSpace(query.RuleName))

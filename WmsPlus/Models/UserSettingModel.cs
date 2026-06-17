@@ -9,10 +9,8 @@ namespace WmsPlus.Models
         public string DeptName { get; set; } = "";
         public string ParentDept { get; set; } = "";
         public string ParentDeptName { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string IsAdmin { get; set; } = "";
-        public string IsResigned { get; set; } = "";
-        public string Supplier { get; set; } = "";
+        public string CategoryCode { get; set; } = "";   // 所属类别
+        public string CategoryName { get; set; } = "";    // 所属类别名称
     }
 
     public class UserSettingQuery
@@ -22,7 +20,7 @@ namespace WmsPlus.Models
         public string Dept { get; set; } = "";
         public bool IncludeSub { get; set; } = false;
         public bool ShowExpired { get; set; } = false;
-        public string Theme { get; set; } = "";
+        public string Manager { get; set; } = "";         // 主管
         public bool SunlikeUser { get; set; } = true;
         public bool Vendor { get; set; } = true;
         public bool IsEmpty { get; set; } = true;

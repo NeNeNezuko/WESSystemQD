@@ -1214,6 +1214,8 @@ SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_F
 - **数据库连接**：统一使用 db_gz01（WarehouseDbContext）
 - **字段说明**：通过 wmssystem.DICT_TAB + DICT_FLD 查询获取
 - **API基地址**：硬编码 `http://localhost:5102`
+- **前端地址**：`http://localhost:5192`
+- **开发环境端口**：后端 API 使用 `5102`，前端 Blazor WASM 使用 `5192`。启动命令：`dotnet run --urls "http://localhost:5102"`（后端）、`dotnet run --urls "http://localhost:5192"`（前端）
 - **认证方式**：使用 AuthHttpClient.CreateRequest() 创建带 Bearer Token 的请求
 - **导入期初库存**：仅做 UI 样式，不实现功能
 

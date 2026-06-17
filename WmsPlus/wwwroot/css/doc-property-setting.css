@@ -460,6 +460,25 @@
     background-color: #e6f7ff;
 }
 
+/* 操作列 - 链接按钮（设置属性） */
+.action-link-btn {
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #1890ff;
+    background: none;
+    border: 1px solid #91d5ff;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.action-link-btn:hover {
+    color: #ffffff;
+    background-color: #1890ff;
+    border-color: #1890ff;
+}
+
 /* ========== 空数据提示 ========== */
 
 .empty-data-cell {

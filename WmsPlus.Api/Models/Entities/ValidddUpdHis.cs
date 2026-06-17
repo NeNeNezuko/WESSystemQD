@@ -38,4 +38,19 @@ public class ValidddUpdHis
 
     /// <summary>仓库代号</summary>
     public string? WH { get; set; }
+
+    /// <summary>最近出库日</summary>
+    public DateTime? LAST_OUT_DD { get; set; }
+
+    /// <summary>最近入库日</summary>
+    public DateTime? LAST_IN_DD { get; set; }
+
+    /// <summary>最近检验日期</summary>
+    public DateTime? LAST_INSPECT_DD { get; set; }
+
+    /// <summary>生产日期</summary>
+    public DateTime? PRODUCE_DD { get; set; }
+
+    /// <summary>数量</summary>
+    public decimal? QTY { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿/* ========== 仓库代号设定 - 页面样式 ========== */
+/* ========== 仓库代号设定 - 页面样式 ========== */
 
 .warehouse-code-setting-page {
     width: 100%;
@@ -241,6 +241,77 @@
     overflow: visible;
 }
 
+/* ========== 查询模式切换 ========== */
+
+.query-mode-toggle {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 4px;
+}
+
+.mode-radio {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #333333;
+}
+
+.mode-radio input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.tree-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.placeholder-text {
+    font-size: 12px;
+    color: #999999;
+}
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0 24px 0 6px;
+    font-size: 12px;
+    color: #333333;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.form-select::-ms-expand {
+    display: none;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
 .form-item {
     display: flex;
     flex-direction: row;
@@ -437,8 +508,35 @@
 /* ========== 操作列 ========== */
 
 .col-action {
-    width: 45px;
+    width: 120px;
     text-align: center;
+}
+
+.action-links {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-link {
+    font-size: 11px;
+    color: #1890ff;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+
+.action-link-danger {
+    color: #ff4d4f;
+}
+
+.action-link-danger:hover {
+    color: #ff7875;
 }
 
 .action-btn {

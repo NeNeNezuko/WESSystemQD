@@ -71,7 +71,7 @@
 
             <div class="query-form">
                 <!-- 制表日期 - 日期范围选择器 -->
-                <DateRangeInput @bind-Value="query.DateRange" />
+                <DateRangeInput @bind-Value="query.DateRange" Label="制表日期" />
 
                 <!-- 业务单号 + 模糊 -->
                 <div class="form-item-fuzzy">
@@ -229,7 +229,7 @@
                             <tr>
                                 <th class="col-item-no">项次</th>
                                 <th class="col-make-time sortable">制单时间<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
-                                <th class="col-source-no sortable">应身单号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
+                                <th class="col-source-no sortable">来源单号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
                                 <th class="col-erp-apply-no sortable">ERP申请单据号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
                                 <th class="col-doc-no sortable">单据号码<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
                                 <th class="col-prd-no sortable">货品代号<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>
@@ -456,7 +456,7 @@
     private async Task SearchProduct()
     {
         try {
-            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);
@@ -483,7 +483,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -492,7 +491,7 @@
                 var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
                 if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
             }
-            var url = $"{ApiBaseUrl}/api/InboundNoticeReport/detail?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/InboundNoticeReport/detail?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.BizOrderNo)) url += $"&bizOrderNo={Uri.EscapeDataString(query.BizOrderNo)}&fuzzyBizOrderNo={query.FuzzyBizOrderNo}";
             if (!string.IsNullOrWhiteSpace(query.ErpApplyNo)) url += $"&erpApplyNo={Uri.EscapeDataString(query.ErpApplyNo)}&fuzzyErpApplyNo={query.FuzzyErpApplyNo}";
             if (!string.IsNullOrWhiteSpace(query.DocNoFrom)) url += $"&docNoFrom={Uri.EscapeDataString(query.DocNoFrom)}";
@@ -524,7 +523,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -533,7 +531,7 @@
                 var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
                 if (parts.Length >= 2) { dateFromStr = parts[0]; dateToStr = parts[1]; }
             }
-            var url = $"{ApiBaseUrl}/api/InboundNoticeReport/summary?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/InboundNoticeReport/summary?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.BizOrderNo)) url += $"&bizOrderNo={Uri.EscapeDataString(query.BizOrderNo)}&fuzzyBizOrderNo={query.FuzzyBizOrderNo}";
             if (!string.IsNullOrWhiteSpace(query.ErpApplyNo)) url += $"&erpApplyNo={Uri.EscapeDataString(query.ErpApplyNo)}&fuzzyErpApplyNo={query.FuzzyErpApplyNo}";
             if (!string.IsNullOrWhiteSpace(query.DocNoFrom)) url += $"&docNoFrom={Uri.EscapeDataString(query.DocNoFrom)}";

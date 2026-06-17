@@ -85,6 +85,10 @@
                     <input type="text" class="form-input" placeholder="" @bind="query.InputUser" />
                 </div>
                 <div class="form-item">
+                    <label class="form-label">录入批次</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.InputBatch" />
+                </div>
+                <div class="form-item">
                     <label class="form-label">客户代号</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.CusNo" />
                 </div>
@@ -434,8 +438,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodePrintBox/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodePrintBox/search?";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -515,7 +518,8 @@
             new() { FieldKey = "SourceNo", OriginalName = "来源单号", DisplayName = "来源单号", Visible = true, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "SourceItm", OriginalName = "来源单据次", DisplayName = "来源单据次", Visible = true, Width = 75, DefaultWidth = 75 },
             new() { FieldKey = "ValidDate", OriginalName = "有效期", DisplayName = "有效期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
-            new() { FieldKey = "ChangeHistory", OriginalName = "变动历史", DisplayName = "变动历史", Visible = true, Width = 100, DefaultWidth = 100 }
+            new() { FieldKey = "ChangeHistory", OriginalName = "变动历史", DisplayName = "变动历史", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "LastPrintTime", OriginalName = "最近打印时间", DisplayName = "最近打印时间", Visible = true, Width = 110, DefaultWidth = 110, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -598,6 +602,7 @@
         "SourceItm" => item.SourceItm?.ToString() ?? "",
         "ValidDate" => item.ValidDate.HasValue ? item.ValidDate.Value.ToString("yyyy-MM-dd") : "",
         "ChangeHistory" => item.ChangeHistory,
+        "LastPrintTime" => item.LastPrintTime.HasValue ? item.LastPrintTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
         _ => ""
     };
 

@@ -385,7 +385,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/DocTypeSetting/search?spcId={Uri.EscapeDataString(query.SpcId)}";
+            var url = $"{ApiConfig.BaseUrl}/api/DocTypeSetting/search?spcId={Uri.EscapeDataString(query.SpcId)}";
             if (!string.IsNullOrWhiteSpace(query.SpcNo))
                 url += $"&spcNo={Uri.EscapeDataString(query.SpcNo)}";
 

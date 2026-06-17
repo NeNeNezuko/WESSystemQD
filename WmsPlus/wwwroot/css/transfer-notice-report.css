@@ -1,4 +1,4 @@
-﻿/* ========== 调拨通知单报表页面样式 ========== */
+/* ========== 调拨通知单报表页面样式 ========== */
 .transfer-notice-report-page {
     width: 100%;
     height: 100%;
@@ -788,3 +788,52 @@
     border-radius: 2px;
     outline: none;
 }
+
+/* ===== 融合式单边框（起止输入框，上下分行） ===== */
+.form-item-fused {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.form-item-fused > .fused-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+}
+.form-item-fused > .fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
+}
+.form-item-fused > .fused-row > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.form-item-fused > .fused-row > .form-label {
+    padding: 0 8px;
+    background-color: #fafafa;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+}
+.form-item-fused > .fused-row > .fused-input {
+    flex: 1; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.form-item-fused > .fused-row > .fused-input-area {
+    flex: 1; display: flex; align-items: center; position: relative;
+}
+.form-item-fused > .fused-row > .fused-input-area > .fused-input {
+    width: 100%; padding: 0 6px; font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.fused-search-btn {
+    position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 2px; cursor: pointer; z-index: 1;
+}
+.fused-divider { display: none; }

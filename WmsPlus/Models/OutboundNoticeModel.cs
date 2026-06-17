@@ -16,6 +16,10 @@ namespace WmsPlus.Models
         public string PrdSpec { get; set; } = "";
         public decimal Qty { get; set; }
         public string Unit { get; set; } = "";
+        // 扩展字段
+        public string ErpApplyId { get; set; } = "";          // ERP申请单ID
+        public string DispatchStatus { get; set; } = "";      // 派工状态
+        public string PickerName { get; set; } = "";          // 拣货员名称
     }
 
     public class OutboundNoticeQuery
@@ -42,5 +46,8 @@ namespace WmsPlus.Models
         public string DeliveryAddress { get; set; } = "全部";
         public string ReceiveCheck { get; set; } = "全部";
         public string OutboundStrategy { get; set; } = "全部";
+        // 新增查询字段
+        public string ReceivePoint { get; set; } = "";               // 收货点
+        public string CloseCaseType { get; set; } = "全部";          // 波次/拣货/出库结案：全部/未结案/已结案
     }
 }

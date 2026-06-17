@@ -73,7 +73,7 @@
                 <!-- 单据日期 - 日期范围选择器 -->
                 <DateRangeInput @bind-Value="query.DateRange" />
 
-                <!-- 稽催日期 - 日期范围选择器 -->
+                <!-- 预出库日 - 日期范围选择器 -->
                 <DateRangeInput @bind-Value="query.EstDateRange" />
 
                 <!-- 单据号码 -->
@@ -94,14 +94,14 @@
                     <input type="text" class="form-input" placeholder="" @bind="query.AreaSh" />
                 </div>
 
-                <!-- 洽谈结案 -->
+                <!-- 波次/拣货/出库结案 -->
                 <div class="form-item">
-                    <label class="form-label">洽谈结案</label>
+                    <label class="form-label">波次/拣货/出库结案</label>
                     <div class="select-wrapper">
                         <select class="form-select" @bind="query.ClsIdBc">
                             <option value="全部">全部</option>
-                            <option value="是">是</option>
-                            <option value="否">否</option>
+                            <option value="未结案">未结案</option>
+                            <option value="已结案">已结案</option>
                         </select>
                         <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
                             <path d="M2 4l4 4 4-4"/>
@@ -109,24 +109,9 @@
                     </div>
                 </div>
 
-                <!-- 转采结案 -->
+                <!-- 业务类型 -->
                 <div class="form-item">
-                    <label class="form-label">转采结案</label>
-                    <div class="select-wrapper">
-                        <select class="form-select" @bind="query.ClsIdCk">
-                            <option value="全部">全部</option>
-                            <option value="是">是</option>
-                            <option value="否">否</option>
-                        </select>
-                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
-                            <path d="M2 4l4 4 4-4"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- 业务类别 -->
-                <div class="form-item">
-                    <label class="form-label">业务类别</label>
+                    <label class="form-label">业务类型</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.TypeId" />
                 </div>
 
@@ -418,8 +403,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var today = DateTime.Today;
+
+var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
             if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
@@ -431,9 +416,9 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/TransferNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/TransferNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
 
-            // 稽催日期范围解析（与DateRange相同逻辑）
+            // 预出库日范围解析（与DateRange相同逻辑）
             var estDateFromStr = "";
             var estDateToStr = "";
             if (!string.IsNullOrWhiteSpace(query.EstDateRange) && query.EstDateRange.Contains("→"))
@@ -460,8 +445,6 @@
                 url += $"&areaSh={Uri.EscapeDataString(query.AreaSh)}";
             if (!string.IsNullOrWhiteSpace(query.ClsIdBc) && query.ClsIdBc != "全部")
                 url += $"&clsIdBc={Uri.EscapeDataString(query.ClsIdBc)}";
-            if (!string.IsNullOrWhiteSpace(query.ClsIdCk) && query.ClsIdCk != "全部")
-                url += $"&clsIdCk={Uri.EscapeDataString(query.ClsIdCk)}";
             if (!string.IsNullOrWhiteSpace(query.TypeId))
                 url += $"&typeId={Uri.EscapeDataString(query.TypeId)}";
 
@@ -531,6 +514,10 @@
             new() { FieldKey = "WhInName", OriginalName = "入库名称", DisplayName = "入库名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "SalNo", OriginalName = "经办人", DisplayName = "经办人", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
             new() { FieldKey = "SalName", OriginalName = "经办人名称", DisplayName = "经办人名称", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "AreaSh", OriginalName = "收货点", DisplayName = "收货点", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "EstDate", OriginalName = "预出库日", DisplayName = "预出库日", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "TypeId", OriginalName = "业务类型", DisplayName = "业务类型", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "TypeName", OriginalName = "业务类型名称", DisplayName = "业务类型名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "UpDate", OriginalName = "制单时间", DisplayName = "制单时间", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
             new() { FieldKey = "Rem", OriginalName = "备注", DisplayName = "备注", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "PrdNo", OriginalName = "品号", DisplayName = "品号", Visible = false, Width = 100, DefaultWidth = 100 },
@@ -652,9 +639,11 @@
         "WhInName" => item.WhInName,
         "SalNo" => item.SalNo,
         "SalName" => item.SalName,
-        "EstDate" => item.EstDate?.ToString("yyyy-MM-dd") ?? "",
-        "UpDate" => item.UpDate?.ToString("yyyy-MM-dd") ?? "",
         "AreaSh" => item.AreaSh,
+        "EstDate" => item.EstDate?.ToString("yyyy-MM-dd") ?? "",
+        "TypeId" => item.TypeId,
+        "TypeName" => item.TypeName,
+        "UpDate" => item.UpDate?.ToString("yyyy-MM-dd") ?? "",
         "Rem" => item.Rem,
         "StatusPg" => item.StatusPg,
         "ClsIdBc" => item.ClsIdBc,

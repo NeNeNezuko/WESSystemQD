@@ -70,16 +70,16 @@
             </div>
 
             <div class="query-form">
-                <!-- 程序代号 -->
+                <!-- 角色代号 -->
                 <div class="form-item">
-                    <label class="form-label">程序代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.Pgm" />
+                    <label class="form-label">角色代号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.RoleNo" />
                 </div>
 
-                <!-- 类别代号 -->
+                <!-- 角色名称 -->
                 <div class="form-item">
-                    <label class="form-label">类别代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.RoleNo" />
+                    <label class="form-label">角色名称</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.Name" />
                 </div>
 
                 <!-- 查询按钮 -->
@@ -100,12 +100,6 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span>新增</span>
-                    </button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -156,15 +150,19 @@
                         }
                         else
                         {
-                            @foreach (var item in dataSource)
+                            @for (int i = 0; i < dataSource.Count; i++)
                             {
+                                var item = dataSource[i];
+                                var idx = i + 1;
                                 <tr>
                                     @foreach (var col in columnConfigs.Where(c => c.Visible))
                                     {
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
-                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey, idx)</td>
                                     }
-                                    <td><button class="action-btn" title="编辑" @onclick="() => HandleEdit(item)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><path d="M11 3l3 3m0 0l-7 7H4v-3l7-7z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                                    <td>
+                                        <button class="action-link-btn" @onclick="() => HandleSetProperty(item)">设置属性</button>
+                                    </td>
                                 </tr>
                             }
                         }
@@ -345,8 +343,7 @@
     }
 
     private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
-    private void HandleEdit(DocPropertySettingModel item) { }
+    private void HandleSetProperty(DocPropertySettingModel item) { }
 
     private async Task HandleExport()
     {
@@ -372,11 +369,11 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/DocPropertySetting/search";
-            if (!string.IsNullOrWhiteSpace(query.Pgm))
-                url += $"?pgm={Uri.EscapeDataString(query.Pgm)}";
+            var url = $"{ApiConfig.BaseUrl}/api/DocPropertySetting/search";
             if (!string.IsNullOrWhiteSpace(query.RoleNo))
-                url += (url.Contains("?") ? "&" : "?") + $"roleNo={Uri.EscapeDataString(query.RoleNo)}";
+                url += $"?roleNo={Uri.EscapeDataString(query.RoleNo)}";
+            if (!string.IsNullOrWhiteSpace(query.Name))
+                url += (url.Contains("?") ? "&" : "?") + $"name={Uri.EscapeDataString(query.Name)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -405,11 +402,11 @@
         var headers = visibleCols.Select(c => c.DisplayName).ToArray();
         var rows = new List<object[]>();
         rows.Add(headers);
-        foreach (var item in dataSource)
+        for (int i = 0; i < dataSource.Count; i++)
         {
             var row = new object[visibleCols.Count];
-            for (int i = 0; i < visibleCols.Count; i++)
-                row[i] = GetCellValue(item, visibleCols[i].FieldKey);
+            for (int j = 0; j < visibleCols.Count; j++)
+                row[j] = GetCellValue(dataSource[i], visibleCols[j].FieldKey, i + 1);
             rows.Add(row);
         }
         var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"单据属性设定_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
@@ -424,22 +421,18 @@
         public string OriginalName { get; set; } = "";
         public string DisplayName { get; set; } = "";
         public bool Visible { get; set; } = true;
-        public int Width { get; set; } = 120;
-        public int DefaultWidth { get; set; } = 120;
-        public bool Sortable { get; set; } = true;
+        public int Width { get; set; } = 0;
+        public int DefaultWidth { get; set; } = 0;
+        public bool Sortable { get; set; } = false;
     }
 
     private void InitDefaultColumnConfigs()
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "CompNo", OriginalName = "帐套代号", DisplayName = "帐套代号", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
-            new() { FieldKey = "Pgm", OriginalName = "程序代号", DisplayName = "程序代号", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
-            new() { FieldKey = "RoleNo", OriginalName = "类别代号", DisplayName = "类别代号", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
-            new() { FieldKey = "TypeId", OriginalName = "类别种类", DisplayName = "类别种类", Visible = true, Width = 120, DefaultWidth = 120, Sortable = false },
-            new() { FieldKey = "FldName", OriginalName = "属性名", DisplayName = "属性名", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true },
-            new() { FieldKey = "FldValue", OriginalName = "属性值", DisplayName = "属性值", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true },
-            new() { FieldKey = "Rem", OriginalName = "参数备注", DisplayName = "参数备注", Visible = true, Width = 180, DefaultWidth = 180, Sortable = false }
+            new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
+            new() { FieldKey = "RoleNo", OriginalName = "角色代号", DisplayName = "角色代号", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
+            new() { FieldKey = "Name", OriginalName = "角色名称", DisplayName = "角色名称", Visible = true, Width = 200, DefaultWidth = 200, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -543,17 +536,33 @@
 
     private int VisibleColumnCount => columnConfigs.Count(c => c.Visible);
 
-    private object GetCellValue(DocPropertySettingModel item, string fieldKey) => fieldKey switch
+    private object GetCellValue(DocPropertySettingModel item, string fieldKey, int itemNo) => fieldKey switch
     {
-        "CompNo" => item.CompNo,
-        "Pgm" => item.Pgm,
+        "ItemNo" => itemNo,
         "RoleNo" => item.RoleNo,
-        "TypeId" => item.TypeId,
-        "FldName" => item.FldName,
-        "FldValue" => item.FldValue,
-        "Rem" => item.Rem,
+        "Name" => item.Name,
         _ => ""
     };
+
+    // ===== 查询模型 =====
+    private class DocPropertySettingQuery
+    {
+        public string RoleNo { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    // ===== 数据模型 =====
+    private class DocPropertySettingModel
+    {
+        public string CompNo { get; set; } = "";
+        public string Pgm { get; set; } = "";
+        public string RoleNo { get; set; } = "";
+        public string TypeId { get; set; } = "";
+        public string FldName { get; set; } = "";
+        public string FldValue { get; set; } = "";
+        public string Rem { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
 
     private class ApiResponse<T>
     {

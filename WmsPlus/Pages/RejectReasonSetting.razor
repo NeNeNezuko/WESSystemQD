@@ -372,7 +372,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/RejectReasonSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/RejectReasonSetting/search";
             if (!string.IsNullOrWhiteSpace(query.SpcNo))
                 url += $"?spcNo={Uri.EscapeDataString(query.SpcNo)}";
             if (!string.IsNullOrWhiteSpace(query.Name))

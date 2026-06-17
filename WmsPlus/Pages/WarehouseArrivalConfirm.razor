@@ -369,7 +369,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/WarehouseArrivalConfirm/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/WarehouseArrivalConfirm/search?";
             if (!string.IsNullOrWhiteSpace(query.WhOut))
                 url += $"whOut={Uri.EscapeDataString(query.WhOut)}&";
             if (!string.IsNullOrWhiteSpace(query.WhIn))
@@ -435,7 +435,8 @@
             new() { FieldKey = "WhIn", OriginalName = "入货仓库", DisplayName = "入货仓库", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
             new() { FieldKey = "Usr", OriginalName = "制单人", DisplayName = "制单人", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "ModifyMan", OriginalName = "修改人", DisplayName = "修改人", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
-            new() { FieldKey = "SysDate", OriginalName = "制单时间", DisplayName = "制单时间", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true }
+            new() { FieldKey = "SysDate", OriginalName = "制单时间", DisplayName = "制单时间", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true },
+            new() { FieldKey = "ModifyDd", OriginalName = "修改时间", DisplayName = "修改时间", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {

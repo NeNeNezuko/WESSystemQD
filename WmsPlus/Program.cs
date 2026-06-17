@@ -17,6 +17,9 @@ builder.Services.AddScoped<AuthService>();
 // 注册简单的 HttpClient（WASM 兼容，不使用 DelegatingHandler）
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+// 从 appsettings.json 读取 API 基地址，部署时只需修改配置文件
+ApiConfig.BaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5102";
+
 builder.Services.AddAntDesign();
 
 await builder.Build().RunAsync();

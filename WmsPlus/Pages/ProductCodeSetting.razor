@@ -70,17 +70,65 @@
             </div>
 
             <div class="query-form">
-                <!-- 货品代号 -->
-                <div class="form-item">
-                    <label class="form-label">货品代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.PrdNo" />
+                <!-- 查询模式切换 -->
+                <div class="query-mode-toggle">
+                    <label class="mode-radio">
+                        @if (queryMode == "tree")
+                        {
+                            <input type="radio" name="queryMode_product" checked @onclick="@(() => queryMode = "tree")" />
+                        }
+                        else
+                        {
+                            <input type="radio" name="queryMode_product" @onclick="@(() => queryMode = "tree")" />
+                        }
+                        <span>树状查询</span>
+                    </label>
+                    <label class="mode-radio">
+                        @if (queryMode == "condition")
+                        {
+                            <input type="radio" name="queryMode_product" checked @onclick="@(() => queryMode = "condition")" />
+                        }
+                        else
+                        {
+                            <input type="radio" name="queryMode_product" @onclick="@(() => queryMode = "condition")" />
+                        }
+                        <span>条件查询</span>
+                    </label>
                 </div>
 
-                <!-- 名称 -->
-                <div class="form-item">
-                    <label class="form-label">名称</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.Name" />
-                </div>
+                @if (queryMode == "condition")
+                {
+                    <!-- 货品代号 -->
+                    <div class="form-item">
+                        <label class="form-label">货品代号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdNo" />
+                    </div>
+
+                    <!-- 名称 -->
+                    <div class="form-item">
+                        <label class="form-label">名称</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.Name" />
+                    </div>
+
+                    <!-- 所属中类 -->
+                    <div class="form-item">
+                        <label class="form-label">所属中类</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.Idx1" />
+                    </div>
+
+                    <!-- 所属部门 -->
+                    <div class="form-item">
+                        <label class="form-label">所属部门</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.Dep" />
+                    </div>
+                }
+                else
+                {
+                    <!-- 树状查询占位 -->
+                    <div class="tree-placeholder">
+                        <span class="placeholder-text">树状查询（待实现）</span>
+                    </div>
+                }
 
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
@@ -105,6 +153,12 @@
                             <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                         <span>新增</span>
+                    </button>
+                    <button class="toolbar-btn export-btn" @onclick="HandleBatchSetting">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M2 4h12M2 8h12M2 12h12" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span>批量设置</span>
                     </button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
@@ -164,7 +218,12 @@
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
                                         <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
                                     }
-                                    <td><button class="action-btn" title="编辑" @onclick="() => HandleEdit(item)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><path d="M11 3l3 3m0 0l-7 7H4v-3l7-7z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                                    <td class="col-action">
+                                        <div class="action-btn-group">
+                                            <button class="action-text-btn" @onclick="() => HandleEdit(item)">编辑</button>
+                                            <button class="action-text-btn action-delete-btn" @onclick="() => HandleDelete(item)">删除</button>
+                                        </div>
+                                    </td>
                                 </tr>
                             }
                         }
@@ -173,21 +232,16 @@
             </div>
             <!-- 表格底部栏 -->
             <div class="table-footer">
-                <div class="footer-left">
-                    <span class="footer-label">分页栏位字段：</span>
-                    <div class="footer-checkboxes">
-                        @foreach (var col in columnConfigs.Where(c => c.Visible))
-                        {
-                            <label class="footer-checkbox-item">
-                                <input type="checkbox" checked />
-                                <span>@col.DisplayName</span>
-                            </label>
-                        }
-                    </div>
-                </div>
                 <div class="footer-right">
-                    <span class="record-count">共 @dataSource.Count 条记录</span>
-                    <div class="pagination-info"></div>
+                    <span class="record-count">共 @totalCount 笔记录</span>
+                    <div class="pagination-controls">
+                        <button class="page-btn @(currentPage <= 1 ? "disabled" : "")" @onclick="PrevPage" disabled="@(currentPage <= 1)">&lt;</button>
+                        @for (int p = 1; p <= TotalPages; p++)
+                        {
+                            <button class="page-btn @(p == currentPage ? "active" : "")" @onclick="() => GoToPage(p)">@p</button>
+                        }
+                        <button class="page-btn @(currentPage >= TotalPages || TotalPages == 0 ? "disabled" : "")" @onclick="NextPage" disabled="@(currentPage >= TotalPages || TotalPages == 0)">&gt;</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -293,12 +347,17 @@
     private string exportFileName = "";
     private bool showColumnSettingsDialog = false;
     private string columnSearchKeyword = "";
+    private string queryMode = "condition";
     private List<ColumnConfig> columnConfigs = new();
     private List<ColumnConfig> defaultColumnConfigs = new();
     private ProductCodeSettingQuery query = new();
     private List<ProductCodeSettingModel> dataSource = new();
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalCount = 0;
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -346,9 +405,52 @@
         StateHasChanged();
     }
 
-    private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
-    private void HandleEdit(ProductCodeSettingModel item) { }
+    private async Task HandleSearch() { currentPage = 1; await LoadData(); }
+    private void HandleAddNew() { OpenTabCallback?.Invoke("product-code-setting-add", "货品代号设定*新增"); }
+    private void HandleBatchSetting() { }
+    private void HandleEdit(ProductCodeSettingModel item) { OpenTabCallback?.Invoke($"product-code-setting-edit-{item.PrdNo}", $"货品代号设定*编辑"); }
+
+    private async Task HandleDelete(ProductCodeSettingModel item)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"确定要删除货品 [{item.PrdNo}] {item.Name} 吗？");
+        if (!confirmed) return;
+
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/ProductCodeSetting/{Uri.EscapeDataString(item.PrdNo)}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Delete, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await LoadData();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", $"删除失败: {response?.Message ?? "未知错误"}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "删除货品失败: {PrdNo}", item.PrdNo);
+            await JS.InvokeVoidAsync("alert", $"删除失败: {ex.Message}");
+        }
+    }
+
+    // ===== 分页方法 =====
+    private int TotalPages => pageSize > 0 ? (int)Math.Ceiling((double)totalCount / pageSize) : 0;
+
+    private async Task GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPages || page == currentPage) return;
+        currentPage = page;
+        await LoadData();
+    }
+
+    private async Task PrevPage() => await GoToPage(currentPage - 1);
+    private async Task NextPage() => await GoToPage(currentPage + 1);
 
     private async Task HandleExport()
     {
@@ -374,11 +476,20 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ProductCodeSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ProductCodeSetting/search";
+            var queryParams = new List<string>();
             if (!string.IsNullOrWhiteSpace(query.PrdNo))
-                url += $"?prdNo={Uri.EscapeDataString(query.PrdNo)}";
+                queryParams.Add($"prdNo={Uri.EscapeDataString(query.PrdNo)}");
             if (!string.IsNullOrWhiteSpace(query.Name))
-                url += $"{(url.Contains("?") ? "&" : "?")}name={Uri.EscapeDataString(query.Name)}";
+                queryParams.Add($"name={Uri.EscapeDataString(query.Name)}");
+            if (!string.IsNullOrWhiteSpace(query.Idx1))
+                queryParams.Add($"idx1={Uri.EscapeDataString(query.Idx1)}");
+            if (!string.IsNullOrWhiteSpace(query.Dep))
+                queryParams.Add($"dep={Uri.EscapeDataString(query.Dep)}");
+            queryParams.Add($"pageIndex={currentPage}");
+            queryParams.Add($"pageSize={pageSize}");
+            if (queryParams.Count > 0)
+                url += "?" + string.Join("&", queryParams);
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -387,16 +498,19 @@
             if (response != null && response.Success && response.Data != null)
             {
                 dataSource = response.Data;
+                totalCount = response.Total;
             }
             else
             {
                 dataSource = new List<ProductCodeSettingModel>();
+                totalCount = 0;
             }
         }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "加载货品代号设定数据失败");
             dataSource = new List<ProductCodeSettingModel>();
+            totalCount = 0;
         }
         StateHasChanged();
     }
@@ -435,13 +549,21 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
+            new() { FieldKey = "Seq", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50, Sortable = false },
             new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
             new() { FieldKey = "Name", OriginalName = "名称", DisplayName = "名称", Visible = true, Width = 200, DefaultWidth = 200, Sortable = true },
-            new() { FieldKey = "Snm", OriginalName = "简称", DisplayName = "简称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "Snm", OriginalName = "简称", DisplayName = "简称", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "Idx1", OriginalName = "中类代号", DisplayName = "中类代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "Ut", OriginalName = "主单位", DisplayName = "主单位", Visible = true, Width = 80, DefaultWidth = 80, Sortable = false },
+            new() { FieldKey = "Ut1", OriginalName = "副单位", DisplayName = "副单位", Visible = true, Width = 80, DefaultWidth = 80, Sortable = false },
             new() { FieldKey = "Spc", OriginalName = "规格", DisplayName = "规格", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
-            new() { FieldKey = "CwxzNo", OriginalName = "储存性质代号", DisplayName = "储存性质代号", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "Knd", OriginalName = "大类", DisplayName = "大类", Visible = true, Width = 80, DefaultWidth = 80, Sortable = false },
+            new() { FieldKey = "CwxzNo", OriginalName = "储存性质代号", DisplayName = "储存性质代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "DepName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "Pkg1Ut", OriginalName = "包装(一)单位", DisplayName = "包装(一)单位", Visible = true, Width = 90, DefaultWidth = 90, Sortable = false },
+            new() { FieldKey = "Pkg1Qty", OriginalName = "包装(一)数量", DisplayName = "包装(一)数量", Visible = true, Width = 90, DefaultWidth = 90, Sortable = false },
+            new() { FieldKey = "Pkg2Ut", OriginalName = "包装(二)单位", DisplayName = "包装(二)单位", Visible = true, Width = 90, DefaultWidth = 90, Sortable = false },
+            new() { FieldKey = "Pkg2Qty", OriginalName = "包装(二)数量", DisplayName = "包装(二)数量", Visible = true, Width = 90, DefaultWidth = 90, Sortable = false },
             new() { FieldKey = "NouseDd", OriginalName = "停用日期", DisplayName = "停用日期", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
@@ -549,13 +671,21 @@
     // 获取单元格渲染值
     private object GetCellValue(ProductCodeSettingModel item, string fieldKey) => fieldKey switch
     {
+        "Seq" => item.Seq,
         "PrdNo" => item.PrdNo,
         "Name" => item.Name,
         "Snm" => item.Snm,
         "Idx1" => item.Idx1,
         "Ut" => item.Ut,
+        "Ut1" => item.Ut1,
         "Spc" => item.Spc,
+        "Knd" => item.Knd,
         "CwxzNo" => item.CwxzNo,
+        "DepName" => item.DepName,
+        "Pkg1Ut" => item.Pkg1Ut,
+        "Pkg1Qty" => item.Pkg1Qty,
+        "Pkg2Ut" => item.Pkg2Ut,
+        "Pkg2Qty" => item.Pkg2Qty,
         "NouseDd" => item.NouseDd?.ToString("yyyy/MM/dd") ?? "",
         _ => ""
     };

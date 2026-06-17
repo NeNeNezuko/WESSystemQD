@@ -1,10 +1,8 @@
 @inject NavigationManager NavigationManager
 @code {
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
-        {
-            NavigationManager.NavigateTo("/login", true);
-        }
+        // 使用客户端导航，避免整页刷新导致 Blazor WASM 运行时重启
+        NavigationManager.NavigateTo("/login");
     }
 }

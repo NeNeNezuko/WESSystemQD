@@ -22,7 +22,12 @@ namespace WmsPlus.Models
         public string DateRange { get; set; } = "";
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
-        public string QjNo { get; set; } = "";
+        public string QjNoFrom { get; set; } = "";
+        public string QjNoTo { get; set; } = "";
+        public string ConBarcode { get; set; } = "";
+        public string PrdNo { get; set; } = "";
+        public string BatNo { get; set; } = "";
+        public string Wh { get; set; } = "";
         public string WhTy { get; set; } = "";
         public string Usr { get; set; } = "";
         public string Tywz { get; set; } = "全部";

@@ -25,6 +25,10 @@ namespace WmsPlus.Models
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         public string TyNo { get; set; } = "";
+        public string BilNo { get; set; } = "";
+        public string PrdNo { get; set; } = "";
+        public string Wh { get; set; } = "";
+        public string Chuw { get; set; } = "";
         public string Usr { get; set; } = "";
         public string BilKnd { get; set; } = "全部";
         public string Tywz { get; set; } = "全部";

@@ -36,7 +36,8 @@ public class OutboundNoticeDispatchController : ControllerBase
         [FromQuery] string? businessType,
         [FromQuery] string? erpOrderNo,
         [FromQuery] string? bizOrderNo,
-        [FromQuery] string? dispatchStatus)
+        [FromQuery] string? dispatchStatus,
+        [FromQuery] string? pickCloseStatus)
     {
         try
         {
@@ -103,6 +104,12 @@ public class OutboundNoticeDispatchController : ControllerBase
                 // query = query.Where(...);
             }
 
+            // 拣货结案标记筛选（TODO: 确认拣货结案标记存储在哪个字段）
+            if (!string.IsNullOrWhiteSpace(pickCloseStatus) && pickCloseStatus != "全部")
+            {
+                // TODO: 待确认拣货结案标记字段后补充过滤逻辑
+            }
+
             // 按单据号+项次排序
             query = query.OrderBy(x => x.T.TZ_NO).ThenBy(x => x.T.ITM);
 
@@ -126,7 +133,8 @@ public class OutboundNoticeDispatchController : ControllerBase
                     Priority = 0,          // TODO: 优先级数据来源待确认
                     IsClosed = (x.M?.CLS_ID ?? "N") == "Y",
                     DispatchStatus = "",   // TODO: 派工状态待确认来源
-                    Remark = x.M?.REM ?? ""
+                    Remark = x.M?.REM ?? "",
+                    PickerName = ""        // TODO: 拣货员名称待确认来源
                 })
                 .ToList();
 
@@ -143,7 +151,12 @@ public class OutboundNoticeDispatchController : ControllerBase
                 Unit = x.T.UNIT ?? "",
                 Qty = x.T.QTY ?? 0,
                 PlannedDeductionQty = 0,  // TODO: 已转计划出库量，数据来源待确认（TF_RKTZ_RCV？）
-                PickedQty = 0             // TODO: 已提数量，数据来源待确认
+                PickedQty = 0,            // TODO: 已拣货量，数据来源待确认
+                ReturnedQty = 0,          // TODO: 已退数量，数据来源待确认
+                OutboundQty = 0,          // TODO: 已出库量，数据来源待确认
+                ErpApplyItemNo = 0,       // TODO: ERP申请单项次，数据来源待确认
+                BizOrderNo = "",          // TODO: 业务单号，数据来源待确认
+                Summary = x.T.REM ?? ""   // 摘要取备注字段
             }).ToList();
 
             return Ok(new ApiResult<DispatchSearchResult>
@@ -187,6 +200,7 @@ public class DispatchMainDto
     public bool IsClosed { get; set; }
     public string DispatchStatus { get; set; } = "";
     public string Remark { get; set; } = "";
+    public string PickerName { get; set; } = "";          // 拣货员名称
 }
 
 /// <summary>出库通知单派工 — 明细表格行数据</summary>
@@ -203,6 +217,11 @@ public class DispatchDetailDto
     public decimal Qty { get; set; }
     public decimal PlannedDeductionQty { get; set; }
     public decimal PickedQty { get; set; }
+    public decimal ReturnedQty { get; set; }               // 已退数量
+    public decimal OutboundQty { get; set; }                // 已出库量
+    public int ErpApplyItemNo { get; set; }                 // ERP申请单项次
+    public string BizOrderNo { get; set; } = "";            // 业务单号
+    public string Summary { get; set; } = "";               // 摘要
 }
 
 /// <summary>出库通知单派工 — 查询结果（含主表+明细）</summary>

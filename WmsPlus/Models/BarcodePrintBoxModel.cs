@@ -23,6 +23,7 @@ namespace WmsPlus.Models
         public string PrdNo { get; set; } = "";
         public string BatNo { get; set; } = "";
         public string InputUser { get; set; } = "";
+        public string InputBatch { get; set; } = "";
         public string CusNo { get; set; } = "";
         public string BoxBarcodeFrom { get; set; } = "";
         public string BoxBarcodeTo { get; set; } = "";

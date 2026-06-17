@@ -21,6 +21,9 @@ public class MfCk
     /// <summary>业务类型</summary>
     public string? BIL_TYPE { get; set; }
 
+    /// <summary>转入单ID（来源单据别）</summary>
+    public string? BIL_ID { get; set; }
+
     /// <summary>客户代号</summary>
     public string? CUS_NO { get; set; }
 

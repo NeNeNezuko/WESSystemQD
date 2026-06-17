@@ -112,6 +112,18 @@
                 <!-- 业务类型 -->
                 <BizTypeInput @bind-Value="query.BusinessType" />
 
+                <!-- 制单人名称 + 模糊 -->
+                <div class="form-item-fuzzy">
+                    <label class="form-label">制单人名称</label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="" @bind="query.CreatorName" />
+                        <label class="fuzzy-checkbox">
+                            <input type="checkbox" @bind="query.FuzzyCreatorName" />
+                            <span>模糊</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleSearch">
@@ -409,20 +421,19 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-                var today = DateTime.Today;
-                var dateFromStr = today.ToString("yyyy-MM-dd");
-                var dateToStr = today.ToString("yyyy-MM-dd");
-                if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+            var today = DateTime.Today;
+            var dateFromStr = today.ToString("yyyy-MM-dd");
+            var dateToStr = today.ToString("yyyy-MM-dd");
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+            {
+                var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
                 {
-                    var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
-                    if (parts.Length >= 2)
-                    {
-                        dateFromStr = parts[0];
-                        dateToStr = parts[1];
-                    }
+                    dateFromStr = parts[0];
+                    dateToStr = parts[1];
                 }
-                var url = $"{ApiBaseUrl}/api/InboundNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            }
+            var url = $"{ApiConfig.BaseUrl}/api/InboundNotice/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.WarehouseCode))
@@ -433,6 +444,8 @@
                 url += $"&closeStatus={Uri.EscapeDataString(query.CloseStatus)}";
             if (!string.IsNullOrWhiteSpace(query.BusinessType))
                 url += $"&businessType={Uri.EscapeDataString(query.BusinessType)}";
+            if (!string.IsNullOrWhiteSpace(query.CreatorName))
+                url += $"&creatorName={Uri.EscapeDataString(query.CreatorName)}&fuzzyCreatorName={query.FuzzyCreatorName}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -499,6 +512,7 @@
             new() { FieldKey = "VendorCode", OriginalName = "厂商代号", DisplayName = "厂商代号", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
             new() { FieldKey = "VendorName", OriginalName = "厂商名称", DisplayName = "厂商名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "ApplyOrderNumber", OriginalName = "申请单号(笔)", DisplayName = "申请单号(笔)", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "ApplyDocType", OriginalName = "申请单单据别", DisplayName = "申请单单据别", Visible = true, Width = 95, DefaultWidth = 95 },
             new() { FieldKey = "OrderNumber", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 95, DefaultWidth = 95 },
             new() { FieldKey = "IsClosed", OriginalName = "结案否", DisplayName = "结案否", Visible = true, Width = 55, DefaultWidth = 55, Sortable = true },
             new() { FieldKey = "PrdNo", OriginalName = "料号/品号", DisplayName = "料号/品号", Visible = false, Width = 100, DefaultWidth = 100 },
@@ -620,6 +634,7 @@
         "VendorCode" => item.VendorCode,
         "VendorName" => item.VendorName,
         "ApplyOrderNumber" => item.ApplyOrderNumber,
+        "ApplyDocType" => item.ApplyDocType,
         "OrderNumber" => item.OrderNumber,
         "IsClosed" => item.IsClosed ? "是" : "否",
         "PrdNo" => item.PrdNo,

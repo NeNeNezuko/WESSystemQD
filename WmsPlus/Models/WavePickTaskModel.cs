@@ -46,6 +46,7 @@ namespace WmsPlus.Models
         public string WarehouseCode { get; set; } = "";    // 仓库代号
         public string AreaSh { get; set; } = "";           // 收货点
         public string PkFlowMark { get; set; } = "全部";   // 捡线策略标记
+        public string ClsMark { get; set; } = "全部";      // 拣货结案标记
         public string BusinessType { get; set; } = "";     // 业务类型
     }
 }

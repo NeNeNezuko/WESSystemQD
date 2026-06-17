@@ -416,8 +416,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodeSplitSupplier/search";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodeSplitSupplier/search";
             if (!string.IsNullOrWhiteSpace(query.CusNo))
                 url += $"&cusNo={Uri.EscapeDataString(query.CusNo)}";
 
@@ -483,7 +482,7 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "SeqNo", OriginalName = "坯次", DisplayName = "坯次", Visible = true, Width = 55, DefaultWidth = 55 },
+            new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 55, DefaultWidth = 55 },
             new() { FieldKey = "CusNo", OriginalName = "供应商代号", DisplayName = "供应商代号", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "CusName", OriginalName = "供应商名称", DisplayName = "供应商名称", Visible = true, Width = 120, DefaultWidth = 120 },
             new() { FieldKey = "RuleCode", OriginalName = "规则代号", DisplayName = "规则代号", Visible = true, Width = 100, DefaultWidth = 100 },

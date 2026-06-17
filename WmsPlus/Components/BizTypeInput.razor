@@ -339,7 +339,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/warehouse/rktypesearch?keyword={Uri.EscapeDataString(bizTypeSearchKeyword ?? "")}&pageIndex={bizTypePageIndex}&pageSize={bizTypePageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/rktypesearch?keyword={Uri.EscapeDataString(bizTypeSearchKeyword ?? "")}&pageIndex={bizTypePageIndex}&pageSize={bizTypePageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);

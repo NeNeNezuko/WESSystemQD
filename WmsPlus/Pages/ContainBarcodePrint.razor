@@ -73,9 +73,9 @@
                 <!-- 打印日期 - 日期范围选择器 -->
                 <DateRangeInput @bind-Value="query.DateRange" Label="打印日期" />
 
-                <!-- 合单代号 -->
+                <!-- 仓库代号 -->
                 <div class="form-item">
-                    <label class="form-label">合单代号</label>
+                    <label class="form-label">仓库代号</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.CombineNo" />
                 </div>
 
@@ -117,9 +117,9 @@
                     </div>
                 </div>
 
-                <!-- 述检标记 -->
+                <!-- 送检标记 -->
                 <div class="form-item">
-                    <label class="form-label">述检标记</label>
+                    <label class="form-label">送检标记</label>
                     <div class="select-wrapper">
                         <select class="form-select" @bind="query.InspectFlag">
                             <option value="">全部</option>
@@ -502,7 +502,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -515,7 +514,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/ContainBarcodePrint/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/ContainBarcodePrint/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
 
             if (!string.IsNullOrWhiteSpace(query.CombineNo))
                 url += $"&combineNo={Uri.EscapeDataString(query.CombineNo)}";
@@ -616,7 +615,7 @@
             new() { FieldKey = "ChuwName", OriginalName = "储位名称", DisplayName = "储位名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "ChuwPos", OriginalName = "储位位置", DisplayName = "储位位置", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "TransitFlag", OriginalName = "在途标记", DisplayName = "在途标记", Visible = true, Width = 70, DefaultWidth = 70 },
-            new() { FieldKey = "InspectFlag", OriginalName = "述检标记", DisplayName = "述检标记", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "InspectFlag", OriginalName = "送检标记", DisplayName = "送检标记", Visible = true, Width = 70, DefaultWidth = 70 },
             new() { FieldKey = "ContainDetail", OriginalName = "容器明细", DisplayName = "容器明细", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "ModifyHistory", OriginalName = "变动历史", DisplayName = "变动历史", Visible = true, Width = 80, DefaultWidth = 80 }
         };

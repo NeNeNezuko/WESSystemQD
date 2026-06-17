@@ -24,6 +24,9 @@ namespace WmsPlus.Models
         public string YbNo { get; set; } = "";
         public string CusNo { get; set; } = "";
         public string TyNo { get; set; } = "";
+        public string PrdNo { get; set; } = "";
+        public string BatNo { get; set; } = "";
+        public string Wh { get; set; } = "";
         public string Usr { get; set; } = "";
         public string BilKnd { get; set; } = "全部";
     }

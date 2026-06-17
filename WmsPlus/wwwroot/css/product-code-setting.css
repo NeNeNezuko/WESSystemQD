@@ -1,4 +1,4 @@
-﻿/* ========== 货品代号设定 - 页面样式 ========== */
+/* ========== 货品代号设定 - 页面样式 ========== */
 
 .product-code-setting-page {
     width: 100%;
@@ -307,6 +307,45 @@
     overflow: visible;
 }
 
+/* ========== 查询模式切换 ========== */
+
+.query-mode-toggle {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 4px;
+}
+
+.mode-radio {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #333333;
+}
+
+.mode-radio input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.tree-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.placeholder-text {
+    font-size: 12px;
+    color: #999999;
+}
+
 .form-item {
     display: flex;
     flex-direction: row;
@@ -568,26 +607,39 @@
 /* ========== 表格列宽定义 ========== */
 
 .col-action {
-    width: 45px;
+    width: 120px;
     text-align: center;
 }
 
-/* ========== 操作列按钮 ========== */
+/* ========== 操作列按钮组 ========== */
 
-.action-btn {
-    background: none;
-    border: none;
-    padding: 2px;
-    cursor: pointer;
-    border-radius: 2px;
-    display: inline-flex;
+.action-btn-group {
+    display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s;
+    gap: 4px;
 }
 
-.action-btn:hover {
-    background-color: #e6f7ff;
+.action-text-btn {
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    font-size: 11px;
+    color: #333333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-text-btn:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+.action-delete-btn:hover {
+    border-color: #ff4d4f;
+    color: #ff4d4f;
 }
 
 /* ========== 空数据提示 ========== */
@@ -875,53 +927,16 @@
 }
 
 .col-btn-cancel:hover { border-color: #1890ff; color: #1890ff; }
-/* ========== 琛ㄦ牸搴曢儴鏍?========== */
+/* ========== 表格底部栏 ========== */
 .table-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 6px 12px;
     border-top: 1px solid #e8e8e8;
     background-color: #fafafa;
     min-height: 32px;
     flex-shrink: 0;
-}
-
-.footer-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
-    color: #666666;
-}
-
-.footer-label {
-    color: #333333;
-    font-weight: 400;
-    white-space: nowrap;
-}
-
-.footer-checkboxes {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.footer-checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    color: #666666;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.footer-checkbox-item input[type="checkbox"] {
-    width: 13px;
-    height: 13px;
-    cursor: pointer;
 }
 
 .footer-right {
@@ -937,10 +952,45 @@
     font-size: 11px;
 }
 
-.pagination-info {
+/* ========== 分页控件 ========== */
+
+.pagination-controls {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+}
+
+.page-btn {
+    min-width: 26px;
+    height: 24px;
+    padding: 0 6px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    font-size: 11px;
+    color: #333333;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+.page-btn.active {
+    background-color: #1890ff;
+    border-color: #1890ff;
+    color: #ffffff;
+}
+
+.page-btn.disabled {
+    color: #cccccc;
+    cursor: not-allowed;
+    background-color: #fafafa;
 }
 
 .page-size-select {

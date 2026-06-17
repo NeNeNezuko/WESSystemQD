@@ -18,6 +18,8 @@ namespace WmsPlus.Models
         public string StatusPg { get; set; } = "";
         public string ClsIdBc { get; set; } = "";
         public string ClsIdCk { get; set; } = "";
+        public string TypeId { get; set; } = "";
+        public string TypeName { get; set; } = "";
         public string PrdNo { get; set; } = "";
         public string PrdName { get; set; } = "";
         public decimal Qty { get; set; }
@@ -33,7 +35,6 @@ namespace WmsPlus.Models
         public string WhIn { get; set; } = "";
         public string AreaSh { get; set; } = "";
         public string ClsIdBc { get; set; } = "全部";
-        public string ClsIdCk { get; set; } = "全部";
         public string TypeId { get; set; } = "";
     }
 }

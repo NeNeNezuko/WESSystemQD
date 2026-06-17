@@ -130,6 +130,21 @@
                     </div>
                 </div>
 
+                <!-- 拣货结案标记 -->
+                <div class="form-item">
+                    <label class="form-label">拣货结案标记</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" @bind="query.ClsMark">
+                            <option value="全部">全部</option>
+                            <option value="N">未结案</option>
+                            <option value="Y">已结案</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 12 12" width="10" height="10" fill="#999999">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                    </div>
+                </div>
+
                 <!-- 业务类型 -->
                 <BizTypeInput @bind-Value="query.BusinessType" />
 
@@ -421,7 +436,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -434,7 +448,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/WavePickTask/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/WavePickTask/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.JrNo))
                 url += $"&jrNo={Uri.EscapeDataString(query.JrNo)}";
             if (!string.IsNullOrWhiteSpace(query.TzNo))
@@ -451,6 +465,8 @@
                 url += $"&areaSh={Uri.EscapeDataString(query.AreaSh)}";
             if (!string.IsNullOrWhiteSpace(query.PkFlowMark) && query.PkFlowMark != "全部")
                 url += $"&pkFlowMark={Uri.EscapeDataString(query.PkFlowMark)}";
+            if (!string.IsNullOrWhiteSpace(query.ClsMark) && query.ClsMark != "全部")
+                url += $"&clsMark={Uri.EscapeDataString(query.ClsMark)}";
             if (!string.IsNullOrWhiteSpace(query.BusinessType))
                 url += $"&businessType={Uri.EscapeDataString(query.BusinessType)}";
 

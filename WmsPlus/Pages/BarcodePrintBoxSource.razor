@@ -96,6 +96,12 @@
                     <label class="form-label">客户名称</label>
                     <input type="text" class="form-input" placeholder="" @bind="query.CusName" />
                 </div>
+                <div class="form-item">
+                    <label class="form-label">模糊</label>
+                    <div style="display:flex;align-items:center;padding-left:8px;flex:1;">
+                        <input type="checkbox" style="width:16px;height:16px;" @bind="query.FuzzySearch" />
+                    </div>
+                </div>
                 <div class="form-item query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleSearch">
                         <svg viewBox="0 0 16 16" width="16" height="16" fill="white" stroke="white" stroke-width="1.5">
@@ -636,8 +642,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodePrintBoxSource/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodePrintBoxSource/search?";
             if (!string.IsNullOrWhiteSpace(query.SourceDoc)) url += ($"&sourceDoc={Uri.EscapeDataString(query.SourceDoc)}");
             if (!string.IsNullOrWhiteSpace(query.SourceNo)) url += ($"&sourceNo={Uri.EscapeDataString(query.SourceNo)}");
             if (!string.IsNullOrWhiteSpace(query.PrdNo)) url += ($"&prdNo={Uri.EscapeDataString(query.PrdNo)}");
@@ -671,7 +676,7 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "SeqNo", OriginalName = "坯次", DisplayName = "坯次", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
             new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
             new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
@@ -680,7 +685,14 @@
             new() { FieldKey = "ThisPrintQty", OriginalName = "本次打印数量", DisplayName = "本次打印数量", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "StandardBoxQty", OriginalName = "标准箱数量", DisplayName = "标准箱数量", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "TailBoxQty", OriginalName = "尾箱数量", DisplayName = "尾箱数量", Visible = true, Width = 70, DefaultWidth = 70 },
-            new() { FieldKey = "LabelCount", OriginalName = "标签个数", DisplayName = "标签个数", Visible = true, Width = 70, DefaultWidth = 70 }
+            new() { FieldKey = "LabelCount", OriginalName = "标签个数", DisplayName = "标签个数", Visible = true, Width = 70, DefaultWidth = 70 },
+            new() { FieldKey = "PrintBarcode", OriginalName = "打印条码", DisplayName = "打印条码", Visible = true, Width = 110, DefaultWidth = 110 },
+            new() { FieldKey = "CusNo", OriginalName = "客户代号", DisplayName = "客户代号", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "SoNo", OriginalName = "受订单号", DisplayName = "受订单号", Visible = true, Width = 95, DefaultWidth = 95 },
+            new() { FieldKey = "NoPickFlag", OriginalName = "不能参与配位标记", DisplayName = "不能参与配位标记", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "SourceNo", OriginalName = "来源单号", DisplayName = "来源单号", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "ApplyDocType", OriginalName = "申请单据别", DisplayName = "申请单据别", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "ApplyNo", OriginalName = "申请单号", DisplayName = "申请单号", Visible = true, Width = 100, DefaultWidth = 100 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -763,6 +775,13 @@
         "StandardBoxQty" => item.StandardBoxQty?.ToString() ?? "",
         "TailBoxQty" => item.TailBoxQty?.ToString() ?? "",
         "LabelCount" => item.LabelCount?.ToString() ?? "",
+        "PrintBarcode" => item.PrintBarcode,
+        "CusNo" => item.CusNo,
+        "SoNo" => item.SoNo,
+        "NoPickFlag" => item.NoPickFlag,
+        "SourceNo" => item.SourceNo,
+        "ApplyDocType" => item.ApplyDocType,
+        "ApplyNo" => item.ApplyNo,
         _ => ""
     };
 

@@ -92,6 +92,23 @@
                     <input type="number" class="form-input" placeholder="" @bind="query.ExceedDays" min="0" />
                 </div>
 
+                <!-- 提前天数 -->
+                <div class="form-item">
+                    <label class="form-label">提前天数</label>
+                    <input type="number" class="form-input" placeholder="" @bind="query.AdvanceDays" min="0" />
+                </div>
+
+                <!-- 模糊查询 -->
+                <div class="form-item">
+                    <label class="form-label">模糊查询</label>
+                    <div style="display:flex;align-items:center;flex:1;padding:0 8px;">
+                        <label class="toggle-switch" style="transform:scale(0.85);">
+                            <input type="checkbox" @bind="query.FuzzySearch" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleSearch">
@@ -110,7 +127,7 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
-                    <button class="toolbar-btn" @onclick="HandleGenerateTask">
+                    <button class="toolbar-btn" disabled @onclick="HandleGenerateTask">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M3 3h10v2H3V3zm0 4h10v2H3V7zm0 4h7v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>
                         </svg>
@@ -390,8 +407,8 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/KcInspectExpiry/search";
+
+var url = $"{ApiConfig.BaseUrl}/api/KcInspectExpiry/search";
             if (!string.IsNullOrWhiteSpace(query.WarehouseCode))
                 url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}";
             if (!string.IsNullOrWhiteSpace(query.PrdNo))
@@ -466,7 +483,8 @@
             new() { FieldKey = "UnitName", OriginalName = "单位名称", DisplayName = "单位名称", Visible = true, Width = 70, DefaultWidth = 70 },
             new() { FieldKey = "Qty", OriginalName = "可验数量", DisplayName = "可验数量", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
             new() { FieldKey = "Qty1", OriginalName = "可验数量(副)", DisplayName = "可验数量(副)", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
-            new() { FieldKey = "LstTyd", OriginalName = "最近验日期", DisplayName = "最近验日期", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true }
+            new() { FieldKey = "LstTyd", OriginalName = "最近验日期", DisplayName = "最近验日期", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
+            new() { FieldKey = "ContainerBarcode", OriginalName = "容器条码", DisplayName = "容器条码", Visible = true, Width = 100, DefaultWidth = 100 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -583,6 +601,7 @@
         "Qty" => item.Qty,
         "Qty1" => item.Qty1,
         "LstTyd" => item.LstTyd.HasValue ? item.LstTyd.Value.ToString("yyyy-MM-dd") : "",
+        "ContainerBarcode" => item.ContainerBarcode,
         _ => ""
     };
 

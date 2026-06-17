@@ -29,7 +29,8 @@ public class OutboundPackageController : ControllerBase
         [FromQuery] DateTime? dateTo,
         [FromQuery] string? packageNo,
         [FromQuery] string? outBilNo,
-        [FromQuery] string? outStatus)
+        [FromQuery] string? outStatus,
+        [FromQuery] string? wh)
     {
         try
         {
@@ -52,6 +53,10 @@ public class OutboundPackageController : ControllerBase
             // 出库状态筛选
             if (!string.IsNullOrWhiteSpace(outStatus))
                 query = query.Where(x => x.OUT_STATUS != null && x.OUT_STATUS == outStatus);
+
+            // 仓库代号筛选
+            if (!string.IsNullOrWhiteSpace(wh))
+                query = query.Where(x => x.WH != null && x.WH.Contains(wh));
 
             // 按包装箱号排序
             query = query.OrderBy(x => x.PACKAGE_NO);

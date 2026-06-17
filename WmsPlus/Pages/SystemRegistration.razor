@@ -227,8 +227,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/SystemRegistration/info";
+            var url = $"{ApiConfig.BaseUrl}/api/SystemRegistration/info";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -259,8 +258,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/SystemRegistration/register";
+            var url = $"{ApiConfig.BaseUrl}/api/SystemRegistration/register";
 
             var dto = new SystemRegistrationDto
             {
@@ -302,8 +300,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/SystemRegistration/clear";
+            var url = $"{ApiConfig.BaseUrl}/api/SystemRegistration/clear";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Post, url, TokenProvider.Token);
@@ -331,8 +328,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/SystemRegistration/reset";
+            var url = $"{ApiConfig.BaseUrl}/api/SystemRegistration/reset";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Post, url, TokenProvider.Token);

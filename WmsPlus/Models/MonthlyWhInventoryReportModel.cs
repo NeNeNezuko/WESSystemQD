@@ -22,6 +22,10 @@ namespace WmsPlus.Models
         public string Year { get; set; } = "";
         public string Month { get; set; } = "";
         public string WarehouseCode { get; set; } = "";
-        public string PrdNo { get; set; } = "";
+        public string PrdNoFrom { get; set; } = "";
+        public string PrdNoTo { get; set; } = "";
+        public string IdxNoFrom { get; set; } = "";
+        public string IdxNoTo { get; set; } = "";
+        public bool IncludeZero { get; set; } = false;
     }
 }

@@ -155,20 +155,9 @@
                 </div>
 
                 <div class="form-item">
-                    <label class="form-label">单据类型</label>
-                    <select class="form-select" @bind="query.DocType">
-                        <option value="全部">全部</option>
-                        <option value="类型A">类型A</option>
-                        <option value="类型B">类型B</option>
-                        <option value="类型C">类型C</option>
-                    </select>
+                    <label class="form-label">业务类型</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.BusinessType" />
                 </div>
-
-                <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
-
-                <DeptCodeInput @bind-Value="query.DeptCode" />
-
-                <BizTypeInput @bind-Value="query.BusinessType" />
 
                 <div class="query-btn-wrapper">
                     <button class="query-submit-btn" @onclick="HandleQuery">
@@ -210,6 +199,7 @@
                                 <th class="col-exec-status sortable">执行状态</th>
                                 <th class="col-creator sortable">制单人</th>
                                 <th class="col-creator-name sortable">制单人名称</th>
+                                <th class="col-make-time sortable">制单时间</th>
                                 <th class="col-action">操作</th>
                             </tr>
                         </thead>
@@ -227,6 +217,7 @@
                                     <td>@item.ExecuteStatus</td>
                                     <td>@item.Creator</td>
                                     <td>@item.CreatorName</td>
+                                    <td>@(item.MakeTime.HasValue ? item.MakeTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</td>
                                     <td>
                                         <button class="query-link-btn" @onclick="() => HandleEdit(item.ChangeNumber)">查询</button>
                                         <button class="action-btn" title="查看"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890ff" stroke-width="1.5"><path d="M2 8s3-4.5 6-4.5S14 8 14 8s-3 4.5-6 4.5S2 8 2 8z"/><circle cx="8" cy="8" r="1.5"/></svg></button>
@@ -256,7 +247,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="11" class="empty-data-cell">
+                                <td colspan="12" class="empty-data-cell">
                                     <div class="empty-data">
                                         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
                                             <rect x="8" y="12" width="48" height="40" rx="4" fill="#f5f5f5" stroke="#e8e8e8" stroke-width="1.5"/>

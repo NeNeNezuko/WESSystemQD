@@ -8,7 +8,11 @@
             <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
                 <div style="text-align: center;">
                     <div class="loading-spinner"></div>
-                    <p>加载中...</p>
+                    <p>加载中... (@initStep)</p>
+                    @if (!string.IsNullOrEmpty(initError))
+                    {
+                        <p style="color:red;font-size:12px;margin-top:10px;max-width:600px;word-break:break-all;">ERROR: @initError</p>
+                    }
                 </div>
             </div>
         }
@@ -18,8 +22,20 @@
         }
         else
         {
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            <ErrorBoundary>
+                <ChildContent>
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                </ChildContent>
+                <ErrorContent>
+                    <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;padding:20px;">
+                        <h3 style="color:#ff4d4f;">页面渲染出错</h3>
+                        <pre style="color:#666;font-size:12px;margin-top:10px;max-width:800px;word-break:break-all;white-space:pre-wrap;">@context.Message</pre>
+                        <pre style="color:#999;font-size:11px;margin-top:5px;max-width:800px;word-break:break-all;white-space:pre-wrap;">@context.StackTrace</pre>
+                        <button style="margin-top:20px;padding:8px 24px;background:#1890ff;color:white;border:none;border-radius:4px;cursor:pointer;" @onclick='() => NavigationManager.NavigateTo("/login", true)'>返回登录</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
         }
     </Found>
     <NotFound>
@@ -47,6 +63,8 @@
 
 @code {
     private bool isInitialized = false;
+    private string initStep = "等待启动...";
+    private string initError = "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -54,28 +72,60 @@
         {
             try
             {
-                await AuthService.InitializeAsync();
-
-                // 如果有 token，向后端验证其有效性
-                if (AuthService.IsAuthenticated)
-                {
-                    var isValid = await AuthService.ValidateTokenAsync();
-                    if (!isValid)
-                    {
-                        // token 无效或已过期，清除登录状态
-                        await AuthService.Logout();
-                    }
-                }
+                // 添加超时保护，防止初始化卡住导致界面一直转圈
+                await InitializeWithTimeout();
             }
-            catch
+            catch (TimeoutException)
             {
-                // 初始化错误时清除登录状态
+                initError = "初始化超时，请检查后端服务是否正常运行";
+                try { await AuthService.Logout(); } catch { }
+            }
+            catch (Exception ex)
+            {
+                initError = ex.Message + "\n" + ex.StackTrace;
                 try { await AuthService.Logout(); } catch { }
             }
 
             isInitialized = true;
             StateHasChanged();
         }
+    }
+
+    private async Task InitializeWithTimeout()
+    {
+        var initTask = DoInitializeAsync();
+        var timeoutTask = Task.Delay(8000);
+
+        var completedTask = await Task.WhenAny(initTask, timeoutTask);
+
+        if (completedTask == timeoutTask)
+        {
+            throw new TimeoutException("初始化超时");
+        }
+
+        // 如果 initTask 先完成，await 它以传播任何异常
+        await initTask;
+    }
+
+    private async Task DoInitializeAsync()
+    {
+        initStep = "1-初始化AuthService";
+        StateHasChanged();
+        await AuthService.InitializeAsync();
+
+        initStep = "2-验证Token";
+        StateHasChanged();
+
+        if (AuthService.IsAuthenticated)
+        {
+            var isValid = await AuthService.ValidateTokenAsync();
+            if (!isValid)
+            {
+                await AuthService.Logout();
+            }
+        }
+
+        initStep = "3-完成";
     }
 
     protected override void OnInitialized()

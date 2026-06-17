@@ -28,16 +28,49 @@
         <div class="loading-progress-text"></div>
     </div>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
+    <div id="blazor-error-ui" style="display:none;white-space:pre-wrap;font-size:13px;padding:15px;max-height:300px;overflow:auto;">
+        <strong>An unhandled error has occurred.</strong>
         <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+        <pre id="blazor-error-detail" style="margin-top:8px;color:#b00;background:#fff0f0;padding:8px;overflow:auto;font-size:12px;"></pre>
     </div>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
     <script src="_content/AntDesign/js/ant-design-blazor.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/system-setting.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script>
+        // 捕获所有未处理的错误并显示详情
+        window.onerror = function(msg, url, line, col, err) {
+            var el = document.getElementById('blazor-error-detail');
+            if (el) {
+                el.textContent = 'Error: ' + msg + '\nFile: ' + url + ':' + line + '\n' + (err ? err.stack : '');
+            }
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function(e) {
+            var el = document.getElementById('blazor-error-detail');
+            if (el) {
+                el.textContent = 'Promise Error: ' + (e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : String(e));
+            }
+        });
+        // 监控 Blazor 错误 UI 的内容变化
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(m) {
+                if (m.target.id === 'blazor-error-ui') {
+                    var detailEl = document.getElementById('blazor-error-detail');
+                    // 尝试从 Blazor 内部获取错误信息
+                    var uiText = m.target.innerText || '';
+                    if (!detailEl.textContent && uiText.length > 50) {
+                        detailEl.textContent = uiText;
+                    }
+                }
+            });
+        });
+        setTimeout(function() {
+            var errUi = document.getElementById('blazor-error-ui');
+            if (errUi) observer.observe(errUi, { childList: true, subtree: true, characterData: true });
+        }, 1000);
+    </script>
 </body>
 
 </html>

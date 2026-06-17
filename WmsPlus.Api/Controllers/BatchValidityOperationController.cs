@@ -21,7 +21,7 @@ public class BatchValidityOperationController : ControllerBase
     }
 
     /// <summary>
-    /// 查询批号有效期修改历史列表（LEFT JOIN MY_WH 取仓库名称、PRDT 取货品名称）
+    /// 查询批号有效期修改历史列表（LEFT JOIN MY_WH 取仓库名称、PRDT 取货品名称、INDX 取中类名称）
     /// </summary>
     [HttpGet("search")]
     public async Task<ActionResult<ApiResult<List<BatchValidityDto>>>> Search(
@@ -41,7 +41,9 @@ public class BatchValidityOperationController : ControllerBase
                         from w in wj.DefaultIfEmpty()
                         join p in _context.Prdts on v.PRD_NO equals p.PRD_NO into pj
                         from p in pj.DefaultIfEmpty()
-                        select new { V = v, W = w, P = p };
+                        join i in _context.Indxes on p.IDX1 equals i.IDX_NO into ij
+                        from i in ij.DefaultIfEmpty()
+                        select new { V = v, W = w, P = p, I = i };
 
             // 修改日期范围筛选
             if (dateFrom.HasValue)
@@ -84,13 +86,15 @@ public class BatchValidityOperationController : ControllerBase
                 PrdNo = x.V.PRD_NO ?? "",
                 PrdName = x.P?.NAME ?? "",
                 BatNo = x.V.BAT_NO ?? "",
-                PrdMark = x.V.PRD_MARK ?? "",
                 ValidDDCur = x.V.VALID_DD_CUR,
                 ValidDDOrg = x.V.VALID_DD_ORG,
-                UpUser = x.V.UP_USER ?? "",
-                UpdDate = x.V.UPD_DATE,
-                ConNo = x.V.CON_NO ?? "",
-                TaskNo = x.V.TASK_NO ?? ""
+                LastOutDate = x.V.LAST_OUT_DD,
+                LastInDate = x.V.LAST_IN_DD,
+                LastInspectDate = x.V.LAST_INSPECT_DD,
+                ProduceDate = x.V.PRODUCE_DD,
+                IdxNo = x.P?.IDX1 ?? "",
+                IdxName = x.I?.NAME ?? "",
+                Qty = x.V.QTY ?? 0
             }).ToList();
 
             return Ok(new ApiResult<List<BatchValidityDto>>
@@ -123,11 +127,13 @@ public class BatchValidityDto
     public string PrdNo { get; set; } = "";
     public string PrdName { get; set; } = "";
     public string BatNo { get; set; } = "";
-    public string PrdMark { get; set; } = "";
     public DateTime? ValidDDCur { get; set; }
     public DateTime? ValidDDOrg { get; set; }
-    public string UpUser { get; set; } = "";
-    public DateTime? UpdDate { get; set; }
-    public string ConNo { get; set; } = "";
-    public string TaskNo { get; set; } = "";
+    public DateTime? LastOutDate { get; set; }
+    public DateTime? LastInDate { get; set; }
+    public DateTime? LastInspectDate { get; set; }
+    public DateTime? ProduceDate { get; set; }
+    public string IdxNo { get; set; } = "";
+    public string IdxName { get; set; } = "";
+    public decimal Qty { get; set; }
 }

@@ -82,6 +82,33 @@
                 <!-- 仓库代号 -->
                 <WarehouseCodeInput @bind-Value="query.WhTy" />
 
+                <!-- 货品代号 起/止 -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 起</label>
+                        <input type="text" class="fused-input" @bind="query.PrdNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 止</label>
+                        <input type="text" class="fused-input" @bind="query.PrdNoTo" />
+                    </div>
+                </div>
+
+                <!-- 检验时效 -->
+                <div class="form-item">
+                    <label class="form-label">检验时效</label>
+                    <select class="form-input" style="width:60px;flex:none;" @bind="query.JyHoursOperator">
+                        <option value="">全部</option>
+                        <option value="gt">&gt;</option>
+                        <option value="lt">&lt;</option>
+                        <option value="eq">=</option>
+                        <option value="gte">&gt;=</option>
+                        <option value="lte">&lt;=</option>
+                    </select>
+                    <input type="number" class="form-input" style="flex:1;" @bind="query.JyHoursValue" />
+                </div>
+
                 <!-- 单据类型 -->
                 <div class="form-item">
                     <label class="form-label">单据类型</label>
@@ -400,8 +427,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-                var today = DateTime.Today;
+            var today = DateTime.Today;
                 var dateFromStr = today.ToString("yyyy-MM-dd");
                 var dateToStr = today.ToString("yyyy-MM-dd");
                 if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
@@ -413,13 +439,24 @@
                         dateToStr = parts[1];
                     }
                 }
-                var url = $"{ApiBaseUrl}/api/StockInspectionAnalysis/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                var url = $"{ApiConfig.BaseUrl}/api/StockInspectionAnalysis/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var queryParams = new List<string>();
             if (!string.IsNullOrWhiteSpace(query.QjNo))
-                url += $"&qjNo={Uri.EscapeDataString(query.QjNo)}";
+                queryParams.Add($"qjNo={Uri.EscapeDataString(query.QjNo)}");
             if (!string.IsNullOrWhiteSpace(query.WhTy))
-                url += $"&whTy={Uri.EscapeDataString(query.WhTy)}";
+                queryParams.Add($"whTy={Uri.EscapeDataString(query.WhTy)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdNoFrom))
+                queryParams.Add($"prdNoFrom={Uri.EscapeDataString(query.PrdNoFrom)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdNoTo))
+                queryParams.Add($"prdNoTo={Uri.EscapeDataString(query.PrdNoTo)}");
+            if (!string.IsNullOrWhiteSpace(query.JyHoursOperator))
+                queryParams.Add($"jyHoursOperator={Uri.EscapeDataString(query.JyHoursOperator)}");
+            if (query.JyHoursValue.HasValue)
+                queryParams.Add($"jyHoursValue={query.JyHoursValue.Value}");
             if (!string.IsNullOrWhiteSpace(query.BilKnd) && query.BilKnd != "全部")
-                url += $"&bilKnd={Uri.EscapeDataString(query.BilKnd)}";
+                queryParams.Add($"bilKnd={Uri.EscapeDataString(query.BilKnd)}");
+            if (queryParams.Count > 0)
+                url += "&" + string.Join("&", queryParams);
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);

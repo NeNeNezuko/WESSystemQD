@@ -13,6 +13,9 @@ namespace WmsPlus.Models
         public string CustomerName { get; set; } = "";
         public string ErpBillId { get; set; } = "";
         public string ErpBillNo { get; set; } = "";
+        public string ErpApplyId { get; set; } = "";
+        public string ErpApplyNo { get; set; } = "";
+        public DateTime EntryDate { get; set; }
         // 表身明细字段（默认隐藏）
         public string PrdNo { get; set; } = "";
         public string PrdName { get; set; } = "";

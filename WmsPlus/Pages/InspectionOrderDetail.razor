@@ -79,6 +79,27 @@
                     <input type="text" class="form-input" placeholder="" @bind="query.TyNo" />
                 </div>
 
+                <!-- 单据号码 -->
+                <div class="form-item">
+                    <label class="form-label">单据号码</label>
+                    <input type="text" class="form-input" @bind="query.BilNo" />
+                </div>
+
+                <!-- 货品代号 -->
+                <div class="form-item">
+                    <label class="form-label">货品代号</label>
+                    <input type="text" class="form-input" @bind="query.PrdNo" />
+                </div>
+
+                <!-- 仓库 -->
+                <WarehouseCodeInput @bind-Value="query.Wh" />
+
+                <!-- 储位 -->
+                <div class="form-item">
+                    <label class="form-label">储位</label>
+                    <input type="text" class="form-input" @bind="query.Chuw" />
+                </div>
+
                 <!-- 制单人 -->
                 <div class="form-item">
                     <label class="form-label">制单人</label>
@@ -473,7 +494,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -486,15 +506,26 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/InspectionOrderDetail/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/InspectionOrderDetail/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var queryParams = new List<string>();
             if (!string.IsNullOrWhiteSpace(query.TyNo))
-                url += $"&tyNo={Uri.EscapeDataString(query.TyNo)}";
+                queryParams.Add($"tyNo={Uri.EscapeDataString(query.TyNo)}");
+            if (!string.IsNullOrWhiteSpace(query.BilNo))
+                queryParams.Add($"bilNo={Uri.EscapeDataString(query.BilNo)}");
+            if (!string.IsNullOrWhiteSpace(query.PrdNo))
+                queryParams.Add($"prdNo={Uri.EscapeDataString(query.PrdNo)}");
+            if (!string.IsNullOrWhiteSpace(query.Wh))
+                queryParams.Add($"wh={Uri.EscapeDataString(query.Wh)}");
+            if (!string.IsNullOrWhiteSpace(query.Chuw))
+                queryParams.Add($"chuw={Uri.EscapeDataString(query.Chuw)}");
             if (!string.IsNullOrWhiteSpace(query.Usr))
-                url += $"&usr={Uri.EscapeDataString(query.Usr)}";
+                queryParams.Add($"usr={Uri.EscapeDataString(query.Usr)}");
             if (!string.IsNullOrWhiteSpace(query.BilKnd) && query.BilKnd != "全部")
-                url += $"&bilKnd={Uri.EscapeDataString(query.BilKnd)}";
+                queryParams.Add($"bilKnd={Uri.EscapeDataString(query.BilKnd)}");
             if (!string.IsNullOrWhiteSpace(query.Tywz) && query.Tywz != "全部")
-                url += $"&tywz={Uri.EscapeDataString(query.Tywz)}";
+                queryParams.Add($"tywz={Uri.EscapeDataString(query.Tywz)}");
+            if (queryParams.Count > 0)
+                url += "&" + string.Join("&", queryParams);
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);

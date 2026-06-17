@@ -1,0 +1,547 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<ProductCodeSettingAdd> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/product-code-setting-add.css" />
+
+<div class="prdadd-page">
+    <!-- 顶部工具栏 -->
+    <div class="page-toolbar">
+        <button class="toolbar-btn primary-btn" @onclick="HandleSave">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 8.28a.75.75 0 011.06-1.06L6 9.94l6.72-6.72a.75.75 0 011.06 0z"/>
+            </svg>
+            <span>保存</span>
+        </button>
+        <button class="toolbar-btn primary-btn" @onclick="HandleSaveAndNew">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>新增</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleDelete">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M5.5 4h5l.5.5v9l-.5.5h-5L5 13.5v-9l.5-.5zM6 5v8h4V5H6z M4 3.5V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5zm8 0V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5z"/>
+            </svg>
+            <span>删除</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleColumnSettings">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8V-2z"/>
+            </svg>
+            <span>栏位</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleQuery">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <circle cx="7" cy="7" r="5"/>
+                <line x1="11" y1="11" x2="15" y2="15" stroke="#666666" stroke-width="1.5"/>
+            </svg>
+            <span>查询</span>
+        </button>
+    </div>
+
+    <!-- 子选项卡 -->
+    <div class="sub-tabs">
+        <div class="sub-tab-item @(activeSubTab == "general" ? "active" : "")" @onclick="@(() => SwitchSubTab("general"))">一般资料</div>
+        <div class="sub-tab-item @(activeSubTab == "other" ? "active" : "")" @onclick="@(() => SwitchSubTab("other"))">其他资料</div>
+        <div class="sub-tab-item @(activeSubTab == "package" ? "active" : "")" @onclick="@(() => SwitchSubTab("package"))">包装资料</div>
+        <div class="sub-tab-item @(activeSubTab == "quality" ? "active" : "")" @onclick="@(() => SwitchSubTab("quality"))">品质检验</div>
+    </div>
+
+    <!-- 表单区域 -->
+    <div class="form-area-scroll">
+
+        @* ===== 一般资料 ===== *@
+        @if (activeSubTab == "general")
+        {
+            <div class="form-section">
+                <div class="form-section-title">基本信息</div>
+
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add"><span class="required-mark">*</span>物料编码</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.PrdNo" @bind:event="oninput" disabled="@IsEditMode" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add"><span class="required-mark">*</span>货品名称</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Name" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">简称</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Snm" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">英文名称</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.NameEng" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品规格</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Spc" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">仓管人员</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.UsrWh" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="chkBat" @bind="model.ChkBat" />
+                        <label for="chkBat">批号管制否</label>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="chkNum" @bind="model.ChkNum" />
+                        <label for="chkNum">序列号管制</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">类别</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">大类</label>
+                        <select class="form-select-add" @bind="model.Knd">
+                            <option value=""></option>
+                            <option value="原料">原料</option>
+                            <option value="成品">成品</option>
+                            <option value="半成品">半成品</option>
+                            <option value="配件">配件</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">所属中类</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Idx1" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">单位</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add"><span class="required-mark">*</span>主单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Ut" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">副单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Ut1" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">其他</div>
+                <div class="form-grid-3col">
+                    <div class="form-textarea-wrapper-full">
+                        <label class="form-label-add">摘要</label>
+                        <textarea class="form-textarea-add" rows="3" placeholder="" @bind="model.Rem"></textarea>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ===== 其他资料 ===== *@
+        @if (activeSubTab == "other")
+        {
+            <div class="form-section">
+                <div class="form-section-title">其他</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">预设仓位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Wh" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">预设储位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Chuw" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">所属部门</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Dep" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">有效期计算方式</label>
+                        <select class="form-select-add" @bind="model.ValidId">
+                            <option value=""></option>
+                            <option value="按天数">按天数</option>
+                            <option value="按年数">按年数</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">有效天数</label>
+                        <input type="number" class="form-input-add" placeholder="" @bind="model.ValidDays" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品创建日</label>
+                        <input type="date" class="form-input-add" @bind="model.StartDD" @bind:format="yyyy-MM-dd" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品停用日期</label>
+                        <input type="date" class="form-input-add" @bind="model.NouseDD" @bind:format="yyyy-MM-dd" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品模版</label>
+                        <select class="form-select-add" @bind="model.TplNo">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品特征模版</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.MobId" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">存放属性</label>
+                        <select class="form-select-add" @bind="model.CfProp">
+                            <option value=""></option>
+                            <option value="">空(默认)</option>
+                            <option value="1">低层</option>
+                            <option value="2">中层</option>
+                            <option value="3">高层</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="notBarcode" @bind="model.NotBarcode" />
+                        <label for="notBarcode">非条码货品</label>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="allowShqFh" @bind="model.AllowShqFh" />
+                        <label for="allowShqFh">允许从收货区直接发货</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">储值信息</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品受储位管制</label>
+                        <select class="form-select-add" @bind="model.CwctrlId">
+                            <option value=""></option>
+                            <option value="不管制">不管制</option>
+                            <option value="管制">管制</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">所属储位性质</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.CwxzNo" />
+                        <div class="input-search-icon" title="搜索">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                                <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">货品超交率</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">进货超交率(%)</label>
+                        <input type="number" class="form-input-add" step="0.01" min="0" @bind="model.RtoPc" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">生产超交率(%)</label>
+                        <input type="number" class="form-input-add" step="0.01" min="0" @bind="model.RtoMm" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">托工超交率(%)</label>
+                        <input type="number" class="form-input-add" step="0.01" min="0" @bind="model.RtoTb" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">销货超交率(%)</label>
+                        <input type="number" class="form-input-add" step="0.01" min="0" @bind="model.RtoSa" @bind:event="oninput" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ===== 包装资料 ===== *@
+        @if (activeSubTab == "package")
+        {
+            <div class="form-section">
+                <div class="form-section-title">库存包装资料</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装(一)单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Pk2Ut" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装(一)数量</label>
+                        <input type="number" class="form-input-add" min="0" @bind="model.Pk2Qty" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装(二)单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.Pk3Ut" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装(二)数量</label>
+                        <input type="number" class="form-input-add" min="0" @bind="model.Pk3Qty" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品单重</label>
+                        <input type="number" class="form-input-add" step="0.001" min="0" @bind="model.QtyWeight" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">货品单重单位</label>
+                        <select class="form-select-add" @bind="model.UnitWeight">
+                            <option value=""></option>
+                            <option value="克">克</option>
+                            <option value="千克">千克</option>
+                            <option value="吨">吨</option>
+                        </select>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">领料单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.MlUt" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">级易包装资料</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.PakUnit" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">换算</label>
+                        <input type="number" class="form-input-add" step="0.001" min="0" @bind="model.PakExc" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装净重</label>
+                        <input type="number" class="form-input-add" step="0.001" min="0" @bind="model.PakNw" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">净重单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.PakWeightUnit" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装毛重</label>
+                        <input type="number" class="form-input-add" step="0.001" min="0" @bind="model.PakGw" @bind:event="oninput" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">包装大小</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.PakMeast" />
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">大小单位</label>
+                        <input type="text" class="form-input-add" placeholder="" @bind="model.PakMeastUnit" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">箱码信息</div>
+                <div class="form-grid-3col">
+                    <div class="form-item-add">
+                        <label class="form-label-add">箱码衍生生效方式</label>
+                        <select class="form-select-add" @bind="model.EffectId">
+                            <option value=""></option>
+                            <option value="立即生效">立即生效</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ===== 品质检验 ===== *@
+        @if (activeSubTab == "quality")
+        {
+            <div class="form-section">
+                <div class="form-section-title">检验设定</div>
+                <div class="form-grid-3col">
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="tyIn" @bind="model.TyIn" />
+                        <label for="tyIn">入库检验</label>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="tyOut" @bind="model.TyOut" />
+                        <label for="tyOut">出库检验</label>
+                    </div>
+                    <div class="checkbox-wrapper-inline">
+                        <input type="checkbox" id="tyStock" @bind="model.TyStock" />
+                        <label for="tyStock">库存检验</label>
+                    </div>
+                    <div class="form-item-add">
+                        <label class="form-label-add">仓库检验周期</label>
+                        <div style="display:flex;align-items:center;flex:1;gap:4px;">
+                            <input type="number" class="form-input-add" min="0" style="width:80px;" @bind="model.TyInr" @bind:event="oninput" />
+                            <span style="font-size:12px;color:#666;white-space:nowrap;">天</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    private ProductCodeSettingAddModel model = new();
+    private string activeSubTab = "general";
+    private bool isSaving = false;
+    private bool isLoading = false;
+
+    [Parameter] public string? EditPrdNo { get; set; }
+
+    private bool IsEditMode => !string.IsNullOrWhiteSpace(EditPrdNo);
+
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTab { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            await LoadDataForEdit();
+        }
+    }
+
+    // ===== 编辑模式：加载货品详情 =====
+    private async Task LoadDataForEdit()
+    {
+        isLoading = true;
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/ProductCodeSetting/getByPrdNo?prdNo={Uri.EscapeDataString(EditPrdNo!)}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<ProductCodeSettingAddModel>>(jsonOptions);
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                model = response.Data;
+            }
+            else
+            {
+                var msg = response?.Message ?? "加载数据失败";
+                await JS.InvokeVoidAsync("alert", $"加载失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载货品详情时发生错误");
+            await JS.InvokeVoidAsync("alert", $"加载失败: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // ===== 子选项卡切换 =====
+    private void SwitchSubTab(string tab)
+    {
+        activeSubTab = tab;
+        StateHasChanged();
+    }
+
+    // ===== 工具栏按钮事件 =====
+    private async Task HandleSave()
+    {
+        if (isSaving) return;
+
+        // 必填校验
+        if (string.IsNullOrWhiteSpace(model.PrdNo))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入物料编码");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入货品名称");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(model.Ut))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入主单位");
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var url = IsEditMode
+                ? $"{ApiConfig.BaseUrl}/api/ProductCodeSetting/update"
+                : $"{ApiConfig.BaseUrl}/api/ProductCodeSetting/create";
+            var httpMethod = IsEditMode ? HttpMethod.Put : HttpMethod.Post;
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+            var jsonContent = System.Text.Json.JsonSerializer.Serialize(model, jsonOptions);
+            var request = AuthHttpClient.CreateRequest(httpMethod, url, TokenProvider.Token);
+            request.Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", IsEditMode ? "修改成功" : "保存成功");
+            }
+            else
+            {
+                var msg = response?.Message ?? (IsEditMode ? "修改失败" : "保存失败");
+                await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, $"{(IsEditMode ? "修改" : "保存")}货品代号设定时发生错误");
+            await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task HandleSaveAndNew()
+    {
+        await HandleSave();
+        // 重置表单
+        model = new ProductCodeSettingAddModel();
+        activeSubTab = "general";
+        StateHasChanged();
+    }
+
+    private void HandleDelete() { /* TODO: 删除功能 */ }
+    private void HandleColumnSettings() { /* TODO: 栏位设置功能 */ }
+    private void HandleQuery() { /* TODO: 查询功能 */ }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+}

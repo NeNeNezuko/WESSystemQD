@@ -335,7 +335,62 @@ namespace WmsPlus.Api.Data
                 entity.Property(e => e.DEP).HasColumnName("DEP").HasMaxLength(30);
                 entity.Property(e => e.INVALID).HasColumnName("INVALID").HasMaxLength(1);
                 entity.Property(e => e.CW_FLAG).HasColumnName("CW_FLAG").HasMaxLength(1);
+                entity.Property(e => e.UP_WH).HasColumnName("UP_WH").HasMaxLength(30);
+                entity.Property(e => e.REM).HasColumnName("REM");
+                entity.Property(e => e.USR).HasColumnName("USR").HasMaxLength(30);
                 entity.Property(e => e.STOP_DD).HasColumnName("STOP_DD");
+                entity.Property(e => e.UP_DD).HasColumnName("UP_DD");
+
+                // 基本信息扩展字段
+                entity.Property(e => e.CNT_MAN).HasColumnName("CNT_MAN").HasMaxLength(30);
+                entity.Property(e => e.TEL_NO).HasColumnName("TEL_NO").HasMaxLength(50);
+                entity.Property(e => e.FAX_NO).HasColumnName("FAX_NO").HasMaxLength(50);
+                entity.Property(e => e.DEPRO_NO).HasColumnName("DEPRO_NO").HasMaxLength(30);
+
+                // 仓库管理扩展字段
+                entity.Property(e => e.RK_FLOW).HasColumnName("RK_FLOW").HasMaxLength(1);
+                entity.Property(e => e.PK_FLOW).HasColumnName("PK_FLOW").HasMaxLength(1);
+                entity.Property(e => e.CK_FLOW).HasColumnName("CK_FLOW").HasMaxLength(10);
+                entity.Property(e => e.IC_TYPE).HasColumnName("IC_TYPE").HasMaxLength(1);
+                entity.Property(e => e.MODE_PG_PK).HasColumnName("MODE_PG_PK").HasMaxLength(1);
+                entity.Property(e => e.PD_MTH).HasColumnName("PD_MTH").HasMaxLength(1);
+                entity.Property(e => e.XJ_BILL_COUNT).HasColumnName("XJ_BILL_COUNT");
+                entity.Property(e => e.XJ_GROUP_COND).HasColumnName("XJ_GROUP_COND").HasMaxLength(200);
+                entity.Property(e => e.XJ_KCBZCL).HasColumnName("XJ_KCBZCL").HasMaxLength(20);
+                entity.Property(e => e.XJ_PWCKYJ).HasColumnName("XJ_PWCKYJ").HasMaxLength(1);
+                entity.Property(e => e.XJ_WHS).HasColumnName("XJ_WHS").HasMaxLength(30);
+                entity.Property(e => e.RULE_ID_BC).HasColumnName("RULE_ID_BC").HasMaxLength(30);
+                entity.Property(e => e.RULE_ID_PK).HasColumnName("RULE_ID_PK").HasMaxLength(30);
+                entity.Property(e => e.RULE_ID_XJ).HasColumnName("RULE_ID_XJ").HasMaxLength(30);
+
+                // 储位管理扩展字段
+                entity.Property(e => e.HJFL).HasColumnName("HJFL").HasMaxLength(1);
+                entity.Property(e => e.MULT_CW_BY).HasColumnName("MULT_CW_BY").HasMaxLength(10);
+                entity.Property(e => e.SHUTTLE_AQYCF).HasColumnName("SHUTTLE_AQYCF").HasMaxLength(1);
+                entity.Property(e => e.SHUTTLE_CFZLYJ).HasColumnName("SHUTTLE_CFZLYJ").HasMaxLength(10);
+                entity.Property(e => e.SHUTTLE_GS).HasColumnName("SHUTTLE_GS").HasMaxLength(1);
+                entity.Property(e => e.SHUTTLE_SORT).HasColumnName("SHUTTLE_SORT").HasMaxLength(20);
+                entity.Property(e => e.RK_CHUW_SORT).HasColumnName("RK_CHUW_SORT").HasMaxLength(100);
+                entity.Property(e => e.RK_CHUW_SORT2).HasColumnName("RK_CHUW_SORT2").HasMaxLength(100);
+                entity.Property(e => e.KRQRK_CHUW_SORT).HasColumnName("KRQRK_CHUW_SORT").HasMaxLength(100);
+                entity.Property(e => e.ALLOW_KRQSJ).HasColumnName("ALLOW_KRQSJ").HasMaxLength(1);
+                entity.Property(e => e.ALLOW_BHRQSJ).HasColumnName("ALLOW_BHRQSJ").HasMaxLength(1);
+                entity.Property(e => e.ALLOW_STATUS_JY).HasColumnName("ALLOW_STATUS_JY").HasMaxLength(20);
+                entity.Property(e => e.QTY_KEEP_CW).HasColumnName("QTY_KEEP_CW");
+                entity.Property(e => e.CAPACITY_TYPE).HasColumnName("CAPACITY_TYPE").HasMaxLength(20);
+                entity.Property(e => e.FLAG_DG).HasColumnName("FLAG_DG").HasMaxLength(1);
+                entity.Property(e => e.FLAG_FKC).HasColumnName("FLAG_FKC").HasMaxLength(1);
+                entity.Property(e => e.PTL_SW).HasColumnName("PTL_SW").HasMaxLength(1);
+                entity.Property(e => e.LKIF_ID).HasColumnName("LKIF_ID").HasMaxLength(30);
+                entity.Property(e => e.MAP_NO).HasColumnName("MAP_NO").HasMaxLength(30);
+                entity.Property(e => e.SYS_DATE).HasColumnName("SYS_DATE");
+                entity.Property(e => e.CUS_NO).HasColumnName("CUS_NO").HasMaxLength(30);
+                entity.Property(e => e.NAME_PY).HasColumnName("NAME_PY").HasMaxLength(60);
+                entity.Property(e => e.TP_ID).HasColumnName("TP_ID").HasMaxLength(1);
+                entity.Property(e => e.TYWZ).HasColumnName("TYWZ").HasMaxLength(1);
+                entity.Property(e => e.WH_TY).HasColumnName("WH_TY").HasMaxLength(30);
+                entity.Property(e => e.WMS_ID).HasColumnName("WMS_ID").HasMaxLength(1);
+                entity.Property(e => e.RQ_SXJ_MODE).HasColumnName("RQ_SXJ_MODE").HasMaxLength(1);
             });
 
             // 入库业务类型设置
@@ -1069,14 +1124,69 @@ namespace WmsPlus.Api.Data
             {
                 entity.ToTable("PRDT");
                 entity.HasKey(e => e.PRD_NO);
+
+                // 基本信息
                 entity.Property(e => e.PRD_NO).HasColumnName("PRD_NO").HasMaxLength(50);
                 entity.Property(e => e.NAME).HasColumnName("NAME").HasMaxLength(320);
                 entity.Property(e => e.SNM).HasColumnName("SNM").HasMaxLength(100);
+                entity.Property(e => e.NAME_ENG).HasColumnName("NAME_ENG").HasMaxLength(320);
                 entity.Property(e => e.IDX1).HasColumnName("IDX1").HasMaxLength(30);
                 entity.Property(e => e.UT).HasColumnName("UT").HasMaxLength(10);
+                entity.Property(e => e.UT1).HasColumnName("UT1").HasMaxLength(10);
                 entity.Property(e => e.SPC).HasColumnName("SPC").HasMaxLength(100);
+                entity.Property(e => e.KND).HasColumnName("KND").HasMaxLength(20);
+                entity.Property(e => e.MRK).HasColumnName("MRK").HasMaxLength(30);
                 entity.Property(e => e.CWXZ_NO).HasColumnName("CWXZ_NO").HasMaxLength(20);
-                entity.Property(e => e.NOUSE_DD).HasColumnName("NOUSE_DD");
+                entity.Property(e => e.CW_FLAG).HasColumnName("CW_FLAG").HasMaxLength(1);
+                entity.Property(e => e.CHK_BAT).HasColumnName("CHK_BAT").HasMaxLength(1);
+                entity.Property(e => e.CHK_NUM).HasColumnName("CHK_NUM").HasMaxLength(1);
+                entity.Property(e => e.VALID_DAYS).HasColumnName("VALID_DAYS");
+                entity.Property(e => e.VALID_ID).HasColumnName("VALID_ID").HasMaxLength(10);
+                entity.Property(e => e.MOB_ID).HasColumnName("MOB_ID").HasMaxLength(30);
+                entity.Property(e => e.TPL_NO).HasColumnName("TPL_NO").HasMaxLength(30);
+                entity.Property(e => e.WH).HasColumnName("WH").HasMaxLength(20);
+                entity.Property(e => e.DEP).HasColumnName("DEP").HasMaxLength(30);
+                entity.Property(e => e.USR_WH).HasColumnName("USR_WH").HasMaxLength(30);
+                entity.Property(e => e.NOUSE_DD).HasColumnName("NOUSE_DD").HasConversion(v => v.HasValue ? v.Value.ToString("yyyy-MM-dd") : null, s => string.IsNullOrEmpty(s) ? (DateTime?)null : DateTime.ParseExact(s, "yyyy-MM-dd", null));
+                entity.Property(e => e.START_DD).HasColumnName("START_DD").HasConversion(v => v.HasValue ? v.Value.ToString("yyyy-MM-dd") : null, s => string.IsNullOrEmpty(s) ? (DateTime?)null : DateTime.ParseExact(s, "yyyy-MM-dd", null));
+                entity.Property(e => e.USR).HasColumnName("USR").HasMaxLength(30);
+                entity.Property(e => e.SYS_DATE).HasColumnName("SYS_DATE").HasConversion(v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null, s => string.IsNullOrEmpty(s) ? (DateTime?)null : DateTime.ParseExact(s, "yyyy-MM-dd HH:mm:ss", null));
+                entity.Property(e => e.UP_DD).HasColumnName("UP_DD").HasConversion(v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null, s => string.IsNullOrEmpty(s) ? (DateTime?)null : DateTime.ParseExact(s, "yyyy-MM-dd HH:mm:ss", null));
+                entity.Property(e => e.REM).HasColumnName("REM").HasMaxLength(200);
+
+                // 其他资料
+                entity.Property(e => e.CF_PROP).HasColumnName("CF_PROP").HasMaxLength(10);
+                entity.Property(e => e.CHUW).HasColumnName("CHUW").HasMaxLength(30);
+                entity.Property(e => e.CWCTRL_ID).HasColumnName("CWCTRL_ID").HasMaxLength(20);
+                entity.Property(e => e.NOT_BARCODE).HasColumnName("NOT_BARCODE").HasMaxLength(1);
+                entity.Property(e => e.ALLOW_SHQ_FH).HasColumnName("ALLOW_SHQ_FH").HasMaxLength(1);
+
+                // 超交率
+                entity.Property(e => e.RTO_PC).HasColumnName("RTO_PC").HasPrecision(5, 2);
+                entity.Property(e => e.RTO_MM).HasColumnName("RTO_MM").HasPrecision(5, 2);
+                entity.Property(e => e.RTO_TB).HasColumnName("RTO_TB").HasPrecision(5, 2);
+                entity.Property(e => e.RTO_SA).HasColumnName("RTO_SA").HasPrecision(5, 2);
+
+                // 包装资料
+                entity.Property(e => e.PK2_UT).HasColumnName("PK2_UT").HasMaxLength(10);
+                entity.Property(e => e.PK2_QTY).HasColumnName("PK2_QTY");
+                entity.Property(e => e.PK3_UT).HasColumnName("PK3_UT").HasMaxLength(10);
+                entity.Property(e => e.PK3_QTY).HasColumnName("PK3_QTY");
+                entity.Property(e => e.QTY_WEIGHT).HasColumnName("QTY_WEIGHT").HasPrecision(12, 4);
+                entity.Property(e => e.UNIT_WEIGHT).HasColumnName("UNIT_WEIGHT").HasMaxLength(10);
+                entity.Property(e => e.ML_UT).HasColumnName("ML_UT").HasMaxLength(10);
+                entity.Property(e => e.PAK_UNIT).HasColumnName("PAK_UNIT").HasMaxLength(10);
+                entity.Property(e => e.PAK_EXC).HasColumnName("PAK_EXC").HasPrecision(12, 4);
+                entity.Property(e => e.PAK_NW).HasColumnName("PAK_NW").HasPrecision(12, 4);
+                entity.Property(e => e.PAK_WEIGHT_UNIT).HasColumnName("PAK_WEIGHT_UNIT").HasMaxLength(10);
+                entity.Property(e => e.PAK_GW).HasColumnName("PAK_GW").HasPrecision(12, 4);
+                entity.Property(e => e.PAK_MEAST).HasColumnName("PAK_MEAST").HasPrecision(12, 4);
+                entity.Property(e => e.PAK_MEAST_UNIT).HasColumnName("PAK_MEAST_UNIT").HasMaxLength(10);
+                entity.Property(e => e.EFFECT_ID).HasColumnName("EFFECT_ID").HasMaxLength(10);
+
+                // 品质检验
+                entity.Property(e => e.TY_INR).HasColumnName("TY_INR").HasMaxLength(10);
+                entity.Property(e => e.NEED_CHK_FLAG).HasColumnName("NEED_CHK_FLAG").HasMaxLength(1);
             });
 
             // 拣货报表（TF_REPT）
@@ -1143,6 +1253,9 @@ namespace WmsPlus.Api.Data
                 entity.Property(e => e.IDX_UP).HasColumnName("IDX_UP").HasMaxLength(30);
                 entity.Property(e => e.STOP_DD).HasColumnName("STOP_DD");
                 entity.Property(e => e.REM).HasColumnName("REM");
+                entity.Property(e => e.USR).HasColumnName("USR").HasMaxLength(30);
+                entity.Property(e => e.SYS_DATE).HasColumnName("SYS_DATE");
+                entity.Property(e => e.UP_DD).HasColumnName("UP_DD");
             });
 
             // 依储存性设定货品储位（PRDT_CW_XZ）

@@ -21,6 +21,13 @@
             <span class="page-title">推送第三方明细表</span>
         </div>
         <div class="header-right">
+            <button class="header-toolbar-btn" @onclick="HandleExport">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span>导出</span>
+            </button>
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
@@ -70,10 +77,13 @@
             </div>
 
             <div class="query-form">
-                <!-- 处理代号 -->
+                <!-- 创建时间 -->
+                <DateRangeInput @bind-Value="query.DateRange" Label="创建时间" />
+
+                <!-- 来源单据别 -->
                 <div class="form-item">
-                    <label class="form-label">处理代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.ActNo" />
+                    <label class="form-label">来源单据别</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.BilId" />
                 </div>
 
                 <!-- 来源单据号码 -->
@@ -82,32 +92,16 @@
                     <input type="text" class="form-input" placeholder="" @bind="query.BilNo" />
                 </div>
 
-                <!-- 接口厂商代号 -->
-                <div class="form-item">
-                    <label class="form-label">接口厂商代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.SupNo" />
-                </div>
-
                 <!-- 成功否 -->
                 <div class="form-item">
                     <label class="form-label">成功否</label>
                     <select class="form-select" @bind="query.Status">
                         <option value="">全部</option>
+                        <option value="0">未推送</option>
+                        <option value="1">正在推送</option>
                         <option value="T">成功</option>
                         <option value="F">失败</option>
                     </select>
-                </div>
-
-                <!-- 开始日期 -->
-                <div class="form-item">
-                    <label class="form-label">开始日期</label>
-                    <input type="date" class="form-input" @bind="query.StartDate" />
-                </div>
-
-                <!-- 结束日期 -->
-                <div class="form-item">
-                    <label class="form-label">结束日期</label>
-                    <input type="date" class="form-input" @bind="query.EndDate" />
                 </div>
 
                 <!-- 查询按钮 -->
@@ -125,19 +119,6 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
-            <!-- 工具栏 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>导出Excel</span>
-                    </button>
-                </div>
-            </div>
-
             <!-- 数据表格 -->
             <div class="data-table-container">
                 <table class="data-table">
@@ -186,30 +167,42 @@
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
                                         <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
                                     }
-                                    <td><button class="action-btn" title="查看" @onclick="() => HandleEdit(item)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><path d="M11 3l3 3m0 0l-7 7H4v-3l7-7z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                                    <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
                                 </tr>
                             }
                         }
                     </tbody>
                 </table>
             </div>
-            <!-- 表格底部栏 -->
+
+            <!-- 底部统计栏 -->
             <div class="table-footer">
                 <div class="footer-left">
-                    <span class="footer-label">分页栏位字段：</span>
-                    <div class="footer-checkboxes">
-                        @foreach (var col in columnConfigs.Where(c => c.Visible))
-                        {
-                            <label class="footer-checkbox-item">
-                                <input type="checkbox" checked />
-                                <span>@col.DisplayName</span>
-                            </label>
-                        }
-                    </div>
+                    <span class="record-count">共 @totalRecords 笔记录</span>
                 </div>
                 <div class="footer-right">
-                    <span class="record-count">共 @dataSource.Count 条记录</span>
-                    <div class="pagination-info"></div>
+                    <button class="page-btn" @onclick="GoToFirstPage" disabled="@(currentPage <= 1)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M10 12L6 8l4-4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M13 12L9 8l4-4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="page-btn" @onclick="GoToPrevPage" disabled="@(currentPage <= 1)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M10 12L6 8l4-4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="page-btn" @onclick="GoToNextPage" disabled="@(currentPage >= totalPages)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M6 4l4 4-4 4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="page-btn" @onclick="GoToLastPage" disabled="@(currentPage >= totalPages)">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="#666666">
+                            <path d="M6 4l4 4-4 4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 4l4 4-4 4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -317,8 +310,14 @@
     private string columnSearchKeyword = "";
     private List<ColumnConfig> columnConfigs = new();
     private List<ColumnConfig> defaultColumnConfigs = new();
-    private ThirdPartyPushDetailQuery query = new();
-    private List<ThirdPartyPushDetailModel> dataSource = new();
+    private PushDetailQuery query = new();
+    private List<PushDetailModel> dataSource = new();
+
+    // 分页
+    private int currentPage = 1;
+    private int pageSize = 50;
+    private int totalRecords = 0;
+    private int totalPages = 0;
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
 
@@ -330,18 +329,8 @@
         await LoadData();
     }
 
-    private void ToggleCollapse()
-    {
-        isCollapsed = !isCollapsed;
-        StateHasChanged();
-    }
-
-    private void ToggleSettingsMenu()
-    {
-        showSettingsMenu = !showSettingsMenu;
-        StateHasChanged();
-    }
-
+    private void ToggleCollapse() { isCollapsed = !isCollapsed; StateHasChanged(); }
+    private void ToggleSettingsMenu() { showSettingsMenu = !showSettingsMenu; StateHasChanged(); }
     private void BatchAddCondition() { showSettingsMenu = false; StateHasChanged(); }
     private void AddSingleCondition() { showSettingsMenu = false; StateHasChanged(); }
     private void CustomCondition() { showSettingsMenu = false; StateHasChanged(); }
@@ -366,23 +355,17 @@
         StateHasChanged();
     }
 
-    private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
-    private void HandleEdit(ThirdPartyPushDetailModel item) { }
+    private async Task HandleSearch() { currentPage = 1; await LoadData(); }
 
     private async Task HandleExport()
     {
         if (dataSource.Count == 0) { await JS.InvokeVoidAsync("alert", "暂无数据可导出"); return; }
-        exportFileName = $"推送第三方明细_{DateTime.Now:yyyyMMddHHmmss}";
+        exportFileName = $"推送第三方明细表_{DateTime.Now:yyyyMMddHHmmss}";
         showExportDialog = true;
         StateHasChanged();
     }
 
-    private void CancelExport()
-    {
-        showExportDialog = false;
-        StateHasChanged();
-    }
+    private void CancelExport() { showExportDialog = false; StateHasChanged(); }
 
     private async Task ConfirmExport()
     {
@@ -394,33 +377,58 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ThirdPartyPushDetail/search";
-            var hasParam = false;
 
-            if (!string.IsNullOrWhiteSpace(query.ActNo)) { url += $"?actNo={Uri.EscapeDataString(query.ActNo)}"; hasParam = true; }
-            if (!string.IsNullOrWhiteSpace(query.BilNo)) url += (hasParam ? "&" : "?") + $"bilNo={Uri.EscapeDataString(query.BilNo)}"; hasParam = true;
-            if (!string.IsNullOrWhiteSpace(query.SupNo)) url += $"&supNo={Uri.EscapeDataString(query.SupNo)}";
-            if (!string.IsNullOrWhiteSpace(query.Status)) url += $"&status={Uri.EscapeDataString(query.Status)}";
-            if (query.StartDate.HasValue) url += $"&startDate={Uri.EscapeDataString(query.StartDate.Value.ToString("yyyy-MM-dd"))}";
-            if (query.EndDate.HasValue) url += $"&endDate={Uri.EscapeDataString(query.EndDate.Value.ToString("yyyy-MM-dd"))}";
+var url = $"{ApiConfig.BaseUrl}/api/ThirdPartyPushDetail/search";
+            var sep = "?";
+
+            if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("\u2192"))
+            {
+                var parts = query.DateRange.Split("\u2192", StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
+                {
+                    url += $"{sep}startDate={Uri.EscapeDataString(parts[0])}&endDate={Uri.EscapeDataString(parts[1])}";
+                    sep = "&";
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(query.BilId))
+            {
+                url += $"{sep}bilId={Uri.EscapeDataString(query.BilId)}";
+                sep = "&";
+            }
+            if (!string.IsNullOrWhiteSpace(query.BilNo))
+            {
+                url += $"{sep}bilNo={Uri.EscapeDataString(query.BilNo)}";
+                sep = "&";
+            }
+            if (!string.IsNullOrWhiteSpace(query.Status))
+            {
+                url += $"{sep}status={Uri.EscapeDataString(query.Status)}";
+                sep = "&";
+            }
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);
-            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<ThirdPartyPushDetailModel>>>(jsonOptions);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<PushDetailModel>>>(jsonOptions);
+
             if (response != null && response.Success && response.Data != null)
             {
                 dataSource = response.Data;
+                totalRecords = response.Total;
             }
             else
             {
-                dataSource = new List<ThirdPartyPushDetailModel>();
+                dataSource = new List<PushDetailModel>();
+                totalRecords = 0;
             }
+            totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
         }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "加载推送第三方明细表数据失败");
-            dataSource = new List<ThirdPartyPushDetailModel>();
+            dataSource = new List<PushDetailModel>();
+            totalRecords = 0;
+            totalPages = 0;
         }
         StateHasChanged();
     }
@@ -438,12 +446,11 @@
                 row[i] = GetCellValue(item, visibleCols[i].FieldKey);
             rows.Add(row);
         }
-        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"推送第三方明细_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
+        var fileName = string.IsNullOrWhiteSpace(exportFileName) ? $"推送第三方明细表_{DateTime.Now:yyyyMMddHHmmss}" : exportFileName;
         if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) fileName += ".xlsx";
         await JS.InvokeVoidAsync("exportToExcel", rows, fileName);
     }
 
-    // ===== 栏位配置 =====
     private class ColumnConfig
     {
         public string FieldKey { get; set; } = "";
@@ -452,39 +459,27 @@
         public bool Visible { get; set; } = true;
         public int Width { get; set; } = 120;
         public int DefaultWidth { get; set; } = 120;
-        public bool Sortable { get; set; } = true;
+        public bool Sortable { get; set; } = false;
     }
 
     private void InitDefaultColumnConfigs()
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "ActNo", OriginalName = "处理代号", DisplayName = "处理代号", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true },
-            new() { FieldKey = "MethodNo", OriginalName = "接口名称", DisplayName = "接口名称", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
-            new() { FieldKey = "HttpMethod", OriginalName = "请求方式", DisplayName = "请求方式", Visible = true, Width = 90, DefaultWidth = 90, Sortable = false },
-            new() { FieldKey = "Path", OriginalName = "请求路径", DisplayName = "请求路径", Visible = true, Width = 180, DefaultWidth = 180, Sortable = false },
-            new() { FieldKey = "BilId", OriginalName = "来源单据别", DisplayName = "来源单据别", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
-            new() { FieldKey = "BilNo", OriginalName = "来源单据号码", DisplayName = "来源单据号码", Visible = true, Width = 160, DefaultWidth = 160, Sortable = true },
-            new() { FieldKey = "OthBilId", OriginalName = "生成外部单据ID", DisplayName = "生成外部单据ID", Visible = true, Width = 160, DefaultWidth = 160, Sortable = false },
-            new() { FieldKey = "OthBilNo", OriginalName = "生成外部单据号", DisplayName = "生成外部单据号", Visible = true, Width = 160, DefaultWidth = 160, Sortable = false },
-            new() { FieldKey = "RefId", OriginalName = "第三方标识", DisplayName = "第三方标识", Visible = true, Width = 130, DefaultWidth = 130, Sortable = false },
-            new() { FieldKey = "StatusId", OriginalName = "成功否", DisplayName = "成功否", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
-            new() { FieldKey = "ErrMsg", OriginalName = "错误信息", DisplayName = "错误信息", Visible = true, Width = 180, DefaultWidth = 180, Sortable = false },
-            new() { FieldKey = "HttpCode", OriginalName = "Http错误代码", DisplayName = "Http错误代码", Visible = true, Width = 110, DefaultWidth = 110, Sortable = false },
-            new() { FieldKey = "RunCount", OriginalName = "执行次数", DisplayName = "执行次数", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
-            new() { FieldKey = "StartDate", OriginalName = "推送开始时间", DisplayName = "推送开始时间", Visible = true, Width = 150, DefaultWidth = 150, Sortable = true },
-            new() { FieldKey = "EndDate", OriginalName = "推送结束时间", DisplayName = "推送结束时间", Visible = true, Width = 150, DefaultWidth = 150, Sortable = true },
-            new() { FieldKey = "SysDate", OriginalName = "插入时间", DisplayName = "插入时间", Visible = true, Width = 150, DefaultWidth = 150, Sortable = true }
+            new() { FieldKey = "RowNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "SysDate", OriginalName = "创建时间", DisplayName = "创建时间", Visible = true, Width = 150, DefaultWidth = 150, Sortable = true },
+            new() { FieldKey = "SupNo", OriginalName = "接口供应商代号", DisplayName = "接口供应商代号", Visible = true, Width = 120, DefaultWidth = 120 },
+            new() { FieldKey = "MethodNo", OriginalName = "接口名称", DisplayName = "接口名称", Visible = true, Width = 140, DefaultWidth = 140 },
+            new() { FieldKey = "BilId", OriginalName = "来源单据别", DisplayName = "来源单据别", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "BilNo", OriginalName = "来源单据号码", DisplayName = "来源单据号码", Visible = true, Width = 140, DefaultWidth = 140 },
+            new() { FieldKey = "BilCategory", OriginalName = "单据类别", DisplayName = "单据类别", Visible = true, Width = 100, DefaultWidth = 100 },
+            new() { FieldKey = "StatusId", OriginalName = "成功否", DisplayName = "成功否", Visible = true, Width = 80, DefaultWidth = 80 },
+            new() { FieldKey = "IsDeleted", OriginalName = "删除否", DisplayName = "删除否", Visible = true, Width = 80, DefaultWidth = 80 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
-            FieldKey = c.FieldKey,
-            OriginalName = c.OriginalName,
-            DisplayName = c.DisplayName,
-            Visible = c.Visible,
-            Width = c.Width,
-            DefaultWidth = c.DefaultWidth,
-            Sortable = c.Sortable
+            FieldKey = c.FieldKey, OriginalName = c.OriginalName, DisplayName = c.DisplayName,
+            Visible = c.Visible, Width = c.Width, DefaultWidth = c.DefaultWidth, Sortable = c.Sortable
         }).ToList();
     }
 
@@ -517,48 +512,15 @@
 
     private async Task SaveColumnSettings()
     {
-        try
-        {
-            var json = System.Text.Json.JsonSerializer.Serialize(columnConfigs);
-            await JS.InvokeVoidAsync("localStorage.setItem", COLUMN_SETTINGS_KEY, json);
-        }
+        try { var json = System.Text.Json.JsonSerializer.Serialize(columnConfigs); await JS.InvokeVoidAsync("localStorage.setItem", COLUMN_SETTINGS_KEY, json); }
         catch { }
     }
 
-    private void OpenColumnSettings()
-    {
-        columnSearchKeyword = "";
-        showColumnSettingsDialog = true;
-        StateHasChanged();
-    }
-
-    private void CloseColumnSettings()
-    {
-        showColumnSettingsDialog = false;
-        StateHasChanged();
-    }
-
-    private void ConfirmColumnSettings()
-    {
-        showColumnSettingsDialog = false;
-        _ = SaveColumnSettings();
-        StateHasChanged();
-    }
-
-    private void CancelColumnSettings()
-    {
-        showColumnSettingsDialog = false;
-        _ = LoadColumnSettings();
-        StateHasChanged();
-    }
-
-    private void SelectAllColumns()
-    {
-        foreach (var col in columnConfigs)
-            col.Visible = true;
-        StateHasChanged();
-    }
-
+    private void OpenColumnSettings() { columnSearchKeyword = ""; showColumnSettingsDialog = true; StateHasChanged(); }
+    private void CloseColumnSettings() { showColumnSettingsDialog = false; StateHasChanged(); }
+    private void ConfirmColumnSettings() { showColumnSettingsDialog = false; _ = SaveColumnSettings(); StateHasChanged(); }
+    private void CancelColumnSettings() { showColumnSettingsDialog = false; _ = LoadColumnSettings(); StateHasChanged(); }
+    private void SelectAllColumns() { foreach (var col in columnConfigs) col.Visible = true; StateHasChanged(); }
     private void RestoreDefaultColumns()
     {
         for (int i = 0; i < columnConfigs.Count && i < defaultColumnConfigs.Count; i++)
@@ -578,26 +540,57 @@
 
     private int VisibleColumnCount => columnConfigs.Count(c => c.Visible);
 
-    private object GetCellValue(ThirdPartyPushDetailModel item, string fieldKey) => fieldKey switch
+    private object GetCellValue(PushDetailModel item, string fieldKey) => fieldKey switch
     {
-        "ActNo" => item.ActNo,
-        "MethodNo" => item.MethodNo,
-        "HttpMethod" => item.HttpMethod,
-        "Path" => item.Path,
-        "BilId" => item.BilId,
-        "BilNo" => item.BilNo,
-        "OthBilId" => item.OthBilId,
-        "OthBilNo" => item.OthBilNo,
-        "RefId" => item.RefId,
-        "StatusId" => item.StatusId,
-        "ErrMsg" => item.ErrMsg,
-        "HttpCode" => item.HttpCode,
-        "RunCount" => item.RunCount?.ToString() ?? "",
-        "StartDate" => item.StartDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
-        "EndDate" => item.EndDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
+        "RowNo" => item.RowNo,
         "SysDate" => item.SysDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "",
+        "SupNo" => item.SupNo ?? "",
+        "MethodNo" => item.MethodNo ?? "",
+        "BilId" => item.BilId ?? "",
+        "BilNo" => item.BilNo ?? "",
+        "BilCategory" => item.BilCategory ?? "",
+        "StatusId" => item.StatusId == "T" ? "成功" : item.StatusId == "F" ? "失败" : item.StatusId == "0" ? "未推送" : item.StatusId == "1" ? "正在推送" : item.StatusId ?? "",
+        "IsDeleted" => item.IsDeleted ?? "",
         _ => ""
     };
+
+    private async Task GoToFirstPage() { if (currentPage <= 1) return; currentPage = 1; await LoadData(); }
+    private async Task GoToPrevPage() { if (currentPage <= 1) return; currentPage--; await LoadData(); }
+    private async Task GoToNextPage() { if (currentPage >= totalPages) return; currentPage++; await LoadData(); }
+    private async Task GoToLastPage() { if (currentPage >= totalPages) return; currentPage = totalPages; await LoadData(); }
+
+    private class PushDetailQuery
+    {
+        public string DateRange { get; set; } = "";
+        public string BilId { get; set; } = "";
+        public string BilNo { get; set; } = "";
+        public string Status { get; set; } = "";
+    }
+
+    private class PushDetailModel
+    {
+        public int RowNo { get; set; }
+        public string ActNo { get; set; } = "";
+        public string MethodNo { get; set; } = "";
+        public string HttpMethod { get; set; } = "";
+        public string Path { get; set; } = "";
+        public string BilId { get; set; } = "";
+        public string BilNo { get; set; } = "";
+        public string OthBilId { get; set; } = "";
+        public string OthBilNo { get; set; } = "";
+        public string RefId { get; set; } = "";
+        public string StatusId { get; set; } = "";
+        public string ErrMsg { get; set; } = "";
+        public string HttpCode { get; set; } = "";
+        public int? RunCount { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public DateTime? SysDate { get; set; }
+        // 规格扩展字段（后端暂不返回，预留）
+        public string? SupNo { get; set; }
+        public string? BilCategory { get; set; }
+        public string? IsDeleted { get; set; }
+    }
 
     private class ApiResponse<T>
     {

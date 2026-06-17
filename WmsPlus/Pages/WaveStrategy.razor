@@ -374,7 +374,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/WaveStrategy/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/WaveStrategy/search?";
             if (!string.IsNullOrWhiteSpace(query.RuleId))
                 url += $"ruleId={Uri.EscapeDataString(query.RuleId)}";
             if (!string.IsNullOrWhiteSpace(query.Name))

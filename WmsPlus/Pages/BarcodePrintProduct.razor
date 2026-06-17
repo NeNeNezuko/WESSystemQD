@@ -434,8 +434,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/BarcodePrintProduct/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/BarcodePrintProduct/search?";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -518,7 +517,7 @@
             new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 120, DefaultWidth = 120 },
             new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "SourceNo", OriginalName = "来源单号", DisplayName = "来源单号", Visible = true, Width = 100, DefaultWidth = 100 },
-            new() { FieldKey = "SourceDoc", OriginalName = "来源单据交", DisplayName = "来源单据交", Visible = true, Width = 85, DefaultWidth = 85 },
+            new() { FieldKey = "SourceDoc", OriginalName = "来源单项次", DisplayName = "来源单项次", Visible = true, Width = 85, DefaultWidth = 85 },
             new() { FieldKey = "ValidDate", OriginalName = "有效期", DisplayName = "有效期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
             new() { FieldKey = "LastPrintTime", OriginalName = "最近打印时间", DisplayName = "最近打印时间", Visible = true, Width = 110, DefaultWidth = 110, Sortable = true }
         };

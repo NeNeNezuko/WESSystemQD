@@ -142,7 +142,7 @@
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" stroke="#666666" stroke-width="1" fill="none"/>
                         </svg>
-                        <span>类别设计</span>
+                        <span>类型设计</span>
                     </button>
                 </div>
             </div>
@@ -394,7 +394,7 @@
     // ===== 工具栏按钮（占位） =====
     private void HandleTypeConfig() { /* TODO: 类型配置 */ }
     private void HandlePrint() { /* TODO: 打印 */ }
-    private void HandleCategoryDesign() { /* TODO: 类别设计 */ }
+    private void HandleCategoryDesign() { /* TODO: 类型设计 */ }
 
     // ===== 导出 =====
     private async Task HandleExport()
@@ -422,14 +422,13 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/PrintSite/list?tabType={activeInnerTab}";
+            var url = $"{ApiConfig.BaseUrl}/api/PrintSite/list?tabType={activeInnerTab}";
             if (!string.IsNullOrWhiteSpace(query.SiteName))
                 url += $"&siteName={Uri.EscapeDataString(query.SiteName)}";
             if (!string.IsNullOrWhiteSpace(query.MachineIp))
                 url += $"&machineIp={Uri.EscapeDataString(query.MachineIp)}";
-            if (query.StopFlag.HasValue)
-                url += $"&stopFlag={query.StopFlag.Value.ToString().ToLower()}";
+            if (!string.IsNullOrWhiteSpace(query.StopFlagText))
+                url += $"&stopFlag={Uri.EscapeDataString(query.StopFlagText)}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -489,7 +488,7 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "SeqNo", OriginalName = "坯次", DisplayName = "坯次", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "SeqNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
             new() { FieldKey = "SiteName", OriginalName = "网点名称", DisplayName = "网点名称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
             new() { FieldKey = "MachineIp", OriginalName = "机器IP", DisplayName = "机器IP", Visible = true, Width = 130, DefaultWidth = 130, Sortable = true },
             new() { FieldKey = "MachineName", OriginalName = "机器名称", DisplayName = "机器名称", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },

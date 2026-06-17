@@ -376,7 +376,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ProductStorageByNature/search?";
+            var url = $"{ApiConfig.BaseUrl}/api/ProductStorageByNature/search?";
             var hasParam = false;
             if (!string.IsNullOrWhiteSpace(query.CwxzNo))
             {

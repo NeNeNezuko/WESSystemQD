@@ -374,7 +374,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ProductMarkSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ProductMarkSetting/search";
             if (!string.IsNullOrWhiteSpace(query.MobId))
                 url += $"?mobId={Uri.EscapeDataString(query.MobId)}";
             if (!string.IsNullOrWhiteSpace(query.MobName))

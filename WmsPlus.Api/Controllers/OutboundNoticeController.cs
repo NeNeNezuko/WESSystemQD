@@ -31,7 +31,11 @@ public class OutboundNoticeController : ControllerBase
         [FromQuery] string? warehouseCode,
         [FromQuery] string? customerCode,
         [FromQuery] string? closeStatus,
-        [FromQuery] string? businessType)
+        [FromQuery] string? businessType,
+        [FromQuery] DateTime? deliveryDateFrom,
+        [FromQuery] DateTime? deliveryDateTo,
+        [FromQuery] string? receivePoint,
+        [FromQuery] string? closeCaseType)
     {
         try
         {
@@ -69,6 +73,24 @@ public class OutboundNoticeController : ControllerBase
             if (!string.IsNullOrWhiteSpace(businessType))
                 query = query.Where(x => x.M != null && (x.M.BIL_TYPE != null && x.M.BIL_TYPE.Contains(businessType)));
 
+            // 预计到货时间范围筛选（使用表头的EST_DD）
+            if (deliveryDateFrom.HasValue)
+                query = query.Where(x => x.M != null && x.M.EST_DD >= deliveryDateFrom.Value);
+            if (deliveryDateTo.HasValue)
+                query = query.Where(x => x.M != null && x.M.EST_DD <= deliveryDateTo.Value.AddDays(1).AddSeconds(-1));
+
+            // 收货点筛选（TODO: 确认收货点对应字段）
+            if (!string.IsNullOrWhiteSpace(receivePoint))
+            {
+                // TODO: 待确认收货点字段后补充过滤逻辑
+            }
+
+            // 波次/拣货/出库结案筛选（TODO: 确认结案类型对应字段）
+            if (!string.IsNullOrWhiteSpace(closeCaseType) && closeCaseType != "全部")
+            {
+                // TODO: 待确认波次/拣货/出库结案字段后补充过滤逻辑
+            }
+
             // 按单据号+项次排序
             query = query.OrderBy(x => x.T.TZ_NO).ThenBy(x => x.T.ITM);
 
@@ -90,7 +112,11 @@ public class OutboundNoticeController : ControllerBase
                 PrdName = x.T.PRD_NAME ?? "",
                 PrdSpec = x.T.PRD_MARK ?? "",
                 Qty = x.T.QTY ?? 0,
-                Unit = x.T.UNIT ?? ""
+                Unit = x.T.UNIT ?? "",
+                // 扩展字段
+                ErpApplyId = "",       // TODO: ERP申请单ID数据来源待确认
+                DispatchStatus = "",   // TODO: 派工状态数据来源待确认
+                PickerName = ""        // TODO: 拣货员名称数据来源待确认
             }).ToList();
 
             return Ok(new ApiResult<List<OutboundNoticeDto>>
@@ -192,6 +218,11 @@ public class OutboundNoticeDto
     public string ApplyNo { get; set; } = "";
     public DateTime? ExpectedOutDate { get; set; }
     public string OperatorName { get; set; } = "";
+
+    // 新增扩展字段
+    public string ErpApplyId { get; set; } = "";          // ERP申请单ID
+    public string DispatchStatus { get; set; } = "";      // 派工状态
+    public string PickerName { get; set; } = "";          // 拣货员名称
 }
 
 /// <summary>出库通知单详情（含表头+表身）</summary>

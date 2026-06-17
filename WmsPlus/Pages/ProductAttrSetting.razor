@@ -368,7 +368,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ProductAttrSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ProductAttrSetting/search";
             if (!string.IsNullOrWhiteSpace(query.PrdNo))
                 url += $"?prdNo={Uri.EscapeDataString(query.PrdNo)}";
 

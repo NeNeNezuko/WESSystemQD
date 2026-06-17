@@ -419,7 +419,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/CustomReport/search";
+            var url = $"{ApiConfig.BaseUrl}/api/CustomReport/search";
             if (!string.IsNullOrWhiteSpace(query.Name))
                 url += $"?name={Uri.EscapeDataString(query.Name)}";
             if (!string.IsNullOrWhiteSpace(query.Usr))

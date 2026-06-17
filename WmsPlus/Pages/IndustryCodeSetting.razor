@@ -372,7 +372,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/IndustryCodeSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/IndustryCodeSetting/search";
             if (!string.IsNullOrWhiteSpace(query.NsNo))
                 url += $"?nsNo={Uri.EscapeDataString(query.NsNo)}";
             if (!string.IsNullOrWhiteSpace(query.Name))

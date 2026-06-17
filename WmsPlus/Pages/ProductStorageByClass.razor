@@ -379,7 +379,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/ProductStorageByClass/search";
+            var url = $"{ApiConfig.BaseUrl}/api/ProductStorageByClass/search";
             var hasParam = false;
             if (!string.IsNullOrWhiteSpace(query.IdxNo))
             {

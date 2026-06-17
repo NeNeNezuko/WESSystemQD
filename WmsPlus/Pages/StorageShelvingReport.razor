@@ -79,8 +79,39 @@
                     <input type="text" class="form-input" placeholder="" @bind="query.SJ_NO" />
                 </div>
 
+                <!-- 单据号码 -->
+                <div class="form-item">
+                    <label class="form-label">单据号码</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.BilNo" />
+                </div>
+
                 <!-- 仓库代号 -->
                 <WarehouseCodeInput @bind-Value="query.WarehouseCode" />
+
+                <!-- 货品代号 起/止 -->
+                <div class="form-item-fused">
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 起</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoFrom" />
+                    </div>
+                    <div class="fused-divider"></div>
+                    <div class="fused-row">
+                        <label class="form-label">货品代号 止</label>
+                        <input type="text" class="fused-input" placeholder="" @bind="query.PrdNoTo" />
+                    </div>
+                </div>
+
+                <!-- 储位 -->
+                <div class="form-item">
+                    <label class="form-label">储位</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.Chuw" />
+                </div>
+
+                <!-- 来源单号 -->
+                <div class="form-item">
+                    <label class="form-label">来源单号</label>
+                    <input type="text" class="form-input" placeholder="" @bind="query.SourceNo" />
+                </div>
 
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
@@ -387,7 +418,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -401,7 +431,7 @@
                 }
             }
             var tabType = activeInnerTab == "summary" ? "summary" : "detail";
-            var url = $"{ApiBaseUrl}/api/StorageShelvingReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&tabType={tabType}";
+            var url = $"{ApiConfig.BaseUrl}/api/StorageShelvingReport/search?dateFrom={dateFromStr}&dateTo={dateToStr}&tabType={tabType}";
             if (!string.IsNullOrWhiteSpace(query.SJ_NO))
                 url += $"&sjNo={Uri.EscapeDataString(query.SJ_NO)}";
             if (!string.IsNullOrWhiteSpace(query.WarehouseCode))

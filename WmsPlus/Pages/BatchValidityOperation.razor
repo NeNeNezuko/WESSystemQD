@@ -145,6 +145,12 @@
             <!-- 工具栏 -->
             <div class="table-toolbar">
                 <div class="toolbar-left">
+                    <button class="toolbar-btn" disabled title="修改有效期">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+                            <path d="M11 3l3 3m0 0l-7 7H4v-3l7-7z" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>修改有效期</span>
+                    </button>
                     <button class="toolbar-btn export-btn" @onclick="HandleExport">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -442,7 +448,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
             var today = DateTime.Today;
             var dateFromStr = today.ToString("yyyy-MM-dd");
             var dateToStr = today.ToString("yyyy-MM-dd");
@@ -455,7 +460,7 @@
                     dateToStr = parts[1];
                 }
             }
-            var url = $"{ApiBaseUrl}/api/BatchValidityOperation/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/BatchValidityOperation/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.Wh))
                 url += $"&wh={Uri.EscapeDataString(query.Wh)}";
             if (!string.IsNullOrWhiteSpace(query.PrdNoFrom))
@@ -532,13 +537,15 @@
             new() { FieldKey = "PrdNo", OriginalName = "货品代号", DisplayName = "货品代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "PrdName", OriginalName = "货品名称", DisplayName = "货品名称", Visible = true, Width = 100, DefaultWidth = 100 },
             new() { FieldKey = "BatNo", OriginalName = "批号", DisplayName = "批号", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
-            new() { FieldKey = "PrdMark", OriginalName = "特征", DisplayName = "特征", Visible = false, Width = 80, DefaultWidth = 80 },
             new() { FieldKey = "ValidDDCur", OriginalName = "有效日期", DisplayName = "有效日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
             new() { FieldKey = "ValidDDOrg", OriginalName = "履迟近品日", DisplayName = "履迟近品日", Visible = true, Width = 95, DefaultWidth = 95 },
-            new() { FieldKey = "UpUser", OriginalName = "修改人", DisplayName = "修改人", Visible = false, Width = 60, DefaultWidth = 60 },
-            new() { FieldKey = "UpdDate", OriginalName = "修改时间", DisplayName = "修改时间", Visible = false, Width = 140, DefaultWidth = 140 },
-            new() { FieldKey = "ConNo", OriginalName = "货主编码", DisplayName = "货主编码", Visible = false, Width = 80, DefaultWidth = 80 },
-            new() { FieldKey = "TaskNo", OriginalName = "推送任务代号", DisplayName = "推送任务代号", Visible = false, Width = 100, DefaultWidth = 100 }
+            new() { FieldKey = "LastOutDate", OriginalName = "最近出库日", DisplayName = "最近出库日", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
+            new() { FieldKey = "LastInDate", OriginalName = "最近入库日", DisplayName = "最近入库日", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
+            new() { FieldKey = "LastInspectDate", OriginalName = "最近检验日期", DisplayName = "最近检验日期", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
+            new() { FieldKey = "ProduceDate", OriginalName = "生产日期", DisplayName = "生产日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
+            new() { FieldKey = "IdxNo", OriginalName = "中类代号", DisplayName = "中类代号", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+            new() { FieldKey = "IdxName", OriginalName = "中类名称", DisplayName = "中类名称", Visible = true, Width = 90, DefaultWidth = 90 },
+            new() { FieldKey = "Qty", OriginalName = "数量", DisplayName = "数量", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -651,13 +658,15 @@
         "PrdNo" => item.PrdNo,
         "PrdName" => item.PrdName,
         "BatNo" => item.BatNo,
-        "PrdMark" => item.PrdMark,
         "ValidDDCur" => item.ValidDDCur.HasValue ? item.ValidDDCur.Value.ToString("yyyy-MM-dd") : "",
         "ValidDDOrg" => item.ValidDDOrg.HasValue ? item.ValidDDOrg.Value.ToString("yyyy-MM-dd") : "",
-        "UpUser" => item.UpUser,
-        "UpdDate" => item.UpdDate.HasValue ? item.UpdDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "",
-        "ConNo" => item.ConNo,
-        "TaskNo" => item.TaskNo,
+        "LastOutDate" => item.LastOutDate.HasValue ? item.LastOutDate.Value.ToString("yyyy-MM-dd") : "",
+        "LastInDate" => item.LastInDate.HasValue ? item.LastInDate.Value.ToString("yyyy-MM-dd") : "",
+        "LastInspectDate" => item.LastInspectDate.HasValue ? item.LastInspectDate.Value.ToString("yyyy-MM-dd") : "",
+        "ProduceDate" => item.ProduceDate.HasValue ? item.ProduceDate.Value.ToString("yyyy-MM-dd") : "",
+        "IdxNo" => item.IdxNo,
+        "IdxName" => item.IdxName,
+        "Qty" => item.Qty,
         _ => ""
     };
 
@@ -713,7 +722,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);

@@ -249,7 +249,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/warehouse/customersearch?keyword={Uri.EscapeDataString(customerSearchKeyword ?? "")}&pageIndex={customerPageIndex}&pageSize={customerPageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/customersearch?keyword={Uri.EscapeDataString(customerSearchKeyword ?? "")}&pageIndex={customerPageIndex}&pageSize={customerPageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);

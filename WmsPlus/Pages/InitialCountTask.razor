@@ -128,7 +128,7 @@
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
                             <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
                         </svg>
-                        <span>新增任务侦自动化</span>
+                        <span>新增任务(非自动化)</span>
                     </button>
                     <button class="toolbar-btn" @onclick="HandleCopy">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
@@ -162,7 +162,11 @@
                             @foreach (var col in columnConfigs.Where(c => c.Visible))
                             {
                                 var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
-                                if (col.Sortable)
+                                if (col.FieldKey == "Checkbox")
+                                {
+                                    <th style="@widthStyle">@col.DisplayName</th>
+                                }
+                                else if (col.Sortable)
                                 {
                                     <th style="@widthStyle" class="sortable">
                                         @col.DisplayName
@@ -200,7 +204,16 @@
                                     @foreach (var col in columnConfigs.Where(c => c.Visible))
                                     {
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
-                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                        if (col.FieldKey == "Checkbox")
+                                        {
+                                            <td style="@widthStyle; text-align:center;">
+                                                <input type="checkbox" class="row-checkbox" />
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                        }
                                     }
                                     <td><button class="action-btn" title="操作"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><circle cx="8" cy="3" r="1" fill="#1890FF"/><circle cx="8" cy="8" r="1" fill="#1890FF"/><circle cx="8" cy="13" r="1" fill="#1890FF"/></svg></button></td>
                                 </tr>
@@ -410,7 +423,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
                 var today = DateTime.Today;
                 var dateFromStr = today.ToString("yyyy-MM-dd");
                 var dateToStr = today.ToString("yyyy-MM-dd");
@@ -423,7 +435,7 @@
                         dateToStr = parts[1];
                     }
                 }
-                var url = $"{ApiBaseUrl}/api/InitialCountTask/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
+                var url = $"{ApiConfig.BaseUrl}/api/InitialCountTask/search?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.DocumentNumber))
                 url += $"&documentNumber={Uri.EscapeDataString(query.DocumentNumber)}";
             if (!string.IsNullOrWhiteSpace(query.CountStaff))
@@ -489,6 +501,7 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
+            new() { FieldKey = "Checkbox", OriginalName = "☑", DisplayName = "☑", Visible = true, Width = 35, DefaultWidth = 35 },
             new() { FieldKey = "ItemNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 45, DefaultWidth = 45 },
             new() { FieldKey = "DocumentNumber", OriginalName = "单据号码", DisplayName = "单据号码", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "DocumentDate", OriginalName = "单据日期", DisplayName = "单据日期", Visible = true, Width = 85, DefaultWidth = 85, Sortable = true },
@@ -605,6 +618,7 @@
     // 获取单元格渲染值
     private object GetCellValue(InitialCountTaskModel item, string fieldKey) => fieldKey switch
     {
+        "Checkbox" => "",
         "ItemNo" => item.ItemNo,
         "DocumentNumber" => item.DocumentNumber,
         "DocumentDate" => item.DocumentDate.ToString("yyyy-MM-dd"),

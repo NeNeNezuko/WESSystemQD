@@ -101,6 +101,8 @@ public class OutboundOrderController : ControllerBase
                 CustomerName = x.M?.CUS_NAME ?? "",
                 BatId = x.M?.BAT_ID ?? "",
                 IsClosed = (x.M?.CLS_ID ?? "N") == "Y",
+                SourceDocType = x.M?.BIL_ID ?? "",
+                SourceDocNo = x.M?.BIL_NO ?? "",
                 // 表身明细字段
                 PrdNo = x.T.PRD_NO ?? "",
                 PrdName = x.T.PRD_NAME ?? "",
@@ -198,6 +200,8 @@ public class OutboundOrderDto
     public string CustomerName { get; set; } = "";
     public string BatId { get; set; } = "";
     public bool IsClosed { get; set; }
+    public string SourceDocType { get; set; } = "";
+    public string SourceDocNo { get; set; } = "";
     // 表身明细字段
     public string PrdNo { get; set; } = "";
     public string PrdName { get; set; } = "";

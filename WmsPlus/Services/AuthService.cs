@@ -25,7 +25,6 @@ namespace WmsPlus.Services
         private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
         private readonly TokenProvider _tokenProvider;
-        private const string ApiBaseUrl = "http://localhost:5102";
 
         public event Action? OnAuthStateChanged;
 
@@ -61,7 +60,7 @@ namespace WmsPlus.Services
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/login", new
+                var response = await _httpClient.PostAsJsonAsync($"{ApiConfig.BaseUrl}/api/auth/login", new
                 {
                     Username = username,
                     Password = password
@@ -93,7 +92,7 @@ namespace WmsPlus.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, $"{ApiBaseUrl}/api/auth/changepassword")
+                var request = new HttpRequestMessage(HttpMethod.Post, $"{ApiConfig.BaseUrl}/api/auth/changepassword")
                 {
                     Content = JsonContent.Create(new
                     {
@@ -132,7 +131,7 @@ namespace WmsPlus.Services
         }
 
         /// <summary>
-        /// 向后端验证 token 是否仍然有效
+        /// 向后端验证 token 是否仍然有效（带5秒超时）
         /// </summary>
         public async Task<bool> ValidateTokenAsync()
         {
@@ -140,11 +139,17 @@ namespace WmsPlus.Services
 
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiBaseUrl}/api/auth/check");
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiConfig.BaseUrl}/api/auth/check");
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.SendAsync(request, cts.Token);
                 return response.IsSuccessStatusCode;
+            }
+            catch (OperationCanceledException)
+            {
+                // 超时，视为无效
+                return false;
             }
             catch
             {

@@ -127,11 +127,11 @@
                     </label>
                 </div>
 
-                <!-- 主题（带搜索图标 + 复选框组） -->
+                <!-- 主管（带搜索图标 + 复选框组） -->
                 <div class="form-item">
-                    <label class="form-label">主题</label>
+                    <label class="form-label">主管</label>
                     <div class="input-with-search">
-                        <input type="text" class="form-input" placeholder="" @bind="query.Theme" />
+                        <input type="text" class="form-input" placeholder="" @bind="query.Manager" />
                         <button class="search-icon-btn" title="搜索">
                             <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
                                 <circle cx="6.5" cy="6.5" r="5" stroke="#999999" stroke-width="1.2" fill="none"/>
@@ -440,8 +440,7 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
-            var url = $"{ApiBaseUrl}/api/UserSetting/search?userCode={Uri.EscapeDataString(query.UserCode)}&userName={Uri.EscapeDataString(query.UserName)}&dept={Uri.EscapeDataString(query.Dept)}&includeSub={query.IncludeSub.ToString().ToLower()}&showExpired={query.ShowExpired.ToString().ToLower()}&theme={Uri.EscapeDataString(query.Theme)}&sunlikeUser={query.SunlikeUser.ToString().ToLower()}&vendor={query.Vendor.ToString().ToLower()}&isEmpty={query.IsEmpty.ToString().ToLower()}";
+            var url = $"{ApiConfig.BaseUrl}/api/UserSetting/search?userCode={Uri.EscapeDataString(query.UserCode)}&userName={Uri.EscapeDataString(query.UserName)}&dept={Uri.EscapeDataString(query.Dept)}&includeSub={query.IncludeSub.ToString().ToLower()}&showExpired={query.ShowExpired.ToString().ToLower()}&manager={Uri.EscapeDataString(query.Manager)}&sunlikeUser={query.SunlikeUser.ToString().ToLower()}&vendor={query.Vendor.ToString().ToLower()}&isEmpty={query.IsEmpty.ToString().ToLower()}";
 
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
@@ -482,17 +481,15 @@
     {
         defaultColumnConfigs = new List<ColumnConfig>
         {
-            new() { FieldKey = "RowNo", OriginalName = "填次", DisplayName = "填次", Visible = true, Width = 50, DefaultWidth = 50 },
+            new() { FieldKey = "RowNo", OriginalName = "项次", DisplayName = "项次", Visible = true, Width = 50, DefaultWidth = 50 },
             new() { FieldKey = "UserCode", OriginalName = "用户代号", DisplayName = "用户代号", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "UserName", OriginalName = "用户名称", DisplayName = "用户名称", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true },
             new() { FieldKey = "DeptCode", OriginalName = "部门代号", DisplayName = "部门代号", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
             new() { FieldKey = "DeptName", OriginalName = "部门名称", DisplayName = "部门名称", Visible = true, Width = 90, DefaultWidth = 90 },
             new() { FieldKey = "ParentDept", OriginalName = "所属部门", DisplayName = "所属部门", Visible = true, Width = 90, DefaultWidth = 90, Sortable = true },
             new() { FieldKey = "ParentDeptName", OriginalName = "所属部门名称", DisplayName = "所属部门名称", Visible = true, Width = 110, DefaultWidth = 110 },
-            new() { FieldKey = "Email", OriginalName = "邮箱", DisplayName = "邮箱", Visible = true, Width = 140, DefaultWidth = 140 },
-            new() { FieldKey = "IsAdmin", OriginalName = "管理员否", DisplayName = "管理员否", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
-            new() { FieldKey = "IsResigned", OriginalName = "离职用户", DisplayName = "离职用户", Visible = true, Width = 70, DefaultWidth = 70, Sortable = true },
-            new() { FieldKey = "Supplier", OriginalName = "供应商", DisplayName = "供应商", Visible = true, Width = 80, DefaultWidth = 80 }
+            new() { FieldKey = "CategoryCode", OriginalName = "所属类别", DisplayName = "所属类别", Visible = true, Width = 80, DefaultWidth = 80, Sortable = true },
+            new() { FieldKey = "CategoryName", OriginalName = "所属类别名称", DisplayName = "所属类别名称", Visible = true, Width = 100, DefaultWidth = 100 }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -606,10 +603,8 @@
         "DeptName" => item.DeptName,
         "ParentDept" => item.ParentDept,
         "ParentDeptName" => item.ParentDeptName,
-        "Email" => item.Email,
-        "IsAdmin" => item.IsAdmin,
-        "IsResigned" => item.IsResigned,
-        "Supplier" => item.Supplier,
+        "CategoryCode" => item.CategoryCode,
+        "CategoryName" => item.CategoryName,
         _ => ""
     };
 

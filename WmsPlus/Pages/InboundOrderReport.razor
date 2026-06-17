@@ -626,7 +626,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
 
             // 解析DateRange
             var dateFromStr = "";
@@ -642,7 +641,7 @@
             }
 
             // 构建URL
-            var url = $"{ApiBaseUrl}/api/InboundOrderReport/detailSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/InboundOrderReport/detailSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.ErpApNo)) url += $"&erpApNo={Uri.EscapeDataString(query.ErpApNo)}";
             url += $"&erpApNoFuzzy={query.ErpApNoFuzzy}";
             if (!string.IsNullOrWhiteSpace(query.BilNoFrom)) url += $"&bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
@@ -688,7 +687,6 @@
     {
         try
         {
-            const string ApiBaseUrl = "http://localhost:5102";
 
             // 解析DateRange
             var dateFromStr = "";
@@ -704,7 +702,7 @@
             }
 
             // 构建URL
-            var url = $"{ApiBaseUrl}/api/InboundOrderReport/statsSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
+            var url = $"{ApiConfig.BaseUrl}/api/InboundOrderReport/statsSearch?dateFrom={dateFromStr}&dateTo={dateToStr}";
             if (!string.IsNullOrWhiteSpace(query.ErpApNo)) url += $"&erpApNo={Uri.EscapeDataString(query.ErpApNo)}";
             url += $"&erpApNoFuzzy={query.ErpApNoFuzzy}";
             if (!string.IsNullOrWhiteSpace(query.BilNoFrom)) url += $"&bilNoFrom={Uri.EscapeDataString(query.BilNoFrom)}";
@@ -1212,7 +1210,7 @@
     {
         try
         {
-            var url = $"http://localhost:5102/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/prdsearch?keyword={Uri.EscapeDataString(productSearchKeyword ?? "")}&pageIndex={productPageIndex}&pageSize={productPageSize}";
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);
