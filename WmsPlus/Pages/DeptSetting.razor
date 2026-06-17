@@ -70,17 +70,53 @@
             </div>
 
             <div class="query-form">
-                <!-- 部门代号 -->
-                <div class="form-item">
-                    <label class="form-label">部门代号</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.Dep" />
+                <!-- 查询模式切换 -->
+                <div class="query-mode-toggle">
+                    <label class="mode-radio">
+                        @if (queryMode == "tree")
+                        {
+                            <input type="radio" name="queryMode_dept" checked @onclick="@(() => queryMode = "tree")" />
+                        }
+                        else
+                        {
+                            <input type="radio" name="queryMode_dept" @onclick="@(() => queryMode = "tree")" />
+                        }
+                        <span>树状查询</span>
+                    </label>
+                    <label class="mode-radio">
+                        @if (queryMode == "condition")
+                        {
+                            <input type="radio" name="queryMode_dept" checked @onclick="@(() => queryMode = "condition")" />
+                        }
+                        else
+                        {
+                            <input type="radio" name="queryMode_dept" @onclick="@(() => queryMode = "condition")" />
+                        }
+                        <span>条件查询</span>
+                    </label>
                 </div>
 
-                <!-- 名称 -->
-                <div class="form-item">
-                    <label class="form-label">名称</label>
-                    <input type="text" class="form-input" placeholder="" @bind="query.Name" />
-                </div>
+                @if (queryMode == "condition")
+                {
+                    <!-- 部门代号 -->
+                    <div class="form-item">
+                        <label class="form-label">部门代号</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.Dep" />
+                    </div>
+
+                    <!-- 名称 -->
+                    <div class="form-item">
+                        <label class="form-label">名称</label>
+                        <input type="text" class="form-input" placeholder="" @bind="query.Name" />
+                    </div>
+                }
+                else
+                {
+                    <!-- 树状查询占位 -->
+                    <div class="tree-placeholder">
+                        <span class="placeholder-text">树状查询（待实现）</span>
+                    </div>
+                }
 
                 <!-- 查询按钮 -->
                 <div class="form-item query-btn-wrapper">
@@ -164,7 +200,12 @@
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
                                         <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
                                     }
-                                    <td><button class="action-btn" title="编辑" @onclick="() => HandleEdit(item)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1890FF" stroke-width="1.5"><path d="M11 3l3 3m0 0l-7 7H4v-3l7-7z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                                    <td class="col-action">
+                                        <div class="action-btn-group">
+                                            <button class="action-text-btn" @onclick="() => HandleEdit(item)">编辑</button>
+                                            <button class="action-text-btn action-delete-btn" @onclick="() => HandleDelete(item)">删除</button>
+                                        </div>
+                                    </td>
                                 </tr>
                             }
                         }
@@ -293,12 +334,14 @@
     private string exportFileName = "";
     private bool showColumnSettingsDialog = false;
     private string columnSearchKeyword = "";
+    private string queryMode = "condition";
     private List<ColumnConfig> columnConfigs = new();
     private List<ColumnConfig> defaultColumnConfigs = new();
     private DeptSettingQuery query = new();
     private List<DeptSettingModel> dataSource = new();
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -345,8 +388,37 @@
     }
 
     private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
-    private void HandleEdit(DeptSettingModel item) { }
+    private void HandleAddNew() { OpenTabCallback?.Invoke("dept-setting-add", "部门设定*新增"); }
+    private void HandleEdit(DeptSettingModel item) { OpenTabCallback?.Invoke($"dept-setting-edit-{item.Dep}", $"部门设定*编辑"); }
+
+    private async Task HandleDelete(DeptSettingModel item)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"确定要删除部门 [{item.Dep}] {item.Name} 吗？");
+        if (!confirmed) return;
+
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/DeptSetting/{Uri.EscapeDataString(item.Dep)}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Delete, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await LoadData();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", $"删除失败: {response?.Message ?? "未知错误"}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "删除部门失败: {Dep}", item.Dep);
+            await JS.InvokeVoidAsync("alert", $"删除失败: {ex.Message}");
+        }
+    }
 
     private async Task HandleExport()
     {
@@ -372,7 +444,7 @@
     {
         try
         {
-            var url = "http://localhost:5102/api/DeptSetting/search";
+            var url = $"{ApiConfig.BaseUrl}/api/DeptSetting/search";
             if (!string.IsNullOrWhiteSpace(query.Dep))
                 url += $"?dep={Uri.EscapeDataString(query.Dep)}";
             if (!string.IsNullOrWhiteSpace(query.Name))
@@ -435,9 +507,10 @@
         {
             new() { FieldKey = "Dep", OriginalName = "部门代号", DisplayName = "部门代号", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
             new() { FieldKey = "Name", OriginalName = "名称", DisplayName = "名称", Visible = true, Width = 200, DefaultWidth = 200, Sortable = true },
-            new() { FieldKey = "Up", OriginalName = "上层部门", DisplayName = "上层部门", Visible = true, Width = 140, DefaultWidth = 140, Sortable = true },
-            new() { FieldKey = "MakeId", OriginalName = "部门性质", DisplayName = "部门性质", Visible = true, Width = 120, DefaultWidth = 120, Sortable = false },
-            new() { FieldKey = "StopDd", OriginalName = "停用日期", DisplayName = "停用日期", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true }
+            new() { FieldKey = "Up", OriginalName = "上层部门", DisplayName = "上层部门", Visible = true, Width = 120, DefaultWidth = 120, Sortable = true },
+            new() { FieldKey = "UpName", OriginalName = "上层部门名称", DisplayName = "上层部门名称", Visible = true, Width = 140, DefaultWidth = 140, Sortable = false },
+            new() { FieldKey = "MakeId", OriginalName = "部门性质", DisplayName = "部门性质", Visible = true, Width = 100, DefaultWidth = 100, Sortable = false },
+            new() { FieldKey = "StopDd", OriginalName = "停用日期", DisplayName = "停用日期", Visible = true, Width = 100, DefaultWidth = 100, Sortable = true }
         };
         columnConfigs = defaultColumnConfigs.Select(c => new ColumnConfig
         {
@@ -546,6 +619,7 @@
         "Dep" => item.Dep,
         "Name" => item.Name,
         "Up" => item.Up,
+        "UpName" => item.UpName,
         "MakeId" => item.MakeId,
         "StopDd" => item.StopDd?.ToString("yyyy-MM-dd") ?? "",
         _ => ""

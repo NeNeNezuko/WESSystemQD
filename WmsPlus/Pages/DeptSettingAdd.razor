@@ -1,0 +1,235 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<DeptSettingAdd> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/dept-setting-add.css" />
+
+<div class="deptadd-page">
+    <!-- 顶部工具栏 -->
+    <div class="page-toolbar">
+        <button class="toolbar-btn primary-btn" @onclick="HandleSave">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 8.28a.75.75 0 011.06-1.06L6 9.94l6.72-6.72a.75.75 0 011.06 0z"/>
+            </svg>
+            <span>保存</span>
+        </button>
+        <button class="toolbar-btn primary-btn" @onclick="HandleSaveAndNew">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>新增</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleDelete">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M5.5 4h5l.5.5v9l-.5.5h-5L5 13.5v-9l.5-.5zM6 5v8h4V5H6z M4 3.5V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5zm8 0V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5z"/>
+            </svg>
+            <span>删除</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleColumnSettings">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+            </svg>
+            <span>栏位</span>
+        </button>
+        <button class="toolbar-btn" @onclick="HandleQuery">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                <circle cx="7" cy="7" r="5"/>
+                <line x1="11" y1="11" x2="15" y2="15" stroke="#666666" stroke-width="1.5"/>
+            </svg>
+            <span>查询</span>
+        </button>
+    </div>
+
+    <!-- 表单区域 -->
+    <div class="form-area-scroll">
+        <div class="form-section">
+            <div class="form-section-title">基本信息</div>
+
+            <div class="form-grid-3col">
+                <div class="form-item-add">
+                    <label class="form-label-add"><span class="required-mark">*</span>部门代号</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.Dep" @bind:event="oninput" disabled="@IsEditMode" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add"><span class="required-mark">*</span>部门名称</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.Name" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add">上层部门</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.Up" />
+                    <div class="input-search-icon" title="选择上层部门">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add">英文名称</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.EngName" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add">停用日期</label>
+                    <input type="date" class="form-input-add" @bind="model.StopDd" @bind:format="yyyy-MM-dd" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add">部门性质</label>
+                    <select class="form-select-add" @bind="model.MakeId">
+                        <option value=""></option>
+                        <option value="生产">生产</option>
+                        <option value="管理">管理</option>
+                        <option value="研发">研发</option>
+                        <option value="销售">销售</option>
+                        <option value="财务">财务</option>
+                        <option value="人事">人事</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-title">其他信息</div>
+            <div class="form-grid-3col">
+                <div class="form-item-add">
+                    <label class="form-label-add">群组代号</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.GroupId" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add">助记码</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.NamePy" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add">类型代号</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.TpId" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private DeptSettingAddModel model = new();
+    private bool isSaving = false;
+    private bool isLoading = false;
+
+    [Parameter] public string? EditDep { get; set; }
+
+    private bool IsEditMode => !string.IsNullOrWhiteSpace(EditDep);
+
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTab { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            await LoadDataForEdit();
+        }
+    }
+
+    // ===== 编辑模式：加载部门详情 =====
+    private async Task LoadDataForEdit()
+    {
+        isLoading = true;
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/DeptSetting/getByDep?dep={Uri.EscapeDataString(EditDep!)}";
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<DeptSettingAddModel>>(jsonOptions);
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                model = response.Data;
+            }
+            else
+            {
+                var msg = response?.Message ?? "加载数据失败";
+                await JS.InvokeVoidAsync("alert", $"加载失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载部门详情时发生错误");
+            await JS.InvokeVoidAsync("alert", $"加载失败: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // ===== 工具栏按钮事件 =====
+    private async Task HandleSave()
+    {
+        if (isSaving) return;
+
+        // 必填校验
+        if (string.IsNullOrWhiteSpace(model.Dep))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入部门代号");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            await JS.InvokeVoidAsync("alert", "请输入部门名称");
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var url = IsEditMode
+                ? $"{ApiConfig.BaseUrl}/api/DeptSetting/update"
+                : $"{ApiConfig.BaseUrl}/api/DeptSetting/create";
+            var httpMethod = IsEditMode ? HttpMethod.Put : HttpMethod.Post;
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+            var jsonContent = System.Text.Json.JsonSerializer.Serialize(model, jsonOptions);
+            var request = AuthHttpClient.CreateRequest(httpMethod, url, TokenProvider.Token);
+            request.Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<object>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                await JS.InvokeVoidAsync("alert", IsEditMode ? "修改成功" : "保存成功");
+            }
+            else
+            {
+                var msg = response?.Message ?? (IsEditMode ? "修改失败" : "保存失败");
+                await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "{(IsEditMode ? "修改" : "保存")}部门设定时发生错误");
+            await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task HandleSaveAndNew()
+    {
+        await HandleSave();
+        // 重置表单
+        model = new DeptSettingAddModel();
+        StateHasChanged();
+    }
+
+    private void HandleDelete() { /* TODO: 删除功能 */ }
+    private void HandleColumnSettings() { /* TODO: 栏位设置功能 */ }
+    private void HandleQuery() { /* TODO: 查询功能 */ }
+
+    // ===== API响应模型 =====
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+}

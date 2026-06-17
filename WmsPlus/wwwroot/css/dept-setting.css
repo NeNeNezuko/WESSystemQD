@@ -1,4 +1,4 @@
-﻿/* ========== 部门设定 - 样式 ========== */
+/* ========== 部门设定 - 样式 ========== */
 
 .dept-setting-page {
     width: 100%;
@@ -817,4 +817,86 @@
     border: 1px solid #d9d9d9;
     border-radius: 2px;
     outline: none;
+}
+
+/* ===== 查询模式切换（树状/条件） ===== */
+.query-mode-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.mode-radio {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+    font-size: 12px;
+    color: #666666;
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.mode-radio input {
+    display: none;
+}
+
+.mode-radio span {
+    pointer-events: none;
+}
+
+.mode-radio:hover {
+    color: #1890ff;
+    background-color: #f0f0f0;
+}
+
+/* 树状查询占位 */
+.tree-placeholder {
+    padding: 20px 10px;
+    text-align: center;
+}
+
+.placeholder-text {
+    font-size: 12px;
+    color: #999999;
+}
+
+/* ===== 操作列文字按钮组 ===== */
+.action-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+}
+
+.action-text-btn {
+    background: none;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    padding: 1px 8px;
+    font-size: 11px;
+    color: #1890ff;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.action-text-btn:hover {
+    border-color: #1890ff;
+    background-color: #e6f7ff;
+}
+
+.action-delete-btn {
+    color: #ff4d4f;
+}
+
+.action-delete-btn:hover {
+    border-color: #ff4d4f;
+    background-color: #fff1f0;
 }

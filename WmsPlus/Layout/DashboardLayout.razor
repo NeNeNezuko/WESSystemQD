@@ -111,18 +111,40 @@
             />
         }
 
-        <!-- 标签页栏 -->
-        <div class="dashboard-tags">
-            @foreach (var tab in tabs)
+        <!-- 标签页栏（带左右箭头导航） -->
+        <div class="tags-nav-wrapper">
+            <button class="tag-nav-btn tag-nav-left @(canScrollLeft ? "" : "disabled")"
+                    @onclick="ScrollTagsLeft" title="向左滚动">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            
+            <!-- 固定的工作台标签 -->
+            @if (tabs.Any(t => t.Id == "dashboard"))
             {
-                <div class="tag-item @(tab.IsActive ? "active" : "")" @onclick="() => SwitchTab(tab.Id)">
-                    <span>@tab.Title</span>
-                    @if (tab.Id != "dashboard")
-                    {
-                        <span class="tag-close" @onclick:stopPropagation @onclick="() => CloseTab(tab.Id)">×</span>
-                    }
+                var dashboardTab = tabs.First(t => t.Id == "dashboard");
+                <div class="tag-item fixed-tag @(dashboardTab.IsActive ? "active" : "")" @onclick="() => SwitchTab(dashboardTab.Id)">
+                    <span>@dashboardTab.Title</span>
                 </div>
             }
+            
+            <!-- 可滚动的其他标签 -->
+            <div class="dashboard-tags-scrollable" @ref="tagsContainerRef">
+                @foreach (var tab in tabs.Where(t => t.Id != "dashboard"))
+                {
+                    <div class="tag-item scrollable-tag @(tab.IsActive ? "active" : "")" @onclick="() => SwitchTab(tab.Id)">
+                        <span>@tab.Title</span>
+                        @if (tab.IsClosable)
+                        {
+                            <span class="tag-close" @onclick:stopPropagation @onclick="() => CloseTab(tab.Id)">×</span>
+                        }
+                    </div>
+                }
+            </div>
+            
+            <button class="tag-nav-btn tag-nav-right @(canScrollRight ? "" : "disabled")"
+                    @onclick="ScrollTagsRight" title="向右滚动">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+            </button>
         </div>
 
         <!-- 主内容区 -->
@@ -413,10 +435,34 @@
                     <ProductCodeSetting />
                 </div>
             }
+            @if (tabs.Any(t => t.Id == "product-code-setting-add"))
+            {
+                <div style="display:@(activeTabId == "product-code-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <ProductCodeSettingAdd />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("product-code-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("product-code-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <ProductCodeSettingAdd EditPrdNo="@GetEditPrdNoFromTabId(activeTabId)" />
+                </div>
+            }
             @if (tabs.Any(t => t.Id == "mid-class-setting"))
             {
                 <div style="display:@(activeTabId == "mid-class-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <MidClassSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "mid-class-setting-add"))
+            {
+                <div style="display:@(activeTabId == "mid-class-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <MidClassSettingAdd />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("mid-class-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("mid-class-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <MidClassSettingAdd EditIdxNo="@GetEditIdxNoFromTabId(activeTabId)" />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-nature-setting"))
@@ -442,6 +488,18 @@
             {
                 <div style="display:@(activeTabId == "warehouse-code-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <WarehouseCodeSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "warehouse-code-setting-add"))
+            {
+                <div style="display:@(activeTabId == "warehouse-code-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <WarehouseCodeSettingAdd />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("warehouse-code-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("warehouse-code-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <WarehouseCodeSettingAdd EditWh="@GetEditWhFromTabId(activeTabId)" />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "storage-location-detail"))
@@ -498,6 +556,18 @@
             {
                 <div style="display:@(activeTabId == "dept-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <DeptSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "dept-setting-add"))
+            {
+                <div style="display:@(activeTabId == "dept-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <DeptSettingAdd />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("dept-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("dept-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <DeptSettingAdd EditDep="@GetEditDepFromTabId(activeTabId)" />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "doc-type-setting"))
@@ -1025,6 +1095,11 @@
     private List<TabItem> tabs = new();
     private string activeTabId = "dashboard";
 
+    // ★ 标签栏滚动导航
+    private ElementReference tagsContainerRef;
+    private bool canScrollLeft = false;
+    private bool canScrollRight = false;
+
     // ★ 初始化标签页
     protected override void OnInitialized()
     {
@@ -1052,6 +1127,34 @@
     {
         if (tabId.StartsWith("inbound-notice-edit-"))
             return tabId.Replace("inbound-notice-edit-", "");
+        return "";
+    }
+
+    private string GetEditPrdNoFromTabId(string tabId)
+    {
+        if (tabId.StartsWith("product-code-setting-edit-"))
+            return tabId.Replace("product-code-setting-edit-", "");
+        return "";
+    }
+
+    private string GetEditWhFromTabId(string tabId)
+    {
+        if (tabId.StartsWith("warehouse-code-setting-edit-"))
+            return tabId.Replace("warehouse-code-setting-edit-", "");
+        return "";
+    }
+
+    private string GetEditIdxNoFromTabId(string tabId)
+    {
+        if (tabId.StartsWith("mid-class-setting-edit-"))
+            return tabId.Replace("mid-class-setting-edit-", "");
+        return "";
+    }
+
+    private string GetEditDepFromTabId(string tabId)
+    {
+        if (tabId.StartsWith("dept-setting-edit-"))
+            return tabId.Replace("dept-setting-edit-", "");
         return "";
     }
 
@@ -1100,6 +1203,53 @@
         }
 
         StateHasChanged();
+    }
+
+    // ★ 标签栏滚动导航方法
+    private async Task ScrollTagsLeft()
+    {
+        await JS.InvokeVoidAsync("scrollTagsContainer", tagsContainerRef, -200);
+        await UpdateArrowVisibility();
+    }
+
+    private async Task ScrollTagsRight()
+    {
+        await JS.InvokeVoidAsync("scrollTagsContainer", tagsContainerRef, 200);
+        await UpdateArrowVisibility();
+    }
+
+    private async Task UpdateArrowVisibility()
+    {
+        try
+        {
+            var result = await JS.InvokeAsync<bool[]>("getTagsScrollState", tagsContainerRef);
+            if (result != null && result.Length >= 2)
+            {
+                bool newCanScrollLeft = result[0];
+                bool newCanScrollRight = result[1];
+                
+                // 只有当状态真正改变时才更新并触发重渲染
+                if (canScrollLeft != newCanScrollLeft || canScrollRight != newCanScrollRight)
+                {
+                    canScrollLeft = newCanScrollLeft;
+                    canScrollRight = newCanScrollRight;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch { /* 忽略 SSR 等异常 */ }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await UpdateArrowVisibility();
+            }
+            catch { /* JS 未就绪时忽略 */ }
+        }
     }
 
     // ★ 切换侧边栏收缩/展开
