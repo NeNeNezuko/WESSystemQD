@@ -19,12 +19,14 @@
             </button>
             <span class="page-title">储位下架单报告</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/><rect x="3" y="11" width="18" height="2" rx="1"/><rect x="3" y="16" width="18" height="2" rx="1"/>
                 </svg>
             </button>
+</div>
+        <div class="header-right">
         </div>
     </div>
 
@@ -62,16 +64,12 @@
         </div>
 
         <div class="table-panel">
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <!-- 内层选项卡：明细表 | 统计表 -->
-                    <div class="inner-tab-bar-inline">
-                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">明细表</div>
-                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">统计表</div>
-                    </div>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport"><svg viewBox="0 0 16 16" width="14" height="14" fill="#666666"><path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><span>导出</span></button>
-                </div>
+            <!-- 内层选项卡：明细表 | 统计表 -->
+            <div class="inner-tab-bar-inline">
+                <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">明细表</div>
+                <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">统计表</div>
             </div>
+                    <button class="toolbar-btn export-btn" @onclick="HandleExport"><svg viewBox="0 0 16 16" width="14" height="14" fill="#666666"><path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><span>导出</span></button>
 
             <div class="data-table-container">
                 <table class="data-table">
@@ -107,8 +105,7 @@
     </div>
 </div>
 
-@if(showExportDialog){
-<div class="export-dialog-overlay" @onclick="CancelExport"><div class="export-dialog" @onclick:stopPropagation><div class="export-dialog-header"><span>导出 Excel</span><button class="export-dialog-close" @onclick="CancelExport">&times;</button></div><div class="export-dialog-body"><label class="export-label">文件名</label><input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput"/></div><div class="export-dialog-footer"><button class="export-btn-cancel" @onclick="CancelExport">取消</button><button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button></div></div></div>}
+@if(showExportDialog){<div class="export-dialog-overlay" @onclick="CancelExport"><div class="export-dialog" @onclick:stopPropagation><div class="export-dialog-header"><span>导出 Excel</span><button class="export-dialog-close" @onclick="CancelExport">&times;</button></div><div class="export-dialog-body"><label class="export-label">文件名</label><input type="text" class="export-filename-input" @bind="exportFileName" @bind:event="oninput"/></div><div class="export-dialog-footer"><button class="export-btn-cancel" @onclick="CancelExport">取消</button><button class="export-btn-confirm" @onclick="ConfirmExport">确认导出</button></div></div></div>}
 @if(showColumnSettingsDialog){
 <div class="column-settings-overlay" @onclick="CloseColumnSettings"><div class="column-settings-dialog" @onclick:stopPropagation><div class="column-settings-header"><span>栏位设计</span><button class="column-settings-close" @onclick="CloseColumnSettings">&times;</button></div><div class="column-settings-search"><input type="text" class="column-search-input" placeholder="搜索栏位原名..." @bind="columnSearchKeyword" @bind:event="oninput"/></div><div class="column-settings-body"><table class="column-settings-table"><thead><tr><th class="col-seq">项次</th><th class="col-visible">显示否</th><th class="col-original">原栏位名</th><th class="col-display">栏位标题</th><th class="col-width">宽度</th></tr></thead><tbody>@for(int i=0;i<FilteredColumnConfigs.Count;i++){var col=FilteredColumnConfigs[i];var idx=columnConfigs.IndexOf(col)+1;<tr><td class="col-seq">@idx</td><td class="col-visible"><label class="toggle-switch"><input type="checkbox" checked="@col.Visible" @onchange="@((ChangeEventArgs e)=>col.Visible=(bool)e.Value!)"/><span class="toggle-slider"></span></label></td><td class="col-original">@col.OriginalName</td><td class="col-display"><input type="text" class="col-title-input" value="@col.DisplayName" @onchange="@((ChangeEventArgs e)=>col.DisplayName=e.Value?.ToString()??col.OriginalName)"/></td><td class="col-width"><input type="number" class="col-width-input" value="@col.Width" min="0" max="500" @onchange="@((ChangeEventArgs e)=>{if(int.TryParse(e.Value?.ToString(),out var w))col.Width=w;})"/></td></tr>}</tbody></table></div><div class="column-settings-footer"><div class="footer-left"><button class="col-select-all" @onclick="SelectAllColumns">全选</button><button class="col-restore-default" @onclick="RestoreDefaultColumns">恢复默认</button></div><div class="footer-right"><button class="col-btn-confirm" @onclick="ConfirmColumnSettings">确定</button><button class="col-btn-cancel" @onclick="CancelColumnSettings">取消</button></div></div></div></div>}
 

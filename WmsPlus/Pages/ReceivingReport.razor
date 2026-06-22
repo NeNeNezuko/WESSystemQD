@@ -1,4 +1,4 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ILogger<ReceivingReport> _logger
@@ -20,21 +20,30 @@
             </button>
             <span class="page-title">收货单报表</span>
         </div>
-        <div class="header-right">
-            <button class="header-toolbar-btn" @onclick="HandleTypeConfig">
+        <div class="header-center">
+        <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
+                    <rect x="3" y="6" width="18" height="2" rx="1"/>
+                    <rect x="3" y="11" width="18" height="2" rx="1"/>
+                    <rect x="3" y="16" width="18" height="2" rx="1"/>
+                </svg>
+            </button>
+    </div>
+    <div class="header-right">
+            <button class="header-action-btn" @onclick="HandleTypeConfig">
                 <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                     <path d="M3 3h10v2H3V3zm0 4h7v2H3V7zm0 4h10v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>
                 </svg>
                 <span>类型</span>
             </button>
-            <button class="header-toolbar-btn" @onclick="HandleExport">
+            <button class="header-action-btn" @onclick="HandleExport">
                 <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                     <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
                 </svg>
                 <span>导出Excel</span>
             </button>
-            <button class="header-toolbar-btn" @onclick="HandlePrint">
+            <button class="header-action-btn" @onclick="HandlePrint">
                 <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                     <path d="M4 2h8v3H4V2zM3 6h10v6H3V6z" stroke="#666666" stroke-width="1.2" fill="none"/>
                     <line x1="6" y1="13" x2="6" y2="15" stroke="#666666" stroke-width="1.2"/>
@@ -42,18 +51,11 @@
                 </svg>
                 <span>打印</span>
             </button>
-            <button class="header-toolbar-btn" @onclick="HandleColumnDesign">
+            <button class="header-action-btn" @onclick="HandleColumnDesign">
                 <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                     <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" stroke="#666666" stroke-width="1" fill="none"/>
                 </svg>
                 <span>类型设计</span>
-            </button>
-            <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
-                    <rect x="3" y="6" width="18" height="2" rx="1"/>
-                    <rect x="3" y="11" width="18" height="2" rx="1"/>
-                    <rect x="3" y="16" width="18" height="2" rx="1"/>
-                </svg>
             </button>
         </div>
     </div>
@@ -156,26 +158,20 @@
                 </div>
 
                 <!-- 货品名称 + 模糊checkbox -->
-                <div class="form-item">
+                <div class="form-item-fuzzy">
                     <label class="form-label">货品名称</label>
-                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" style="flex:1;" />
-                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
-                            <input type="checkbox" style="width:16px;height:16px;margin-right:4px;" checked="@query.PrdNameFuzzy" @onchange="@((ChangeEventArgs e) => query.PrdNameFuzzy = (bool)e.Value!)" />
-                            模糊
-                        </label>
+                    <div class="form-input-wrapper">
+                        <input type="text" class="form-input" placeholder="" @bind="query.PrdName" />
+                        <label class="fuzzy-checkbox"><input type="checkbox" @bind="query.PrdNameFuzzy" /> <span>模糊</span></label>
                     </div>
                 </div>
 
-                <!-- 仓库 + 含下属checkbox -->
-                <div class="form-item">
+                <!-- 仓库 + 含下属checkbox (A9 Pattern) -->
+                <div class="form-item-with-check">
                     <label class="form-label">仓库</label>
-                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                        <WarehouseCodeInput @bind-Value="query.Wh" style="flex:1;" />
-                        <label style="display:flex;align-items:center;cursor:pointer;font-size:13px;color:#666666;white-space:nowrap;">
-                            <input type="checkbox" style="width:16px;height:16px;margin-right:4px;" checked="@query.IncludeOffShelf" @onchange="@((ChangeEventArgs e) => query.IncludeOffShelf = (bool)e.Value!)" />
-                            含下属
-                        </label>
+                    <div class="input-check-row">
+                        <WarehouseCodeInput @bind-Value="query.Wh" HideLabel="true" />
+                        <label class="inline-check-label"><input type="checkbox" @bind="query.IncludeOffShelf" /> <span>含下属</span></label>
                     </div>
                 </div>
 
@@ -194,19 +190,10 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
-            <!-- 顶部工具栏：内层选项卡 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <!-- 内层选项卡：明细表 | 统计表 -->
-                    <div class="inner-tab-bar-inline">
-                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
-                            明细表
-                        </div>
-                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
-                            统计表
-                        </div>
-                    </div>
-                </div>
+            <!-- 内层选项卡：明细表 | 统计表 -->
+            <div class="inner-tab-bar-inline">
+                <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">明细表</div>
+                <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">统计表</div>
             </div>
 
             <!-- 数据表格 -->
@@ -328,7 +315,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+</div>
     </div>
 </div>
 

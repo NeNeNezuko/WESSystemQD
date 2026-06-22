@@ -1,4 +1,4 @@
-﻿/* ========== 拣货单报表页面根容器 ========== */
+/* ========== 拣货单报表页面根容器 ========== */
 .picking-order-report-page {
     width: 100%;
     height: 100%;
@@ -11,22 +11,18 @@
 .picking-order-report-page .inner-tab-bar{display:flex;align-items:center;gap:0;padding:0 12px;background-color:#ffffff;border-bottom:1px solid #e8e8e8;min-height:32px}
 .picking-order-report-page .inner-tab-item{padding:6px 16px;font-size:12px;color:#666666;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s ease;white-space:nowrap}
 .picking-order-report-page .inner-tab-item:hover{color:#1890ff}.picking-order-report-page .inner-tab-item.active{color:#1890ff;border-bottom-color:#1890ff;font-weight:500}
-.picking-order-report-page .page-header{display:flex;justify-content:space-between;align-items:center;padding:4px 12px;background-color:#fafafa;border-bottom:1px solid #e8e8e8;min-height:32px;position:relative}
-.picking-order-report-page .header-left{display:flex;align-items:center;gap:8px}
-.picking-order-report-page .favorite-btn{background:none;border:1px solid #d9d9d9;border-radius:2px;padding:2px 4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease}
-.picking-order-report-page .favorite-btn:hover{border-color:#FFD700;transform:scale(1.05)}
-.picking-order-report-page .favorite-btn.favorited{border-color:#FFD700;animation:starPulse 0.5s ease}
-@keyframes starPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
-.picking-order-report-page .page-title{font-size:12px;font-weight:500;color:#333333}
-.picking-order-report-page .header-right{display:flex;align-items:center;gap:4px}
-.picking-order-report-page .collapse-btn-fixed{position:absolute;left:308px;top:50%;transform:translateY(-50%);background:none;border:1px solid #d9d9d9;padding:3px 5px;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;z-index:10}
-.picking-order-report-page .collapse-btn-fixed:hover{border-color:#1890ff;background-color:#f0f0f0}
+
+.picking-order-report-page 
+.picking-order-report-page 
+.picking-order-report-page 
+
+.picking-order-report-page 
+.picking-order-report-page 
 .picking-order-report-page .collapse-btn-fixed:hover svg{fill:#1890ff}
-.picking-order-report-page .collapse-btn-fixed.collapsed{background-color:#e6f7ff;border-color:#1890ff}
-.picking-order-report-page .favorite-success-toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:1000;animation:slideInTop 0.3s ease,fadeOut 0.3s ease 1.7s forwards}
-@keyframes slideInTop{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes fadeOut{from{opacity:1}to{opacity:0}}
-.picking-order-report-page .toast-content{display:flex;align-items:center;gap:6px;background-color:#ffffff;border:1px solid #b7eb8f;border-radius:3px;padding:6px 14px;box-shadow:0 2px 6px rgba(0,0,0,0.12);color:#333333;font-size:12px}
+.picking-order-report-page 
+.picking-order-report-page 
+
+.picking-order-report-page 
 .picking-order-report-page .page-content {flex:1;display:flex;gap:0;overflow:hidden;margin-top:0;
     min-height: 0;}
 .picking-order-report-page .query-panel{width:300px;min-width:300px;background-color:#ffffff;border:1px solid #d9d9d9;border-right:none;margin-right:8px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;transition:width 0.3s ease,min-width 0.3s ease,opacity 0.3s ease,padding 0.3s ease}
@@ -39,17 +35,6 @@
 .picking-order-report-page .settings-dropdown-item{padding:8px 16px;font-size:13px;color:#333333;cursor:pointer;transition:background-color 0.15s;white-space:nowrap}
 .picking-order-report-page .settings-dropdown-item:hover{background-color:#f5f5f5}
 .picking-order-report-page .query-form{padding:8px 10px;display:flex;flex-direction:column;gap:8px;overflow:visible}
-.picking-order-report-page .form-item{display:flex;flex-direction:row;align-items:stretch;height:30px;border:1px solid #d9d9d9;border-radius:2px;background-color:#ffffff;overflow:visible;position:relative}
-.picking-order-report-page .form-item *{margin:0;padding:0;box-sizing:border-box;border:none;outline:none}
-.picking-order-report-page .form-label{font-size:12px;color:#333333;font-weight:400;padding:0 8px;white-space:nowrap;background-color:#fafafa;border-right:1px solid #e8e8e8;display:flex;align-items:center;justify-content:center}
-.picking-order-report-page .form-input{width:100%;padding:0 6px;font-size:12px;color:#333333;background-color:transparent}
-.picking-order-report-page .select-wrapper{position:relative;display:flex;align-items:center;flex:1}
-.picking-order-report-page .form-select{width:100%;padding:0 24px 0 6px;font-size:12px;color:#333333;cursor:pointer;border:none;outline:none;background-image:linear-gradient(45deg,transparent 50%,#ffffff 50%);background-size:18px;background-position:calc(100% - 2px) center;background-repeat:no-repeat;-webkit-appearance:none;-moz-appearance:none;appearance:none}
-.picking-order-report-page .form-select::-ms-expand{display:none}
-.picking-order-report-page .select-arrow{position:absolute;right:6px;top:50%;transform:translateY(-50%);pointer-events:none}
-.picking-order-report-page .query-btn-wrapper{margin-top:4px}
-.picking-order-report-page .query-submit-btn{width:100%;height:26px;background-color:#1890ff;color:#ffffff;border:none;border-radius:2px;font-size:12px;font-weight:400;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.3s}
-.picking-order-report-page .query-submit-btn:hover{background-color:#40a9ff}
 .picking-order-report-page .table-panel{flex:1;display:flex;flex-direction:column;background-color:#ffffff;overflow:hidden;border-left:1px solid #e8e8e8}
 .picking-order-report-page .table-toolbar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid #e8e8e8;background-color:#fafafa;min-height:34px}
 .picking-order-report-page .toolbar-left{display:flex;gap:6px}

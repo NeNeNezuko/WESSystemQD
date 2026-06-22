@@ -9,43 +9,10 @@
 }
 
 /* 顶部标题栏 */
-.exceed-ctrl-page .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: #fff;
-    border-bottom: 1px solid #e8e8e8;
-    min-height: 44px;
-    flex-shrink: 0;
-}
 
-.exceed-ctrl-page .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.exceed-ctrl-page 
 
-.exceed-ctrl-page .favorite-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-}
-
-.exceed-ctrl-page .favorite-btn:hover {
-    background: #f0f0f0;
-}
-
-.exceed-ctrl-page .page-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-}
+.exceed-ctrl-page 
 
 /* 主内容区 - 左右分栏 */
 .exceed-ctrl-page .page-content {
@@ -358,7 +325,6 @@
     box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
 }
 
-/* ===== 保存成功提示 Toast ===== */
 .exceed-ctrl-page .save-success-toast {
     position: fixed;
     top: 60px;
@@ -378,18 +344,7 @@
     }
 }
 
-.exceed-ctrl-page .toast-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-size: 13px;
-    color: #333;
-    border-left: 3px solid #52c41a;
-}
+.exceed-ctrl-page 
 
 /* 空状态提示 */
 .exceed-ctrl-page .empty-hint {

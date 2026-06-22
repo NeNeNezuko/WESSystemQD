@@ -50,6 +50,153 @@
             <span class="favorite-text">入库通知变更单</span>
         </div>
     }
+
+    @* ===== 基础资料-货品 ===== *@
+    @if (showFavoriteProductCodeSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToProductCodeSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#E6F7FF" stroke="#1890FF" stroke-width="1.5"/><path d="M18 14h12M18 22h12M18 30h8" stroke="#1890FF" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="favorite-text">货品代号设定</span>
+        </div>
+    }
+    @if (showFavoriteMidClassSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToMidClassSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF7E6" stroke="#FA8C16" stroke-width="1.5"/><path d="M16 16l8 8-8 8" stroke="#FA8C16" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 24h10" stroke="#FA8C16" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="favorite-text">中类代号设定</span>
+        </div>
+    }
+    @if (showFavoriteStorageNatureSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToStorageNatureSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#F6FFED" stroke="#52C41A" stroke-width="1.5"/><rect x="16" y="14" width="16" height="6" rx="1" fill="#52C41A" opacity="0.3"/><rect x="16" y="24" width="16" height="6" rx="1" fill="#52C41A" opacity="0.3"/><rect x="16" y="34" width="10" height="6" rx="1" fill="#52C41A" opacity="0.3"/></svg>
+            <span class="favorite-text">储存性质设定</span>
+        </div>
+    }
+    @if (showFavoriteProductAttrSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToProductAttrSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF0F6" stroke="#EB2F96" stroke-width="1.5"/><circle cx="24" cy="18" r="5" stroke="#EB2F96" stroke-width="2" fill="none"/><path d="M16 30h16M18 36h12" stroke="#EB2F96" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="favorite-text">货品属性信息</span>
+        </div>
+    }
+    @if (showFavoriteProductMarkSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToProductMarkSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#F9F0FF" stroke="#722ED1" stroke-width="1.5"/><path d="M16 16h6v6h-6zM26 16h6v6h-6zM16 26h6v6h-6zM26 26h6v6h-6z" fill="#722ED1" opacity="0.25"/></svg>
+            <span class="favorite-text">货品特征码段</span>
+        </div>
+    }
+
+    @* ===== 基础资料-仓库 ===== *@
+    @if (showFavoriteWarehouseCodeSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToWarehouseCodeSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#E6F7FF" stroke="#1890FF" stroke-width="1.5"/><path d="M16 14h16v8H16zM16 26h16v12H16z" fill="#1890FF" opacity="0.15" stroke="#1890FF" stroke-width="1"/></svg>
+            <span class="favorite-text">仓库代号设定</span>
+        </div>
+    }
+    @if (showFavoriteStorageLocationDetail)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToStorageLocationDetail">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF7E6" stroke="#FA8C16" stroke-width="1.5"/><rect x="14" y="12" width="8" height="8" rx="1" fill="#FA8C16" opacity="0.25"/><rect x="26" y="12" width="8" height="8" rx="1" fill="#FA8C16" opacity="0.25"/><rect x="14" y="24" width="8" height="8" rx="1" fill="#FA8C16" opacity="0.25"/><rect x="26" y="24" width="8" height="8" rx="1" fill="#FA8C16" opacity="0.25"/><rect x="14" y="36" width="8" height="4" rx="1" fill="#FA8C16" opacity="0.25"/><rect x="26" y="36" width="8" height="4" rx="1" fill="#FA8C16" opacity="0.25"/></svg>
+            <span class="favorite-text">储位明细</span>
+        </div>
+    }
+    @if (showFavoriteWarehouseArrivalConfirm)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToWarehouseArrivalConfirm">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#F6FFED" stroke="#52C41A" stroke-width="1.5"/><path d="M16 24l6 6 10-12" stroke="#52C41A" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="favorite-text">到货确认</span>
+        </div>
+    }
+
+    @* ===== 基础资料-策略 ===== *@
+    @if (showFavoriteWaveStrategy)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToWaveStrategy">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF1F0" stroke="#F5222D" stroke-width="1.5"/><path d="M16 28c0-6 4-10 8-14s8-4 8 0" stroke="#F5222D" stroke-width="2.5" fill="none"/></svg>
+            <span class="favorite-text">波次策略</span>
+        </div>
+    }
+    @if (showFavoritePickStrategy)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToPickStrategy">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#E6F7FF" stroke="#1890FF" stroke-width="1.5"/><path d="M18 32l6-10 6 10H18z" fill="#1890FF" opacity="0.2" stroke="#1890FF" stroke-width="1.5"/></svg>
+            <span class="favorite-text">拣货策略</span>
+        </div>
+    }
+    @if (showFavoriteUnshelveStrategy)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToUnshelveStrategy">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF7E6" stroke="#FA8C16" stroke-width="1.5"/><path d="M18 16l6 14 6-14H18z" fill="#FA8C16" opacity="0.2" stroke="#FA8C16" stroke-width="1.5"/></svg>
+            <span class="favorite-text">下架策略</span>
+        </div>
+    }
+
+    @* ===== 基础资料-其他 ===== *@
+    @if (showFavoriteDeptSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToDeptSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#F9F0FF" stroke="#722ED1" stroke-width="1.5"/><circle cx="24" cy="20" r="6" stroke="#722ED1" stroke-width="2" fill="none"/><path d="M24 28v8M20 33h8" stroke="#722ED1" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="favorite-text">部门设定</span>
+        </div>
+    }
+    @if (showFavoriteDocTypeSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToDocTypeSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#E6F7FF" stroke="#1890FF" stroke-width="1.5"/><path d="M16 14h16M16 22h12M16 30h14" stroke="#1890FF" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="favorite-text">单据类别设定</span>
+        </div>
+    }
+    @if (showFavoriteCountReasonSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToCountReasonSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF1F0" stroke="#F5222D" stroke-width="1.5"/><path d="M18 18l12 12M30 18L18 30" stroke="#F5222D" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="favorite-text">查盘/原因设定</span>
+        </div>
+    }
+    @if (showFavoriteNoticeSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToNoticeSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF7E6" stroke="#FA8C16" stroke-width="1.5"/><path d="M24 14v8h8" stroke="#FA8C16" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="24" cy="26" r="10" stroke="#FA8C16" stroke-width="2" fill="none"/></svg>
+            <span class="favorite-text">消息通知设定</span>
+        </div>
+    }
+    @if (showFavoriteIndustryCodeSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToIndustryCodeSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#F6FFED" stroke="#52C41A" stroke-width="1.5"/><path d="M16 18h16v4H16zM16 26h12v4H16zM16 34h14v4H14z" fill="#52C41A" opacity="0.2"/></svg>
+            <span class="favorite-text">行业代号设定</span>
+        </div>
+    }
+    @if (showFavoriteForkliftManagement)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToForkliftManagement">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#E6F7FF" stroke="#1890FF" stroke-width="1.5"/><path d="M18 28h12M24 22v12M18 20h12" stroke="#1890FF" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="favorite-text">叉车车号管理</span>
+        </div>
+    }
+    @if (showFavoriteBatchNoPickingSetting)
+    {
+        <div class="db-favorite-item" @onclick="NavigateToBatchNoPickingSetting">
+            <svg viewBox="0 0 48 48" width="40" height="40"><rect x="8" y="4" width="32" height="38" rx="3" fill="#FFF0F6" stroke="#EB2F96" stroke-width="1.5"/><circle cx="20" cy="20" r="4" stroke="#EB2F96" stroke-width="2" fill="none"/><circle cx="30" cy="28" r="4" stroke="#EB2F96" stroke-width="2" fill="none"/><path d="M23 22l4 4" stroke="#EB2F96" stroke-width="2"/></svg>
+            <span class="favorite-text">批号设置</span>
+        </div>
+    }
+
+    @if (!showFavoriteInboundNotice && !showFavoriteInboundOrder && !showFavoriteInboundNoticeChange &&
+         !showFavoriteProductCodeSetting && !showFavoriteMidClassSetting && !showFavoriteStorageNatureSetting &&
+         !showFavoriteProductAttrSetting && !showFavoriteProductMarkSetting && !showFavoriteWarehouseCodeSetting &&
+         !showFavoriteStorageLocationDetail && !showFavoriteWarehouseArrivalConfirm && !showFavoriteWaveStrategy &&
+         !showFavoritePickStrategy && !showFavoriteUnshelveStrategy && !showFavoriteDeptSetting &&
+         !showFavoriteDocTypeSetting && !showFavoriteCountReasonSetting && !showFavoriteNoticeSetting &&
+         !showFavoriteIndustryCodeSetting && !showFavoriteForkliftManagement && !showFavoriteBatchNoPickingSetting)
+    {
+        <div style="padding:20px;text-align:center;color:#999999;font-size:13px;">
+            点击页面左上角星标收藏常用功能
+        </div>
+    }
 </div>
 
 <!-- 仓库视图卡片 -->
@@ -207,9 +354,37 @@
 </div>
 
 @code {
+    // ===== 原有3个业务单据收藏 =====
     private bool showFavoriteInboundNotice = false;
     private bool showFavoriteInboundOrder = false;
     private bool showFavoriteInboundNoticeChange = false;
+
+    // ===== 基础资料-货品（5个）=====
+    private bool showFavoriteProductCodeSetting = false;
+    private bool showFavoriteMidClassSetting = false;
+    private bool showFavoriteStorageNatureSetting = false;
+    private bool showFavoriteProductAttrSetting = false;
+    private bool showFavoriteProductMarkSetting = false;
+
+    // ===== 基础资料-仓库（3个）=====
+    private bool showFavoriteWarehouseCodeSetting = false;
+    private bool showFavoriteStorageLocationDetail = false;
+    private bool showFavoriteWarehouseArrivalConfirm = false;
+
+    // ===== 基础资料-策略（3个）=====
+    private bool showFavoriteWaveStrategy = false;
+    private bool showFavoritePickStrategy = false;
+    private bool showFavoriteUnshelveStrategy = false;
+
+    // ===== 基础资料-其他（7个）=====
+    private bool showFavoriteDeptSetting = false;
+    private bool showFavoriteDocTypeSetting = false;
+    private bool showFavoriteCountReasonSetting = false;
+    private bool showFavoriteNoticeSetting = false;
+    private bool showFavoriteIndustryCodeSetting = false;
+    private bool showFavoriteForkliftManagement = false;
+    private bool showFavoriteBatchNoPickingSetting = false;
+
     private int _lastFavoriteVersion = -1;
 
     [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
@@ -234,24 +409,71 @@
     {
         try
         {
-            var r1 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_notice");
-            showFavoriteInboundNotice = r1 == "true";
+            // 业务单据（原有）
+            var r1 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_notice"); showFavoriteInboundNotice = r1 == "true";
+            var r2 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_order"); showFavoriteInboundOrder = r2 == "true";
+            var r3 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_notice_change"); showFavoriteInboundNoticeChange = r3 == "true";
 
-            var r2 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_order");
-            showFavoriteInboundOrder = r2 == "true";
+            // 基础资料-货品
+            var r4 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_product_code_setting"); showFavoriteProductCodeSetting = r4 == "true";
+            var r5 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_mid_class_setting"); showFavoriteMidClassSetting = r5 == "true";
+            var r6 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_storage_nature_setting"); showFavoriteStorageNatureSetting = r6 == "true";
+            var r7 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_product_attr_setting"); showFavoriteProductAttrSetting = r7 == "true";
+            var r8 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_product_mark_setting"); showFavoriteProductMarkSetting = r8 == "true";
 
-            var r3 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_inbound_notice_change");
-            showFavoriteInboundNoticeChange = r3 == "true";
+            // 基础资料-仓库
+            var r9 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_warehouse_code_setting"); showFavoriteWarehouseCodeSetting = r9 == "true";
+            var r10 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_storage_location_detail"); showFavoriteStorageLocationDetail = r10 == "true";
+            var r11 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_warehouse_arrival_confirm"); showFavoriteWarehouseArrivalConfirm = r11 == "true";
+
+            // 基础资料-策略
+            var r12 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_wave_strategy"); showFavoriteWaveStrategy = r12 == "true";
+            var r13 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_pick_strategy"); showFavoritePickStrategy = r13 == "true";
+            var r14 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_unshelve_strategy"); showFavoriteUnshelveStrategy = r14 == "true";
+
+            // 基础资料-其他
+            var r15 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_dept_setting"); showFavoriteDeptSetting = r15 == "true";
+            var r16 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_doc_type_setting"); showFavoriteDocTypeSetting = r16 == "true";
+            var r17 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_count_reason_setting"); showFavoriteCountReasonSetting = r17 == "true";
+            var r18 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_notice_setting"); showFavoriteNoticeSetting = r18 == "true";
+            var r19 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_industry_code_setting"); showFavoriteIndustryCodeSetting = r19 == "true";
+            var r20 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_forklift_management"); showFavoriteForkliftManagement = r20 == "true";
+            var r21 = await JS.InvokeAsync<string>("localStorage.getItem", "wms_favorite_batch_no_picking_setting"); showFavoriteBatchNoPickingSetting = r21 == "true";
         }
         catch
         {
-            showFavoriteInboundNotice = false;
-            showFavoriteInboundOrder = false;
-            showFavoriteInboundNoticeChange = false;
+            // 忽略异常，所有默认为false
         }
     }
 
+    // ===== 导航方法：业务单据 =====
     private void NavigateToInboundNotice() => OpenTabCallback?.Invoke("inbound-notice", "入库通知单");
     private void NavigateToInboundOrder() => OpenTabCallback?.Invoke("inbound-order", "入库单");
     private void NavigateToInboundNoticeChange() => OpenTabCallback?.Invoke("inbound-notice-change", "入库通知变更单");
+
+    // ===== 导航方法：基础资料-货品 =====
+    private void NavigateToProductCodeSetting() => OpenTabCallback?.Invoke("product-code-setting", "货品代号设定");
+    private void NavigateToMidClassSetting() => OpenTabCallback?.Invoke("mid-class-setting", "中类代号设定");
+    private void NavigateToStorageNatureSetting() => OpenTabCallback?.Invoke("storage-nature-setting", "储存性质设定");
+    private void NavigateToProductAttrSetting() => OpenTabCallback?.Invoke("product-attr-setting", "货品属性信息设定");
+    private void NavigateToProductMarkSetting() => OpenTabCallback?.Invoke("product-mark-setting", "货品特征码段设定");
+
+    // ===== 导航方法：基础资料-仓库 =====
+    private void NavigateToWarehouseCodeSetting() => OpenTabCallback?.Invoke("warehouse-code-setting", "仓库代号设定");
+    private void NavigateToStorageLocationDetail() => OpenTabCallback?.Invoke("storage-location-detail", "储位明细");
+    private void NavigateToWarehouseArrivalConfirm() => OpenTabCallback?.Invoke("warehouse-arrival-confirm", "依仓库启用到货确认");
+
+    // ===== 导航方法：基础资料-策略 =====
+    private void NavigateToWaveStrategy() => OpenTabCallback?.Invoke("wave-strategy", "波次策略");
+    private void NavigateToPickStrategy() => OpenTabCallback?.Invoke("pick-strategy", "拣货策略");
+    private void NavigateToUnshelveStrategy() => OpenTabCallback?.Invoke("unshelve-strategy", "下架策略");
+
+    // ===== 导航方法：基础资料-其他 =====
+    private void NavigateToDeptSetting() => OpenTabCallback?.Invoke("dept-setting", "部门设定");
+    private void NavigateToDocTypeSetting() => OpenTabCallback?.Invoke("doc-type-setting", "单据类别设定");
+    private void NavigateToCountReasonSetting() => OpenTabCallback?.Invoke("count-reason-setting", "查盘/与原因设定");
+    private void NavigateToNoticeSetting() => OpenTabCallback?.Invoke("notice-setting", "即时消息通知设定");
+    private void NavigateToIndustryCodeSetting() => OpenTabCallback?.Invoke("industry-code-setting", "行业代号设定");
+    private void NavigateToForkliftManagement() => OpenTabCallback?.Invoke("forklift-management", "叉车车号管理");
+    private void NavigateToBatchNoPickingSetting() => OpenTabCallback?.Invoke("batch-no-picking-setting", "不能参与配位的批号设置");
 }

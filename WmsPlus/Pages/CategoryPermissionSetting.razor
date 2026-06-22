@@ -1,4 +1,4 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ILogger<CategoryPermissionSetting> _logger
@@ -20,7 +20,7 @@
             </button>
             <span class="page-title">类别权限设定/查询</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
@@ -28,7 +28,29 @@
                     <rect x="3" y="16" width="18" height="2" rx="1"/>
                 </svg>
             </button>
-        </div>
+</div>
+<div class="header-right">
+        
+                    <button class="header-action-btn primary" @onclick="HandleAddNew">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>新增</span>
+                    </button>
+                    <button class="header-action-btn delete-btn" @onclick="HandleDelete">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M3 4h10M5 4V3h6v1M6 7v5m4-5v5M4 4h8l-1 9H5L4 4z" stroke="#666666" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>删除</span>
+                    </button>
+                    <button class="header-action-btn" @onclick="HandleExport">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                        <span>导出</span>
+                    </button>
+                </div>
     </div>
 
     <!-- 收藏成功提示 -->
@@ -110,29 +132,7 @@
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
             <!-- 工具栏 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span>新增</span>
-                    </button>
-                    <button class="toolbar-btn delete-btn" @onclick="HandleDelete">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M3 4h10M5 4V3h6v1M6 7v5m4-5v5M4 4h8l-1 9H5L4 4z" stroke="#666666" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>删除</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>导出</span>
-                    </button>
-                </div>
-            </div>
+            
 
             <!-- 数据表格 -->
             <div class="data-table-container">
@@ -323,6 +323,7 @@
     private List<CategoryPermissionSettingModel> dataSource = new();
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -369,11 +370,11 @@
     }
 
     private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
+    private void HandleAddNew() { OpenTabCallback?.Invoke("category-permission-setting-add", "类别权限设定*新增"); }
     private void HandleDelete() { }
-    private void HandleSetPermission(CategoryPermissionSettingModel item) { }
-    private void HandleSetMember(CategoryPermissionSettingModel item) { }
-    private void HandleSetProperty(CategoryPermissionSettingModel item) { }
+    private void HandleSetPermission(CategoryPermissionSettingModel item) { OpenTabCallback?.Invoke($"category-permission-setting-edit-{item.RoleNo}", $"类别权限设定*编辑"); }
+    private void HandleSetMember(CategoryPermissionSettingModel item) { /* TODO: 设置成员功能 */ }
+    private void HandleSetProperty(CategoryPermissionSettingModel item) { /* TODO: 设置属性功能 */ }
 
     private async Task HandleExport()
     {

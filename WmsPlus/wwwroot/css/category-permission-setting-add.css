@@ -1,0 +1,466 @@
+﻿/* ===== 类别权限设定-新增/编辑 页面样式 ===== */
+
+.cps-add-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+/* 工具栏 */
+.cps-add-page .page-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-bottom: 1px solid #e8e8e8;
+    background-color: #ffffff;
+}
+
+.cps-add-page .toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #333333;
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.cps-add-page .toolbar-btn:hover { border-color: #40a9ff; color: #40a9ff; }
+.cps-add-page .toolbar-btn.primary-btn { background-color: #1890ff; color: #ffffff; border-color: #1890ff; }
+.cps-add-page .toolbar-btn.primary-btn:hover { background-color: #40a9ff; border-color: #40a9ff; color: #ffffff; }
+
+/* 表单区域 */
+.cps-add-page .form-area {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 8px;
+    border-bottom: 1px solid #e8e8e8;
+    background-color: #fafafa;
+}
+
+.cps-add-page .form-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.cps-add-page .form-item-cps {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+.cps-add-page .form-item-cps.cps-company,
+.cps-add-page .form-item-cps.cps-dept-group {
+    position: relative;
+    flex: 1;
+    max-width: 200px;
+}
+.cps-add-page .form-item-cps.cps-actions {
+    flex: 2;
+    max-width: 280px;
+}
+.cps-add-page .form-item-cps.cps-toggle {
+    min-width: 80px;
+}
+
+.cps-add-page .form-label-cps {
+    font-size: 12px;
+    color: #666666;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.cps-add-page .required-mark {
+    color: #ff4d4f;
+    margin-right: 2px;
+}
+
+.cps-add-page .form-input-cps {
+    height: 26px;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #333333;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    outline: none;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    min-width: 100px;
+}
+.cps-add-page .form-input-cps:focus { border-color: #40a9ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.cps-add-page .form-input-cps:disabled { background-color: #f5f5f5; color: #999999; cursor: not-allowed; }
+
+.cps-add-page .cps-search-btn {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Toggle开关 */
+.toggle-switch-cps {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+}
+.toggle-switch-cps input { opacity: 0; width: 0; height: 0; }
+.toggle-slider-cps {
+    position: absolute;
+    inset: 0;
+    background-color: #cccccc;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+.toggle-slider-cps::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.toggle-switch-cps input:checked + .toggle-slider-cps { background-color: #1890ff; }
+.toggle-switch-cps input:checked + .toggle-slider-cps::before { transform: translateX(16px); }
+
+/* 操作按钮 */
+.cps-action-btn {
+    padding: 3px 10px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    cursor: pointer;
+    background-color: #ffffff;
+    color: #333333;
+    white-space: nowrap;
+}
+.cps-action-btn:hover { border-color: #40a9ff; color: #40a9ff; }
+.cps-action-btn.primary { background-color: #1890ff; color: #ffffff; border-color: #1890ff; }
+.cps-action-btn.primary:hover { background-color: #40a9ff; border-color: #40a9ff; }
+
+/* ===== 主内容区：左侧树 + 右侧权限 ===== */
+.main-content-area {
+    display: flex;
+    flex: 1 1 0%;
+    overflow: hidden;
+    border-top: 1px solid #e8e8e8;
+}
+
+/* ===== 左侧树状菜单 ===== */
+.tree-panel {
+    width: 220px;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e8e8e8;
+    background-color: #fafafa;
+    overflow: hidden;
+}
+
+.tree-header {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333333;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.tree-search {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-bottom: 1px solid #e8e8e8;
+    gap: 4px;
+}
+
+.tree-search-input {
+    flex: 1;
+    height: 24px;
+    padding: 0 6px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    outline: none;
+}
+.tree-search-input:focus { border-color: #40a9ff; }
+
+.tree-search-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.tree-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.tree-node {
+    display: flex;
+    align-items: center;
+    min-height: 28px;
+}
+
+.tree-node.root-node {
+    font-weight: 500;
+}
+
+.tree-expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.tree-expand-btn.invisible { visibility: hidden; cursor: default; }
+
+.tree-node-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    padding: 2px 6px;
+    font-size: 12px;
+    color: #333333;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tree-node-label:hover { background-color: #e6f7ff; }
+.tree-node-label.selected { background-color: #bae7ff; color: #1890ff; }
+
+.tree-icon {
+    flex-shrink: 0;
+}
+.tree-icon.leaf { color: #999999; }
+
+/* ===== 右侧权限分配区域 ===== */
+.permission-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+/* 权限Tab切换 */
+.perm-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #e8e8e8;
+    background-color: #fafafa;
+    padding: 0 12px;
+}
+
+.perm-tab-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #666666;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+.perm-tab-btn:hover { color: #1890ff; }
+.perm-tab-btn.active {
+    color: #1890ff;
+    font-weight: 500;
+    border-bottom-color: #1890ff;
+}
+
+/* 权限表格容器 */
+.perm-table-container {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+}
+
+.perm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.perm-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #fafafa;
+    padding: 8px 6px;
+    font-weight: 500;
+    color: #666666;
+    border-bottom: 1px solid #e8e8e8;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.perm-table tbody td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 12px;
+}
+.perm-table tbody tr:hover td { background-color: #fafafa; }
+
+.col-pgm { min-width: 140px; text-align: left !important; padding-left: 12px !important; }
+.cell-pgm { text-align: left !important; padding-left: 12px !important; color: #333333; }
+.col-flag { width: 46px; min-width: 46px; }
+.col-switch { width: 70px; min-width: 70px; }
+.col-range { min-width: 120px; }
+.col-dept { min-width: 100px; }
+
+.cell-flag { text-align: center; }
+.cell-flag input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #1890ff;
+}
+
+.cell-switch { text-align: center; }
+
+.mini-toggle {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+    cursor: pointer;
+}
+.mini-toggle input { opacity: 0; width: 0; height: 0; }
+.mini-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background-color: #cccccc;
+    border-radius: 18px;
+    transition: 0.2s;
+}
+.mini-toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.mini-toggle input:checked + .mini-toggle-slider { background-color: #52c41a; }
+.mini-toggle input:checked + .mini-toggle-slider::before { transform: translateX(14px); }
+
+.cell-range { text-align: left; padding-left: 8px !important; }
+.range-input {
+    width: 90%;
+    height: 22px;
+    padding: 0 6px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    outline: none;
+}
+.range-input:focus { border-color: #40a9ff; }
+
+.cell-dept {
+    text-align: left;
+    padding-left: 4px !important;
+    position: relative;
+}
+.dept-input {
+    width: 65px;
+    height: 22px;
+    padding: 0 20px 0 6px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    outline: none;
+    box-sizing: border-box;
+}
+.dept-input:focus { border-color: #40a9ff; }
+
+.dept-search-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 1px;
+    cursor: pointer;
+}
+
+/* 收藏提示 */
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-8px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* ===== 权限文本输入框（替代checkbox） ===== */
+.cell-input { text-align: center; padding: 2px !important; }
+
+.perm-text {
+    width: 100%;
+    height: 24px;
+    padding: 0 4px;
+    font-size: 12px;
+    text-align: center;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    outline: none;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    color: #333333;
+}
+.perm-text:focus { border-color: #40a9ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+
+.col-qty { width: 50px; min-width: 50px; }
+
+/* ===== 底部提示条 ===== */
+.perm-hint-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #fffbe6;
+    border-top: 1px solid #ffe58f;
+    font-size: 12px;
+    color: #d48806;
+    z-index: 1;
+}
+.perm-hint-bar span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -224,14 +224,7 @@ namespace WmsPlus.Api.Data
     public DbSet<TfRk> TfRks { get; set; }
 
         // ========== 三级菜单界面 - 新增表注册开始 ==========
-        
-        // 类别权限设定
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<FxPswd> FxPswds { get; set; }
-        
-        // 类别成员设定
-        public DbSet<PswdRole> PswdRoles { get; set; }
-        
+
         // 单据属性设定
         public DbSet<BarPswdProp> BarPswdProps { get; set; }
         
@@ -340,8 +333,6 @@ namespace WmsPlus.Api.Data
                 entity.Property(e => e.USR).HasColumnName("USR").HasMaxLength(30);
                 entity.Property(e => e.STOP_DD).HasColumnName("STOP_DD");
                 entity.Property(e => e.UP_DD).HasColumnName("UP_DD");
-
-                // 基本信息扩展字段
                 entity.Property(e => e.CNT_MAN).HasColumnName("CNT_MAN").HasMaxLength(30);
                 entity.Property(e => e.TEL_NO).HasColumnName("TEL_NO").HasMaxLength(50);
                 entity.Property(e => e.FAX_NO).HasColumnName("FAX_NO").HasMaxLength(50);
@@ -2144,52 +2135,6 @@ namespace WmsPlus.Api.Data
             });
 
             // ========== 三级菜单界面 - 新增表Fluent API配置开始 ==========
-            
-            // 角色定义（ROLE）
-            modelBuilder.Entity<Role>(entity =>
-            {
-                entity.ToTable("ROLE");
-                entity.HasKey(e => e.ROLENO);
-                entity.Property(e => e.ROLENO).HasColumnName("ROLENO").HasMaxLength(30);
-                entity.Property(e => e.NAME).HasColumnName("NAME").HasMaxLength(200);
-                entity.Property(e => e.DEP).HasColumnName("DEP").HasMaxLength(30);
-                entity.Property(e => e.DEPRO_NO).HasColumnName("DEPRO_NO").HasMaxLength(30);
-                entity.Property(e => e.COMPNO).HasColumnName("COMPNO").HasMaxLength(30);
-                entity.Property(e => e.TYPE_ID).HasColumnName("TYPE_ID").HasMaxLength(20);
-                entity.Property(e => e.PUBLIC_ID).HasColumnName("PUBLIC_ID").HasMaxLength(1);
-                entity.Property(e => e.USR).HasColumnName("USR").HasMaxLength(30);
-                entity.Property(e => e.REM).HasColumnName("REM");
-                entity.Property(e => e.SUB_ID).HasColumnName("SUB_ID").HasMaxLength(1);
-            });
-
-            // ONLINE角色权限（FX_PSWD）
-            modelBuilder.Entity<FxPswd>(entity =>
-            {
-                entity.ToTable("FX_PSWD");
-                entity.HasKey(e => new { e.ROLENO, e.PGM });
-                entity.Property(e => e.ROLENO).HasColumnName("ROLENO").HasMaxLength(30);
-                entity.Property(e => e.PGM).HasColumnName("PGM").HasMaxLength(50);
-                entity.Property(e => e.TYPE_ID).HasColumnName("TYPE_ID").HasMaxLength(20);
-                entity.Property(e => e.COMPNO).HasColumnName("COMPNO").HasMaxLength(30);
-                entity.Property(e => e.DEPRO_NO).HasColumnName("DEPRO_NO").HasMaxLength(30);
-                entity.Property(e => e.QRY).HasColumnName("QRY").HasMaxLength(1);
-                entity.Property(e => e.INS).HasColumnName("INS").HasMaxLength(1);
-                entity.Property(e => e.UPD).HasColumnName("UPD").HasMaxLength(1);
-                entity.Property(e => e.DEL).HasColumnName("DEL").HasMaxLength(1);
-                entity.Property(e => e.PRN).HasColumnName("PRN").HasMaxLength(1);
-                entity.Property(e => e.ALLOW_ID).HasColumnName("ALLOW_ID").HasMaxLength(1);
-            });
-
-            // ONLINE角色所属用户（PSWD_ROLE）
-            modelBuilder.Entity<PswdRole>(entity =>
-            {
-                entity.ToTable("PSWD_ROLE");
-                entity.HasKey(e => new { e.COMPNO, e.ROLENO, e.TYPE_ID, e.USR });
-                entity.Property(e => e.COMPNO).HasColumnName("COMPNO").HasMaxLength(30);
-                entity.Property(e => e.ROLENO).HasColumnName("ROLENO").HasMaxLength(30);
-                entity.Property(e => e.TYPE_ID).HasColumnName("TYPE_ID").HasMaxLength(20);
-                entity.Property(e => e.USR).HasColumnName("USR").HasMaxLength(30);
-            });
 
             // 条形码属性设定档（BAR_PSWD_PROP）
             modelBuilder.Entity<BarPswdProp>(entity =>

@@ -13,85 +13,19 @@
 }
 
 /* 顶部标题栏 */
-.con-close-page .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px;
-    border-bottom: 1px solid #E8E8E8;
-    background-color: #FAFAFA;
-    flex-shrink: 0;
-}
 
-.con-close-page .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.con-close-page 
 
-.con-close-page .favorite-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-}
+.con-close-page 
 
-.con-close-page .favorite-btn:hover {
-    transform: scale(1.15);
-}
+.con-close-page 
 
-.con-close-page .page-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333333;
-}
-
-.con-close-page .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.con-close-page .collapse-btn-fixed {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s;
-}
-
-.con-close-page .collapse-btn-fixed:hover {
-    background-color: #E6F7FF;
-}
+.con-close-page 
 
 /* 收藏成功提示 */
-.con-close-page .favorite-success-toast {
-    position: absolute;
-    top: 40px;
-    right: 24px;
-    z-index: 100;
-    animation: slideInFade 0.3s ease-out forwards;
-}
+.con-close-page 
 
-.con-close-page .toast-content {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #F6FFED;
-    border: 1px solid #B7EB8F;
-    border-radius: 4px;
-    padding: 6px 12px;
-    color: #52C41A;
-    font-size: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+.con-close-page 
 
 @keyframes slideInFade {
     from { opacity: 0; transform: translateX(20px); }

@@ -45,3 +45,13 @@ Desktop.ini
 # App settings with sensitive data (uncomment if needed)
 # appsettings.Development.json
 # appsettings.json
+
+# Build output
+publish/
+
+# Test scripts and temp files
+test-*.ps1
+test-*.json
+TestProductCodeSetting/
+commit_msg.txt
+page_inbound_notice.png

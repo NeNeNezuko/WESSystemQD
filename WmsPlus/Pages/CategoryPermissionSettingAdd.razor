@@ -1,0 +1,848 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<CategoryPermissionSettingAdd> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/category-permission-setting-add.css" />
+
+<div class="cps-add-page">
+    <!-- 页面标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">@(IsEditMode ? "类别权限设定*编辑" : "类别权限设定*新增")</span>
+        </div>
+        <div class="header-right">
+            <button class="header-action-btn primary" @onclick="HandleSave">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                    <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 8.28a.75.75 0 011.06-1.06L6 9.94l6.72-6.72a.75.75 0 011.06 0z"/>
+                </svg>
+                <span>保存</span>
+            </button>
+            <button class="header-action-btn primary" @onclick="HandleSaveAndNew">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                    <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>新增</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleDelete">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M5.5 4h5l.5.5v9l-.5.5h-5L5 13.5v-9l.5-.5zM6 5v8h4V5H6z M4 3.5V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5zm8 0V4h1v-.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5z"/>
+                </svg>
+                <span>删除</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleCopy">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M4 2h6l3 3v8a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm0 1v10h8V5.5L9.5 3H4z M6 7h4v1H6V7zm0 2h4v1H6V9zm0 2h3v1H6v-1z" fill="#666666"/>
+                </svg>
+                <span>复制</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandlePrint">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M4 1h8v3h2v6h-2v5H4v-5H2V4h2V1zm1 1v2h6V2H5zm-1 7h2V5H4v5zm8 0h-2V5h2v5zm-6 1v4h6v-4H6z" fill="#666666"/>
+                </svg>
+                <span>打印</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleQuery">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <circle cx="7" cy="7" r="5"/>
+                    <line x1="11" y1="11" x2="15" y2="15" stroke="#666666" stroke-width="1.5"/>
+                </svg>
+                <span>查询</span>
+            </button>
+        </div>
+    </div>
+
+    @if (showFavoriteSuccess)
+    {
+        <div class="favorite-success-toast">
+            <div class="toast-content">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A">
+                    <circle cx="8" cy="8" r="8"/>
+                    <path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>收藏成功</span>
+            </div>
+        </div>
+    }
+
+    <!-- 表单区域 -->
+    <div class="form-area">
+        <div class="form-row">
+            <!-- 类别代号* -->
+            <div class="form-item-cps">
+                <label class="form-label-cps"><span class="required-mark">*</span> 类别代号</label>
+                <input type="text" class="form-input-cps" @bind="roleForm.RoleNo" @bind:event="oninput" disabled="@IsEditMode" placeholder="" />
+            </div>
+            <!-- 类别名称* -->
+            <div class="form-item-cps">
+                <label class="form-label-cps">类别名称<span class="required-mark">*</span></label>
+                <input type="text" class="form-input-cps" @bind="roleForm.Name" @bind:event="oninput" placeholder="" />
+            </div>
+            <!-- 备注 -->
+            <div class="form-item-cps">
+                <label class="form-label-cps">备注</label>
+                <input type="text" class="form-input-cps" @bind="roleForm.Rem" @bind:event="oninput" placeholder="" />
+            </div>
+            <!-- 公司 -->
+            <div class="form-item-cps cps-company">
+                <label class="form-label-cps">公司</label>
+                <input type="text" class="form-input-cps" @bind="roleForm.CompNo" @bind:event="oninput" placeholder="" />
+                <button class="cps-search-btn" title="选择公司">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="form-row">
+            <!-- 部门群组 -->
+            <div class="form-item-cps cps-dept-group">
+                <label class="form-label-cps">部门群组</label>
+                <input type="text" class="form-input-cps" @bind="roleForm.DeproNo" @bind:event="oninput" placeholder="" />
+                <button class="cps-search-btn" title="选择部门群组">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                </button>
+            </div>
+            <!-- 公用注记 -->
+            <div class="form-item-cps cps-toggle">
+                <label class="form-label-cps">公用注记</label>
+                <label class="toggle-switch-cps">
+                    <input type="checkbox" checked="@publicFlag" @onchange="OnPublicFlagChanged" />
+                    <span class="toggle-slider-cps"></span>
+                </label>
+            </div>
+            <!-- 设置全部权限 / 取消全部权限 -->
+            <div class="form-item-cps cps-actions">
+                <button class="cps-action-btn primary" @onclick="SetAllPermissions">设置全部权限</button>
+                <button class="cps-action-btn" @onclick="ClearAllPermissions">取消全部权限</button>
+            </div>
+            <!-- 含下属 -->
+            <div class="form-item-cps cps-toggle">
+                <label class="form-label-cps">含下属</label>
+                <label class="toggle-switch-cps">
+                    <input type="checkbox" checked="@subFlag" @onchange="OnSubFlagChanged" />
+                    <span class="toggle-slider-cps"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区：左侧树 + 右侧权限表格 -->
+    <div class="main-content-area">
+        <!-- 左侧树状菜单 -->
+        <div class="tree-panel">
+            <div class="tree-header">
+                <span>菜单</span>
+            </div>
+            <div class="tree-search">
+                <input type="text" class="tree-search-input" placeholder="查找..." @bind="treeSearchKeyword" @bind:event="oninput" />
+                <button class="tree-search-btn">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                </button>
+            </div>
+            <div class="tree-body">
+                @foreach (var item in FlatTreeList)
+                {
+                    <div class="tree-node @(item.Depth == 0 ? "root-node" : "")" style="padding-left:@(item.Depth * 18)px;">
+                        <button class="tree-expand-btn @(item.HasChildren ? "" : "invisible")" @onclick="() => ToggleTreeItem(item)">
+                            <svg viewBox="0 0 12 12" width="10" height="10" fill="#666">
+                                @if (item.IsExpanded)
+                                {
+                                    <path d="M3 5h6v2H3z"/>
+                                }
+                                else
+                                {
+                                    <path d="M5 3l4 3-4 3V3z"/>
+                                }
+                            </svg>
+                        </button>
+                        <button class="tree-node-label @(selectedTreeKey == item.Key ? "selected" : "")" @onclick="() => SelectTreeItem(item)">
+                            <svg class="tree-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#888" stroke-width="1.2">
+                                @if (item.HasChildren)
+                                {
+                                    <rect x="2" y="3" width="12" height="10" rx="1"/>
+                                    <line x1="2" y1="7" x2="14" y2="7"/>
+                                    <line x1="6" y1="3" x2="6" y2="7"/>
+                                }
+                                else
+                                {
+                                    <path d="M3 6h10M6 3v6"/>
+                                }
+                            </svg>
+                            <span>@item.Title</span>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- 右侧权限分配区域 -->
+        <div class="permission-panel">
+            <!-- 权限Tab切换 -->
+            <div class="perm-tabs">
+                <button class="perm-tab-btn @(activePermTab == "general" ? "active" : "")" @onclick='() => SwitchPermTab("general")'>一般权限</button>
+                <button class="perm-tab-btn @(activePermTab == "advanced" ? "active" : "")" @onclick='() => SwitchPermTab("advanced")'>进阶权限</button>
+                <button class="perm-tab-btn @(activePermTab == "pda" ? "active" : "")" @onclick='() => SwitchPermTab("pda")'>PDA权限</button>
+            </div>
+
+            <!-- 权限表格内容 -->
+            <div class="perm-table-container">
+                @if (activePermTab == "general")
+                {
+                    <table class="perm-table">
+                        <thead>
+                            <tr>
+                                <th class="col-pgm">功能名称*</th>
+                                <th class="col-flag">查询</th>
+                                <th class="col-flag">修改</th>
+                                <th class="col-flag">删除</th>
+                                <th class="col-flag">列印</th>
+                                <th class="col-flag">锁单</th>
+                                <th class="col-flag">新增</th>
+                                <th class="col-flag">属性</th>
+                                <th class="col-flag">字段</th>
+                                <th class="col-flag">转出</th>
+                                <th class="col-qty">数量</th>
+                                <th class="col-dept">部门群组</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < GeneralPermRows.Count; i++)
+                            {
+                                var row = GeneralPermRows[i];
+                                <tr>
+                                    <td class="cell-pgm">@row.PgmName</td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Qry" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Upd" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Del" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Prn" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.LockDoc" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Ins" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Property" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Fld" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Ept" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("wrn")' @onblur="OnPermBlur" @bind="row.Qty" @bind:event="oninput" /></td>
+                                    <td class="cell-dept">
+                                        <input type="text" class="dept-input" value="@row.DeproNo" />
+                                        <button class="dept-search-btn" title="选择部门群组">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (activePermTab == "advanced")
+                {
+                    <table class="perm-table perm-table-advanced">
+                        <thead>
+                            <tr>
+                                <th class="col-pgm">功能名称*</th>
+                                <th class="col-switch">访问画面</th>
+                                <th class="col-range">查询范围</th>
+                                <th class="col-dept">部门群组</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < AdvancedPermRows.Count; i++)
+                            {
+                                var row = AdvancedPermRows[i];
+                                <tr>
+                                    <td class="cell-pgm">@row.PgmName</td>
+                                    <td class="cell-switch">
+                                        <label class="mini-toggle">
+                                            <input type="checkbox" checked="@row.AllowId" @onchange="(e)=>{ row.AllowId = (bool?)e.Value ?? false; StateHasChanged(); }" />
+                                            <span class="mini-toggle-slider"></span>
+                                        </label>
+                                    </td>
+                                    <td class="cell-range">
+                                        <input type="text" class="range-input" value="@row.QueryRangeDeproNo" />
+                                        <button class="dept-search-btn" title="选择查询范围">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                                        </button>
+                                    </td>
+                                    <td class="cell-dept">
+                                        <input type="text" class="dept-input" value="@row.DeproNo" />
+                                        <button class="dept-search-btn" title="选择部门群组">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (activePermTab == "pda")
+                {
+                    <table class="perm-table">
+                        <thead>
+                            <tr>
+                                <th class="col-pgm">功能名称*</th>
+                                <th class="col-flag">查询</th>
+                                <th class="col-flag">修改</th>
+                                <th class="col-flag">删除</th>
+                                <th class="col-flag">列印</th>
+                                <th class="col-flag">锁单</th>
+                                <th class="col-flag">新增</th>
+                                <th class="col-flag">属性</th>
+                                <th class="col-flag">字段</th>
+                                <th class="col-flag">转出</th>
+                                <th class="col-qty">数量</th>
+                                <th class="col-dept">部门群组</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < PdaPermRows.Count; i++)
+                            {
+                                var row = PdaPermRows[i];
+                                <tr>
+                                    <td class="cell-pgm">@row.PgmName</td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Qry" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Upd" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Del" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.Prn" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("qrd")' @onblur="OnPermBlur" @bind="row.LockDoc" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Ins" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Property" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Fld" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("yn")' @onblur="OnPermBlur" @bind="row.Ept" @bind:event="oninput" /></td>
+                                    <td class="cell-input"><input type="text" class="perm-text" @onfocus='()=>OnPermFocus("wrn")' @onblur="OnPermBlur" @bind="row.Qty" @bind:event="oninput" /></td>
+                                    <td class="cell-dept">
+                                        <input type="text" class="dept-input" value="@row.DeproNo" />
+                                        <button class="dept-search-btn" title="选择部门群组">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="#999"><circle cx="7" cy="6" r="4" stroke="#999" stroke-width="1.5" fill="none"/><line x1="10" y1="9" x2="14" y2="13" stroke="#999" stroke-width="1.5"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                <!-- 底部提示条 -->
+                <div class="perm-hint-bar">
+                    <span>@hintText</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    // ===== 参数 =====
+    [Parameter] public string? EditRoleNo { get; set; }
+    public bool IsEditMode => !string.IsNullOrWhiteSpace(EditRoleNo);
+
+    private const string FAVORITE_KEY = "wms_favorite_category_permission_setting_add";
+    private bool isFavorited = false;
+    private bool showFavoriteSuccess = false;
+
+    // ===== 表单数据 =====
+    private RoleFormData roleForm = new();
+    private bool publicFlag = false;
+    private bool subFlag = false;
+
+    // ===== 树状菜单（扁平化列表） =====
+    private string treeSearchKeyword = "";
+    private string selectedTreeKey = "";
+    private List<TreeNodeData> treeNodes = new();
+    private List<FlatTreeItem> flatTreeCache = new();
+    private List<FlatTreeItem> FlatTreeList => flatTreeCache;
+
+    // ===== 权限数据 =====
+    private string activePermTab = "general";
+    private List<GeneralPermRow> GeneralPermRows = new();
+    private List<AdvancedPermRow> AdvancedPermRows = new();
+    private List<GeneralPermRow> PdaPermRows = new();
+
+    // ===== 提示条文字 =====
+    private const string HINT_DEFAULT = "在表格区域点击鼠标右键可快捷设置权限";
+    private const string HINT_QRD = "0:所有，1:部门及下属，2:本部门，3:部门群组，4:本人及下属，5:本人，空白:无权限，N:拒绝";
+    private const string HINT_YN = "Y:有许可权，空白:无权限，N:拒绝";
+    private const string HINT_WRN = "W:读写许可权，R:唯读许可权，空白:无权限，N:拒绝";
+    private string hintText = HINT_DEFAULT;
+
+    // ===== 回调 =====
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitTreeData();
+        InitPermissionRows();
+        await LoadFavoriteStatus();
+
+        if (IsEditMode)
+        {
+            await LoadEditData();
+        }
+    }
+
+    // ===== 收藏 =====
+    private async Task LoadFavoriteStatus()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", FAVORITE_KEY); isFavorited = r == "true"; } catch { }
+    }
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", FAVORITE_KEY, isFavorited.ToString().ToLower()); } catch {}
+        if (isFavorited) { showFavoriteSuccess = true; StateHasChanged(); await Task.Delay(2000); showFavoriteSuccess = false; }
+        StateHasChanged();
+    }
+
+    // ===== Toggle事件 =====
+    private void OnPublicFlagChanged(ChangeEventArgs e) { publicFlag = (bool?)e.Value ?? false; roleForm.PublicId = publicFlag ? "T" : "F"; }
+    private void OnSubFlagChanged(ChangeEventArgs e) { subFlag = (bool?)e.Value ?? false; roleForm.SubId = subFlag ? "Y" : "N"; }
+
+    // ===== 初始化树状菜单数据（从Sidebar提取）=====
+    private void InitTreeData()
+    {
+        treeNodes = new List<TreeNodeData>
+        {
+            new("all", "全部", 0, true,
+                new()
+                {
+                    new("web", "WEB管理", 1, true,
+                        new()
+                        {
+                            // ===== 仓储管理（6个子项）=====
+                            new("wh_mgt", "仓储管理", 2, true,
+                                new()
+                                {
+                                    new TreeNodeData("rk_mgt", "入库管理"),
+                                    new TreeNodeData("ck_mgt", "出库管理"),
+                                    new TreeNodeData("kc_mgt", "库存管理"),
+                                    new TreeNodeData("pzjy", "品质检验"),
+                                    new TreeNodeData("dygl", "打印管理"),
+                                    new TreeNodeData("jczl", "基础资料"),
+                                }),
+                            // ===== 系统管理（4个子项）=====
+                            new("sys_mgt", "系统管理", 2, true,
+                                new()
+                                {
+                                    new TreeNodeData("xtsd", "系统设定"),
+                                    new TreeNodeData("zdyd", "自定义设定"),
+                                    new TreeNodeData("xtfw", "系统服务"),
+                                    new TreeNodeData("xzzx", "下载中心"),
+                                }),
+                            // ===== 外部接口（2个子项）=====
+                            new("ext_if", "外部接口", 2, true,
+                                new()
+                                {
+                                    new TreeNodeData("zdhckgl", "自动化仓库管理"),
+                                    new TreeNodeData("dsfjk", "第三方接口"),
+                                }),
+                            // ===== 服务日志（无子项）=====
+                            new TreeNodeData("svc_log", "服务日志"),
+                        }),
+                    new("pda", "PDA单据管理", 1, true,
+                        new()
+                        {
+                            new TreeNodeData("pda_sys", "系统"),
+                            new TreeNodeData("pda_rk", "入库管理"),
+                            new TreeNodeData("pda_ck", "出库管理"),
+                            new TreeNodeData("pda_kc", "库存管理"),
+                            new TreeNodeData("pda_pzjy", "品质检验"),
+                            new TreeNodeData("pda_scgl", "生产管理"),
+                            new TreeNodeData("pda_xlhgl", "序列号管理"),
+                            new TreeNodeData("xtdmgl", "箱条码管理"),
+                            new TreeNodeData("wlrqgl", "物流容器管理"),
+                            new TreeNodeData("ydshjggl", "移动式货架管理"),
+                            new TreeNodeData("pdady", "PDA打印"),
+                            new TreeNodeData("qt", "其他"),
+                        })
+                })
+        };
+        RebuildFlatTree();
+    }
+
+    // ===== 将树结构扁平化为线性列表 =====
+    private void RebuildFlatTree()
+    {
+        flatTreeCache = new List<FlatTreeItem>();
+        foreach (var node in treeNodes)
+        {
+            FlattenNode(node, 0);
+        }
+    }
+
+    private void FlattenNode(TreeNodeData node, int depth)
+    {
+        var hasChildren = node.Children != null && node.Children.Count > 0;
+        flatTreeCache.Add(new FlatTreeItem
+        {
+            Key = node.Key,
+            Title = node.Title,
+            Depth = depth,
+            HasChildren = hasChildren,
+            IsExpanded = node.IsExpanded,
+            SourceNode = node
+        });
+        if (node.IsExpanded && hasChildren)
+        {
+            foreach (var child in node.Children)
+            {
+                FlattenNode(child, depth + 1);
+            }
+        }
+    }
+
+    // ===== 初始化权限行数据 =====
+    private void InitPermissionRows()
+    {
+        // 一般权限 - 入库相关功能（参照截图）
+        GeneralPermRows = new List<GeneralPermRow>
+        {
+            new("RKTZ", "入库通知单"), new("PLSC_RKTZ", "批量产生入库通知单"),
+            new("RK_TZBG", "入库通知变更单"), new("SH_REPORT", "收货报表"),
+            new("RKTZ_REPORT", "入库通知单报表"), new("RKD_REPORT", "入库单报表"),
+            new("CKTZ", "出库通知单"), new("PLSC_CKTZ", "批量产生出库通知单"),
+            new("CKTZ_PG", "出库通知单派工"), new("CKTH", "出库退回通知单"),
+            new("BCD", "波次单"), new("BCPJH", "波次拣货任务单"),
+            new("ZZJH", "直接拣货任务单"), new("JHD", "拣货单"),
+            new("ECJH", "二次分拣单"),            new("JHTH", "拣货退回单"),
+            new("CKD", "出库单"), new("CK_TZBG", "出库通知变更单"),
+        };
+
+        // 进阶权限 - 与一般权限相同的菜单项
+        AdvancedPermRows = GeneralPermRows.Select(r => new AdvancedPermRow(r.Pgm, r.PgmName)).ToList();
+
+        // PDA权限 - PDA菜单项
+        PdaPermRows = new List<GeneralPermRow>
+        {
+            new("PRDT_SET", "货品条码规则设定"), new("CTL_XLHGD", "储条列号编码规则设定"),
+            new("XLHGD", "序列号编码规则设定"), new("XTHMGD", "箱条列号编码规则设定"),
+            new("WLRQBMGD", "物流容器编码规则设定"), new("PHBMGD", "批号编码规则设定"),
+            new("BZBMGD", "包装编码规则设定"), new("RKTMGD", "入库条码料规则设定"),
+            new("YGYSSQKMGD", "依供应商拆码规则设定"), new("XGBDLS", "箱条码变动历史表"),
+            new("WLRQBDLS", "物流容器变动历史查询"),
+        };
+    }
+
+    // ===== 加载编辑数据 =====
+    private async Task LoadEditData()
+    {
+        if (string.IsNullOrEmpty(EditRoleNo)) return;
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/CategoryPermissionSetting/{Uri.EscapeDataString(EditRoleNo)}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var result = await responseMsg.Content.ReadFromJsonAsync<CpsApiResponse<CpsDetailDto>>(jsonOptions);
+            if (result != null && result.Success && result.Data != null)
+            {
+                var info = result.Data.RoleInfo;
+                roleForm.RoleNo = info.RoleNo;
+                roleForm.Name = info.Name;
+                roleForm.Dep = info.Dep;
+                roleForm.CompNo = info.CompNo;
+                roleForm.TypeId = info.TypeId;
+                roleForm.Rem = info.Rem;
+                roleForm.DeproNo = ""; // 从权限行中取
+                publicFlag = info.PublicId == "T";
+                roleForm.PublicId = info.PublicId;
+                subFlag = info.SubId == "Y";
+                roleForm.SubId = info.SubId;
+
+                // 回填权限数据
+                foreach (var p in result.Data.Permissions)
+                {
+                    var gRow = GeneralPermRows.FirstOrDefault(r => r.Pgm == p.Pgm);
+                    if (gRow != null)
+                    {
+                        gRow.Qry = p.Qry ?? "";
+                        gRow.Upd = p.Upd ?? "";
+                        gRow.Del = p.Del ?? "";
+                        gRow.Prn = p.Prn ?? "";
+                        gRow.LockDoc = ""; // 锁单字段暂无对应
+                        gRow.Ins = p.Ins ?? "";
+                        gRow.Property = p.Property ?? "";
+                        gRow.Fld = p.Fld ?? "";
+                        gRow.Ept = p.Ept ?? "";
+                        gRow.Qty = p.Qty ?? "";
+                        gRow.DeproNo = p.DeproNo ?? "";
+                    }
+                    var aRow = AdvancedPermRows.FirstOrDefault(r => r.Pgm == p.Pgm);
+                    if (aRow != null)
+                    {
+                        aRow.AllowId = (p.AllowId ?? "") == "Y";
+                        aRow.DeproNo = p.DeproNo ?? "";
+                        aRow.QueryRangeDeproNo = p.DeproNo ?? "";
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载角色详情失败");
+        }
+    }
+
+    // ===== 树操作（基于扁平列表） =====
+    private void ToggleTreeItem(FlatTreeItem item)
+    {
+        if (item.SourceNode != null)
+        {
+            item.SourceNode.IsExpanded = !item.SourceNode.IsExpanded;
+            RebuildFlatTree();
+            StateHasChanged();
+        }
+    }
+    private void SelectTreeItem(FlatTreeItem item) { selectedTreeKey = item.Key; StateHasChanged(); }
+
+    // ===== Tab切换 =====
+    private void SwitchPermTab(string tab) { activePermTab = tab; StateHasChanged(); }
+
+    // ===== 权限输入框focus/blur → 切换底部提示条 =====
+    private void OnPermFocus(string type)
+    {
+        hintText = type switch
+        {
+            "qrd" => HINT_QRD,
+            "yn" => HINT_YN,
+            "wrn" => HINT_WRN,
+            _ => HINT_DEFAULT
+        };
+        StateHasChanged();
+    }
+    private void OnPermBlur() { hintText = HINT_DEFAULT; StateHasChanged(); }
+
+    // ===== 批量操作 =====
+    private void SetAllPermissions()
+    {
+        foreach (var r in GeneralPermRows) { r.Qry = "Y"; r.Upd = "Y"; r.Del = "Y"; r.Prn = "Y"; r.LockDoc = ""; r.Ins = "Y"; r.Property = "Y"; r.Fld = "Y"; r.Ept = "Y"; r.Qty = "W"; }
+        foreach (var r in AdvancedPermRows) { r.AllowId = true; }
+        foreach (var r in PdaPermRows) { r.Qry = "Y"; r.Upd = "Y"; r.Del = "Y"; r.Prn = "Y"; r.LockDoc = ""; r.Ins = "Y"; r.Property = "Y"; r.Fld = "Y"; r.Ept = "Y"; r.Qty = "W"; }
+        StateHasChanged();
+    }
+    private void ClearAllPermissions()
+    {
+        foreach (var r in GeneralPermRows) { r.Qry = ""; r.Upd = ""; r.Del = ""; r.Prn = ""; r.LockDoc = ""; r.Ins = ""; r.Property = ""; r.Fld = ""; r.Ept = ""; r.Qty = ""; }
+        foreach (var r in AdvancedPermRows) { r.AllowId = false; }
+        foreach (var r in PdaPermRows) { r.Qry = ""; r.Upd = ""; r.Del = ""; r.Prn = ""; r.LockDoc = ""; r.Ins = ""; r.Property = ""; r.Fld = ""; r.Ept = ""; r.Qty = ""; }
+        StateHasChanged();
+    }
+
+    // ===== 保存 =====
+    private async Task HandleSave()
+    {
+        if (string.IsNullOrWhiteSpace(roleForm.RoleNo))
+        { await JS.InvokeVoidAsync("alert", "请输入类别代号"); return; }
+        if (string.IsNullOrWhiteSpace(roleForm.Name))
+        { await JS.InvokeVoidAsync("alert", "请输入类别名称"); return; }
+
+        try
+        {
+            var permissions = GeneralPermRows.Select(r => new CpsPermRowDto
+            {
+                Pgm = r.Pgm,
+                TypeId = "",
+                CompNo = roleForm.CompNo,
+                DeproNo = r.DeproNo,
+                Qry = r.Qry ?? "",
+                Ins = r.Ins ?? "",
+                Upd = r.Upd ?? "",
+                Del = r.Del ?? "",
+                Prn = r.Prn ?? "",
+                Qty = r.Qty ?? "",
+                Fld = r.Fld ?? "",
+                Property = r.Property ?? "",
+                AllowId = "",
+                Ept = r.Ept ?? ""
+            }).ToList();
+
+            var request = new CpsCreateRequest
+            {
+                RoleInfo = new CpsRoleDto
+                {
+                    RoleNo = roleForm.RoleNo,
+                    Name = roleForm.Name,
+                    Dep = roleForm.Dep,
+                    DeproNo = roleForm.DeproNo,
+                    CompNo = roleForm.CompNo,
+                    TypeId = roleForm.TypeId,
+                    PublicId = roleForm.PublicId,
+                    SubId = roleForm.SubId,
+                    Rem = roleForm.Rem
+                },
+                Permissions = permissions,
+                Usr = "ADMIN"
+            };
+
+            var url = IsEditMode
+                ? $"{ApiConfig.BaseUrl}/api/CategoryPermissionSetting/{Uri.EscapeDataString(roleForm.RoleNo)}"
+                : $"{ApiConfig.BaseUrl}/api/CategoryPermissionSetting";
+
+            var method = IsEditMode ? HttpMethod.Put : HttpMethod.Post;
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var httpRequest = AuthHttpClient.CreateRequest(method, url, TokenProvider.Token);
+            httpRequest.Content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(request, new System.Text.Json.JsonSerializerOptions { WriteIndented = false }),
+                System.Text.Encoding.UTF8);
+            httpRequest.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            var responseMsg = await Http.SendAsync(httpRequest);
+            var result = await responseMsg.Content.ReadFromJsonAsync<CpsApiResponse<string>>(jsonOptions);
+
+            if (result != null && result.Success)
+            {
+                await JS.InvokeVoidAsync("alert", IsEditMode ? "更新成功！" : "新增成功！");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", $"操作失败: {result?.Message ?? "未知错误"}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "保存失败");
+            await JS.InvokeVoidAsync("alert", $"保存失败: {ex.Message}");
+        }
+    }
+
+    private async Task HandleSaveAndNew()
+    {
+        await HandleSave();
+        roleForm = new RoleFormData();
+        publicFlag = false;
+        subFlag = false;
+        ClearAllPermissions();
+        StateHasChanged();
+    }
+
+    // ===== 占位方法 =====
+    private async Task HandleDelete() { await JS.InvokeVoidAsync("alert", "删除功能开发中"); }
+    private async Task HandleCopy() { await JS.InvokeVoidAsync("alert", "复制功能开发中"); }
+    private async Task HandlePrint() { await JS.InvokeVoidAsync("alert", "打印功能开发中"); }
+    private async Task HandleQuery() { OpenTabCallback?.Invoke("category-permission-setting", "类别权限设定/查询"); }
+
+
+    // ===== 数据模型 =====
+    private class RoleFormData
+    {
+        public string RoleNo { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Dep { get; set; } = "";
+        public string DeproNo { get; set; } = "";
+        public string CompNo { get; set; } = "";
+        public string TypeId { get; set; } = "";
+        public string PublicId { get; set; } = "F";
+        public string SubId { get; set; } = "N";
+        public string Rem { get; set; } = "";
+    }
+
+    private class TreeNodeData
+    {
+        public string Key { get; set; }
+        public string Title { get; set; }
+        public int Level { get; set; }
+        public bool IsExpanded { get; set; }
+        public List<TreeNodeData>? Children { get; set; }
+
+        public TreeNodeData(string key, string title, int level = 0, bool expanded = false, List<TreeNodeData>? children = null)
+        {
+            Key = key; Title = title; Level = level; IsExpanded = expanded; Children = children;
+        }
+    }
+
+    // 扁平化树节点（用于渲染）
+    private class FlatTreeItem
+    {
+        public string Key { get; set; } = "";
+        public string Title { get; set; } = "";
+        public int Depth { get; set; }
+        public bool HasChildren { get; set; }
+        public bool IsExpanded { get; set; }
+        public TreeNodeData? SourceNode { get; set; }
+    }
+
+    private class GeneralPermRow
+    {
+        public string Pgm { get; set; }
+        public string PgmName { get; set; }
+        // 查询/修改/删除/列印/锁单 — 填0-5或N或空
+        public string Qry { get; set; } = "";
+        public string Upd { get; set; } = "";
+        public string Del { get; set; } = "";
+        public string Prn { get; set; } = "";
+        public string LockDoc { get; set; } = "";
+        // 新增/属性/字段/转出 — 填Y/N或空
+        public string Ins { get; set; } = "";
+        public string Property { get; set; } = "";
+        public string Fld { get; set; } = "";
+        public string Ept { get; set; } = "";
+        // 数量 — 填W/R/N或空
+        public string Qty { get; set; } = "";
+        // 部门群组
+        public string DeproNo { get; set; } = "";
+
+        public GeneralPermRow(string pgm, string pgmName) { Pgm = pgm; PgmName = pgmName; }
+    }
+
+    private class AdvancedPermRow
+    {
+        public string Pgm { get; set; }
+        public string PgmName { get; set; }
+        public bool AllowId { get; set; }
+        public string DeproNo { get; set; } = "";
+        public string QueryRangeDeproNo { get; set; } = ""; // 查询范围
+
+        public AdvancedPermRow(string pgm, string pgmName) { Pgm = pgm; PgmName = pgmName; }
+    }
+
+    // ===== API响应模型（前端本地定义）=====
+    private class CpsApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+    }
+    private class CpsRoleDto
+    {
+        public string RoleNo { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Dep { get; set; } = "";
+        public string CompNo { get; set; } = "";
+        public string TypeId { get; set; } = "";
+        public string PublicId { get; set; } = "";
+        public string SubId { get; set; } = "";
+        public string Rem { get; set; } = "";
+        public string DeproNo { get; set; } = "";
+    }
+    private class CpsDetailDto
+    {
+        public CpsRoleDto RoleInfo { get; set; } = new();
+        public List<CpsPermRowDto> Permissions { get; set; } = new();
+    }
+    private class CpsPermRowDto
+    {
+        public string Pgm { get; set; } = "";
+        public string TypeId { get; set; } = "";
+        public string CompNo { get; set; } = "";
+        public string DeproNo { get; set; } = "";
+        public string Qry { get; set; } = "";
+        public string Ins { get; set; } = "";
+        public string Upd { get; set; } = "";
+        public string Del { get; set; } = "";
+        public string Prn { get; set; } = "";
+        public string Qty { get; set; } = "";
+        public string Fld { get; set; } = "";
+        public string Property { get; set; } = "";
+        public string AllowId { get; set; } = "";
+        public string Ept { get; set; } = "";
+    }
+    private class CpsCreateRequest
+    {
+        public CpsRoleDto RoleInfo { get; set; } = new();
+        public List<CpsPermRowDto> Permissions { get; set; } = new();
+        public string Usr { get; set; } = "ADMIN";
+    }
+}

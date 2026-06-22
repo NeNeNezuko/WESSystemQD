@@ -20,13 +20,34 @@
             </button>
             <span class="page-title">货品代号设定/查询</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
                     <rect x="3" y="11" width="18" height="2" rx="1"/>
                     <rect x="3" y="16" width="18" height="2" rx="1"/>
                 </svg>
+            </button>
+        </div>
+        <div class="header-right">
+            <button class="header-action-btn primary" @onclick="HandleAddNew">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                    <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>新增</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleBatchSetting">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M2 4h12M2 8h12M2 12h12" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>批量设置</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleExport">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span>导出</span>
             </button>
         </div>
     </div>
@@ -145,31 +166,6 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
-            <!-- 工具栏 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
-                            <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span>新增</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleBatchSetting">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M2 4h12M2 8h12M2 12h12" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        <span>批量设置</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>导出</span>
-                    </button>
-                </div>
-            </div>
-
             <!-- 数据表格 -->
             <div class="data-table-container">
                 <table class="data-table">
@@ -178,9 +174,10 @@
                             @foreach (var col in columnConfigs.Where(c => c.Visible))
                             {
                                 var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
+                                var isFixedLeft = col.FieldKey == "Seq";
                                 if (col.Sortable)
                                 {
-                                    <th style="@widthStyle" class="sortable">
+                                    <th style="@widthStyle" class="sortable @(isFixedLeft ? "col-fixed-left" : "")">
                                         @col.DisplayName
                                         <svg viewBox="0 0 12 12" width="10" height="10" fill="#999999">
                                             <path d="M6 3l3 3H9l-3-3-3 3H3z"/>
@@ -190,7 +187,7 @@
                                 }
                                 else
                                 {
-                                    <th style="@widthStyle">@col.DisplayName</th>
+                                    <th style="@widthStyle" class="@(isFixedLeft ? "col-fixed-left" : "")">@col.DisplayName</th>
                                 }
                             }
                             <th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;">
@@ -216,7 +213,8 @@
                                     @foreach (var col in columnConfigs.Where(c => c.Visible))
                                     {
                                         var widthStyle = col.Width > 0 ? $"width:{col.Width}px" : "";
-                                        <td style="@widthStyle">@GetCellValue(item, col.FieldKey)</td>
+                                        var isFixedLeft = col.FieldKey == "Seq";
+                                        <td style="@widthStyle" class="@(isFixedLeft ? "col-fixed-left" : "")">@GetCellValue(item, col.FieldKey)</td>
                                     }
                                     <td class="col-action">
                                         <div class="action-btn-group">

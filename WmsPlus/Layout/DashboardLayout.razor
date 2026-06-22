@@ -447,6 +447,18 @@
                     <ProductCodeSettingAdd EditPrdNo="@GetEditPrdNoFromTabId(activeTabId)" />
                 </div>
             }
+            @if (tabs.Any(t => t.Id == "user-setting-add"))
+            {
+                <div style="display:@(activeTabId == "user-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <UserSettingAdd />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("user-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("user-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <UserSettingAdd EditUsr="@GetEditUsrFromTabId(activeTabId)" />
+                </div>
+            }
             @if (tabs.Any(t => t.Id == "mid-class-setting"))
             {
                 <div style="display:@(activeTabId == "mid-class-setting" ? "flex" : "none"); min-height:0; height:100%;">
@@ -928,10 +940,28 @@
                     <CategoryPermissionSetting />
                 </div>
             }
+            @if (tabs.Any(t => t.Id == "category-permission-setting-add"))
+            {
+                <div style="display:@(activeTabId == "category-permission-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <CategoryPermissionSettingAdd />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("category-permission-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("category-permission-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <CategoryPermissionSettingAdd EditRoleNo="@GetEditRoleNoFromTabId(activeTabId)" />
+                </div>
+            }
             @if (tabs.Any(t => t.Id == "category-member-setting"))
             {
                 <div style="display:@(activeTabId == "category-member-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <CategoryMemberSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id.StartsWith("category-member-setting-edit-")))
+            {
+                <div style="display:@(activeTabId.StartsWith("category-member-setting-edit-") ? "flex" : "none"); min-height:0; height:100%;">
+                    <CategoryMemberSettingEdit EditRoleNo="@GetEditRoleNoFromTabId(activeTabId)" />
                 </div>
             }
             @if (tabs.Any(t => t.Id == "doc-property-setting"))
@@ -1151,10 +1181,26 @@
         return "";
     }
 
+    private string GetEditUsrFromTabId(string tabId)
+    {
+        if (tabId.StartsWith("user-setting-edit-"))
+            return tabId.Replace("user-setting-edit-", "");
+        return "";
+    }
+
     private string GetEditDepFromTabId(string tabId)
     {
         if (tabId.StartsWith("dept-setting-edit-"))
             return tabId.Replace("dept-setting-edit-", "");
+        return "";
+    }
+
+    private string GetEditRoleNoFromTabId(string tabId)
+    {
+        if (tabId.StartsWith("category-permission-setting-edit-"))
+            return tabId.Replace("category-permission-setting-edit-", "");
+        if (tabId.StartsWith("category-member-setting-edit-"))
+            return tabId.Replace("category-member-setting-edit-", "");
         return "";
     }
 

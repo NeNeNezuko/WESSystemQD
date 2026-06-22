@@ -20,6 +20,30 @@ public class DeptSettingController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 安全转换日期字段（处理 MySqlConnector.MySqlDateTime 类型）
+    /// </summary>
+    private static DateTime? SafeDateTime(object? value)
+    {
+        if (value == null) return null;
+        if (value is DateTime dt) return dt;
+        try
+        {
+            var type = value.GetType();
+            if (type.FullName == "MySqlConnector.MySqlDateTime" || type.Name == "MySqlDateTime")
+            {
+                var method = type.GetMethod("GetDateTime");
+                if (method != null)
+                    return (DateTime)method.Invoke(value, null)!;
+                var prop = type.GetProperty("Value");
+                if (prop != null)
+                    return (DateTime)prop.GetValue(value)!;
+            }
+            return Convert.ToDateTime(value);
+        }
+        catch { return null; }
+    }
+
     [HttpGet("search")]
     public async Task<ActionResult<ApiResult<List<DeptSettingDto>>>> Search(
         [FromQuery] string? dep,
@@ -106,7 +130,7 @@ public class DeptSettingController : ControllerBase
                 Name = entity.NAME ?? "",
                 Up = entity.UP ?? "",
                 EngName = entity.ENG_NAME ?? "",
-                StopDd = entity.STOP_DD,
+                StopDd = SafeDateTime(entity.STOP_DD),
                 MakeId = entity.MAKE_ID ?? "",
                 GroupId = entity.GROUP_ID ?? "",
                 NamePy = entity.NAME_PY ?? "",
@@ -140,6 +164,9 @@ public class DeptSettingController : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(request.Dep))
                 return BadRequest(new ApiResult<object> { Success = false, Message = "部门代号不能为空" });
+
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return BadRequest(new ApiResult<object> { Success = false, Message = "部门名称不能为空" });
 
             // 校验是否重复
             var existing = await _context.Depts.FirstOrDefaultAsync(x => x.DEP == request.Dep);
@@ -204,6 +231,9 @@ public class DeptSettingController : ControllerBase
             if (string.IsNullOrWhiteSpace(request.Dep))
                 return BadRequest(new ApiResult<object> { Success = false, Message = "部门代号不能为空" });
 
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return BadRequest(new ApiResult<object> { Success = false, Message = "部门名称不能为空" });
+
             var entity = await _context.Depts.FirstOrDefaultAsync(x => x.DEP == request.Dep);
             if (entity == null)
             {
@@ -218,7 +248,6 @@ public class DeptSettingController : ControllerBase
             entity.GROUP_ID = request.GroupId;
             entity.NAME_PY = request.NamePy;
             entity.TP_ID = request.TpId;
-            entity.UP_DD = DateTime.Now;
 
             await _context.SaveChangesAsync();
 

@@ -1223,3 +1223,111 @@ SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_F
 - 在 DashboardLayout.razor 的 HandleMegaMenuItemClick 中添加菜单项路由映射
 - 在 DashboardLayout.razor 的标签页区域添加组件存活占位（@if + display CSS）
 - 选项卡内页面组件需保持存活状态（不随切换销毁）
+
+### 选项卡页面标题栏统一标准（强制执行）
+
+> **2026-06-18 统一优化后，所有新开发的选项卡页面必须遵循以下标准。** 违反此标准的页面将导致 UI 不一致。
+
+#### 标题栏布局结构
+
+所有选项卡页面的标题栏必须采用 **单行三段式布局**：
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ [☆收藏] 页面标题    [≡折叠]                        [按钮1] [按钮2] │
+└──────────────────────────────────────────────────────────────────┘
+  header-left        header-center                     header-right
+```
+
+| 区域 | 内容 | 说明 |
+|------|------|------|
+| `header-left` | 收藏按钮(☆) + 标题文字 | 所有页面必须包含 |
+| `header-center` | 折叠按钮(≡) | 仅查询类页面（有左侧查询面板的）需要 |
+| `header-right` | 功能操作按钮 | 按钮放在这里，禁止单独成行 |
+
+#### HTML 结构模板
+
+**查询类页面**（有左侧查询面板 + 右侧表格）：
+```html
+<div class="page-header">
+    <div class="header-left">
+        <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      fill="@((isFavorited ? "#FFD700" : "none"))"
+                      stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                      stroke-width="2"/>
+            </svg>
+        </button>
+        <span class="page-title">页面标题/查询</span>
+    </div>
+    <div class="header-center">
+        <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse"
+                title="@(isCollapsed ? "展开查询" : "收起查询")">
+            <!-- 折叠图标 SVG -->
+        </button>
+    </div>
+    <div class="header-right">
+        <button class="header-action-btn primary" @onclick="HandleAddNew">新增</button>
+        <button class="header-action-btn" @onclick="HandleExport">导出</button>
+    </div>
+</div>
+<!-- 禁止出现独立的 table-toolbar / page-toolbar 行 -->
+```
+
+**新增/编辑类页面**（表单类，无查询面板）：
+```html
+<div class="page-header">
+    <div class="header-left">
+        <button class="favorite-btn ...">...</button>
+        <span class="page-title">页面标题*新增</span>
+    </div>
+    <div class="header-right">
+        <button class="header-action-btn primary" @onclick="HandleSave">保存</button>
+        <button class="header-action-btn primary" @onclick="HandleSaveAndNew">新增</button>
+        <button class="header-action-btn" @onclick="HandleDelete">删除</button>
+    </div>
+</div>
+<!-- 无 header-center，无折叠按钮 -->
+<!-- 禁止出现独立的 page-toolbar 行 -->
+```
+
+#### 强制规范
+
+| 规则 | 说明 |
+|------|------|
+| **统一 CSS 来源** | `.page-header` / `.page-title` / `.favorite-btn` / `.header-action-btn` 等样式定义在 `app.css` 中，**各页面独立 CSS 文件中禁止重复定义这些选择器** |
+| **禁止独立按钮行** | 禁止使用 `<div class="table-toolbar">` 或 `<div class="page-toolbar">` 作为独立行，所有功能按钮必须在 `page-header > header-right` 内 |
+| **必须包含收藏按钮** | 所有选项卡页面必须有收藏功能（favorite-btn + isFavorited + ToggleFavorite + FAVORITE_KEY） |
+| **标题栏参数标准** | `padding: 6px 12px; min-height: 36px; font-size: 13px; background-color: #fafafa; border-bottom: 1px solid #e8e8e8` |
+| **按钮样式** | 使用 `header-action-btn` 基础类 + `primary` 修饰类表示主按钮，禁止使用旧的 `toolbar-btn` 类名 |
+| **折叠按钮位置** | 折叠按钮放在 `header-center` 区域，与下方表格左边缘对齐 |
+
+#### 收藏功能必选代码
+
+每个新页面必须包含以下 C# 代码：
+
+```csharp
+// 字段
+private bool isFavorited;
+private const string FAVORITE_KEY = "fav_页面标识";
+
+// 方法
+private void ToggleFavorite()
+{
+    isFavorited = !isFavorited;
+    localStorage.SetItem(FAVORITE_KEY, isFavorited.ToString());
+}
+
+// 初始化
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
+    {
+        var fav = await localStorage.GetItemAsync(FAVORITE_KEY);
+        if (!string.IsNullOrEmpty(fav))
+            isFavorited = bool.Parse(fav);
+        StateHasChanged();
+    }
+}
+```

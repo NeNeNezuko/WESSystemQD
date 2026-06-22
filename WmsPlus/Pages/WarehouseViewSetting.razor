@@ -1,4 +1,4 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ILogger<WarehouseViewSetting> _logger
@@ -13,11 +13,16 @@
             </button>
             <span class="page-title">可视化仓储仿真布局设定/查询</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666"><rect x="3" y="6" width="18" height="2" rx="1"/><rect x="3" y="11" width="18" height="2" rx="1"/><rect x="3" y="16" width="18" height="2" rx="1"/></svg>
             </button>
-        </div>
+</div>
+<div class="header-right">
+        
+                    <button class="header-action-btn primary" @onclick="HandleAddNew"><svg viewBox="0 0 16 16" width="14" height="14" fill="white"><path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg><span>新增</span></button>
+                    <button class="header-action-btn" @onclick="HandleExport"><svg viewBox="0 0 16 16" width="14" height="14" fill="#666666"><path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><span>导出</span></button>
+                </div>
     </div>
     @if (showFavoriteSuccess)
     {
@@ -39,12 +44,7 @@
             </div>
         </div>
         <div class="table-panel">
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <button class="toolbar-btn primary-btn" @onclick="HandleAddNew"><svg viewBox="0 0 16 16" width="14" height="14" fill="white"><path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg><span>新增</span></button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport"><svg viewBox="0 0 16 16" width="14" height="14" fill="#666666"><path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><span>导出</span></button>
-                </div>
-            </div>
+            
             <div class="data-table-container">
                 <table class="data-table">
                     <thead><tr>@foreach (var col in columnConfigs.Where(c => c.Visible)){var ws = col.Width > 0 ? $"width:{col.Width}px" : ""; if(col.Sortable){<th style="@ws" class="sortable">@col.DisplayName<svg viewBox="0 0 12 12" width="10" height="10" fill="#999999"><path d="M6 3l3 3H9l-3-3-3 3H3z"/><path d="M6 9l-3-3h3l3 3h-3z" opacity="0.3"/></svg></th>}else{<th style="@ws">@col.DisplayName</th>}}<th class="col-action" style="display:flex;align-items:center;justify-content:space-between;white-space:nowrap;"><span>操作</span><button class="column-settings-btn" title="栏位设置" @onclick="OpenColumnSettings"><svg viewBox="0 0 16 16" width="14" height="14" fill="#666666"><path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/></svg></button></th></tr></thead>

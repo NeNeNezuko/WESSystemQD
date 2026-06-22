@@ -1,4 +1,4 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ILogger<BarcodePrintProductSource> _logger
@@ -14,11 +14,17 @@
             </button>
             <span class="page-title">依来源单打印货品条码</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666"><rect x="3" y="6" width="18" height="2" rx="1"/><rect x="3" y="11" width="18" height="2" rx="1"/><rect x="3" y="16" width="18" height="2" rx="1"/></svg>
             </button>
-        </div>
+</div>
+<div class="header-right">
+        
+                    <!-- 内层选项卡：打印&查询 / 参数设定 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTabId == "print-query" ? "active" : "")" @onclick="SwitchToPrintQueryTab">打印&amp;查询</div>
+                        <div class="inner-tab-item @(activeInnerTabId == "param-setting" ? "active" : "")" @onclick="SwitchToParamSettingTab">参数设定</div>
     </div>
     @if (showFavoriteSuccess) { <div class="favorite-success-toast"><div class="toast-content"><svg viewBox="0 0 16 16" width="16" height="16" fill="#52C41A"><circle cx="8" cy="8" r="8"/><path d="M5 8l2 2 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>收藏成功</span></div></div> }
 
@@ -69,13 +75,7 @@
 
         <div class="table-panel">
             <!-- 工具栏 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <!-- 内层选项卡：打印&查询 / 参数设定 -->
-                    <div class="inner-tab-bar-inline">
-                        <div class="inner-tab-item @(activeInnerTabId == "print-query" ? "active" : "")" @onclick="SwitchToPrintQueryTab">打印&amp;查询</div>
-                        <div class="inner-tab-item @(activeInnerTabId == "param-setting" ? "active" : "")" @onclick="SwitchToParamSettingTab">参数设定</div>
-                    </div>
+            
                     <button class="toolbar-btn primary-btn" @onclick="HandleBatchPrint">批次打印</button>
                     <button class="toolbar-btn export-btn" @onclick="HandleSearch">查询</button>
                 </div>

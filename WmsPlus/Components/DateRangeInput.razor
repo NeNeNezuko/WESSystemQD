@@ -432,8 +432,9 @@
         if (ShowCalendar)
         {
             await JS.InvokeVoidAsync("eval", @"(function(){
-                var trigger = arguments[0];
-                var dropdown = arguments[1];
+                var trigger = arguments[0] || document.querySelector('.date-picker-trigger');
+                var dropdown = arguments[1] || document.querySelector('.datepicker-dropdown');
+                if (!trigger || !dropdown) return;
                 var rect = trigger.getBoundingClientRect();
                 dropdown.style.left = rect.left + 'px';
                 dropdown.style.top = (rect.bottom + 4) + 'px';

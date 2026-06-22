@@ -1,4 +1,4 @@
-.inventory-detail-ledger-page {
+﻿.inventory-detail-ledger-page {
     width: 100%;
     height: 100%;
     flex: 1 1 0%;
@@ -8,44 +8,11 @@
     overflow: hidden;
 }
 
-.inventory-detail-ledger-page .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 12px;
-    background-color: #fafafa;
-    border-bottom: 1px solid #e8e8e8;
-    min-height: 32px;
-    position: relative;
-}
+.inventory-detail-ledger-page 
 
-.inventory-detail-ledger-page .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.inventory-detail-ledger-page 
 
-.inventory-detail-ledger-page .favorite-btn {
-    background: none;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 2px 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.inventory-detail-ledger-page .favorite-btn:hover {
-    border-color: #FFD700;
-    transform: scale(1.05);
-}
-
-.inventory-detail-ledger-page .favorite-btn.favorited {
-    border-color: #FFD700;
-    animation: idl-starPulse 0.5s ease;
-}
+.inventory-detail-ledger-page 
 
 @keyframes idl-starPulse {
     0% { transform: scale(1); }
@@ -53,57 +20,17 @@
     100% { transform: scale(1); }
 }
 
-.inventory-detail-ledger-page .page-title {
-    font-size: 12px;
-    font-weight: 500;
-    color: #333333;
-}
+.inventory-detail-ledger-page 
 
-.inventory-detail-ledger-page .header-right {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.inventory-detail-ledger-page .collapse-btn-fixed {
-    position: absolute;
-    left: 308px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: 1px solid #d9d9d9;
-    padding: 3px 5px;
-    cursor: pointer;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 10;
-}
-
-.inventory-detail-ledger-page .collapse-btn-fixed:hover {
-    border-color: #1890ff;
-    background-color: #f0f0f0;
-}
+.inventory-detail-ledger-page 
 
 .inventory-detail-ledger-page .collapse-btn-fixed:hover svg {
     fill: #1890ff;
 }
 
-.inventory-detail-ledger-page .collapse-btn-fixed.collapsed {
-    background-color: #e6f7ff;
-    border-color: #1890ff;
-}
+.inventory-detail-ledger-page 
 
-.inventory-detail-ledger-page .favorite-success-toast {
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    animation: idl-slideInTop 0.3s ease, idl-fadeOut 0.3s ease 1.7s forwards;
-}
+.inventory-detail-ledger-page 
 
 @keyframes idl-slideInTop {
     from {
@@ -121,18 +48,7 @@
     to { opacity: 0; }
 }
 
-.inventory-detail-ledger-page .toast-content {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #ffffff;
-    border: 1px solid #b7eb8f;
-    border-radius: 3px;
-    padding: 6px 14px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-    color: #333333;
-    font-size: 12px;
-}
+.inventory-detail-ledger-page 
 
 .inventory-detail-ledger-page .page-content {
     flex: 1;

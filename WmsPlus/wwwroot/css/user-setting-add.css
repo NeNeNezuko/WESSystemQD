@@ -1,0 +1,248 @@
+﻿/* ===== 用户设定新增/编辑页面样式 ===== */
+
+.usradd-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+/* 工具栏 */
+.usradd-page .page-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-bottom: 1px solid #e8e8e8;
+    background-color: #fafafa;
+    flex-shrink: 0;
+}
+
+.usradd-page .toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    color: #333333;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.usradd-page .toolbar-btn:hover {
+    border-color: #40a9ff;
+    color: #40a9ff;
+}
+
+.usradd-page .toolbar-btn.primary-btn {
+    background-color: #1890ff;
+    border-color: #1890ff;
+    color: #ffffff;
+}
+
+.usradd-page .toolbar-btn.primary-btn:hover {
+    background-color: #40a9ff;
+    border-color: #40a9ff;
+    color: #ffffff;
+}
+
+/* 表单滚动区域 */
+.usradd-page .form-area-scroll {
+    flex: 1 1 0%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px 16px;
+}
+
+/* 表单区块 */
+.usradd-page .form-section {
+    margin-bottom: 16px;
+}
+
+.usradd-page .form-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333333;
+    padding: 6px 0;
+    margin-bottom: 10px;
+    border-left: 3px solid #1890ff;
+    padding-left: 8px;
+}
+
+/* 三列网格布局 */
+.usradd-page .form-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 16px;
+}
+
+/* 表单项 */
+.usradd-page .form-item-add {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: relative;
+}
+
+.usradd-page .form-label-add {
+    font-size: 12px;
+    color: #666666;
+    white-space: nowrap;
+}
+
+.usradd-page .form-label-add .required-mark {
+    color: #ff4d4f;
+    margin-right: 2px;
+}
+
+.usradd-page .form-input-add {
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #333333;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.usradd-page .form-input-add:focus {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.usradd-page .form-input-add:disabled {
+    background-color: #f5f5f5;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+/* 搜索图标按钮 */
+.usradd-page .input-search-icon {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.usradd-page .input-search-icon:hover {
+    opacity: 1;
+}
+
+/* 密码切换按钮 */
+.usradd-page .pwd-toggle-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.usradd-page .pwd-toggle-btn:hover {
+    opacity: 1;
+}
+
+/* 行内复选框 */
+.usradd-page .checkbox-wrapper-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-top: 20px;
+    font-size: 12px;
+    color: #333333;
+}
+
+.usradd-page .checkbox-wrapper-inline input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #1890ff;
+}
+
+.usradd-page .checkbox-wrapper-inline label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* 下拉选择框 */
+.usradd-page .form-select-add {
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #333333;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
+}
+
+.usradd-page .form-select-add:focus {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* 文本域 */
+.usradd-page .form-textarea-add {
+    width: 100%;
+    min-height: 60px;
+    padding: 6px 8px;
+    font-size: 12px;
+    color: #333333;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    outline: none;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.usradd-page .form-textarea-add:focus {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* 全宽表单项 */
+.usradd-page .form-textarea-wrapper-full {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* 响应式：小屏幕下两列 */
+@media (max-width: 900px) {
+    .usradd-page .form-grid-3col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 响应式：更小屏幕下单列 */
+@media (max-width: 600px) {
+    .usradd-page .form-grid-3col {
+        grid-template-columns: 1fr;
+    }
+}

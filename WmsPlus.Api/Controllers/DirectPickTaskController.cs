@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WmsPlus.Api.Data;
 using WmsPlus.Api.Models;
+using WmsPlus.Api.Utils;
 
 namespace WmsPlus.Api.Controllers;
 
@@ -156,7 +157,7 @@ public class DirectPickTaskController : ControllerBase
                 Success = true,
                 Data = new DirectPickTaskDetailDto
                 {
-                    Header = header,
+                    Header = MySqlDateHelper.SafeConvert(header),
                     Details = details
                 }
             });

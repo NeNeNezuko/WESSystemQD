@@ -1,0 +1,461 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject ILogger<CategoryMemberSettingEdit> _logger
+@inject TokenProvider TokenProvider
+
+<link rel="stylesheet" href="css/category-member-setting-edit.css" />
+
+<div class="cms-edit-page">
+    <!-- 页面标题栏 -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="favorite-btn @(isFavorited ? "favorited" : "")" @onclick="ToggleFavorite" title="收藏">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                          fill="@((isFavorited ? "#FFD700" : "none"))"
+                          stroke="@((isFavorited ? "#FFD700" : "#666666"))"
+                          stroke-width="2"/>
+                </svg>
+            </button>
+            <span class="page-title">类别成员设定*编辑</span>
+        </div>
+        <div class="header-right">
+            <button class="header-action-btn primary" @onclick="HandleSave">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                    <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 8.28a.75.75 0 011.06-1.06L6 9.94l6.72-6.72a.75.75 0 011.06 0z"/>
+                </svg>
+                <span>保存</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleQuery">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <circle cx="7" cy="7" r="5"/>
+                    <line x1="11" y1="11" x2="15" y2="15" stroke="#666666" stroke-width="1.5"/>
+                </svg>
+                <span>查询</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 表单区域：类别代号、类别名称 -->
+    <div class="form-area">
+        <div class="form-row">
+            <div class="form-item-cms">
+                <label class="form-label-cms"><span class="required-mark">*</span> 类别代号</label>
+                <input type="text" class="form-input-cms" value="@EditRoleNo" readonly />
+            </div>
+            <div class="form-item-cms">
+                <label class="form-label-cms">类别名称<span class="required-mark">*</span></label>
+                <input type="text" class="form-input-cms" value="@RoleName" readonly />
+            </div>
+        </div>
+    </div>
+
+    <!-- 成员表格区域 -->
+    <div class="member-table-area">
+        <table class="member-table">
+            <thead>
+                <tr>
+                    <th style="width:200px;">用户代号<span class="required-mark">*</span></th>
+                    <th style="width:auto;">用户名称<span class="required-mark">*</span></th>
+                    <th style="width:60px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (members.Count == 0)
+                {
+                    <tr><td colspan="3" class="empty-cell"></td></tr>
+                }
+                else
+                {
+                    @for (int i = 0; i < members.Count; i++)
+                    {
+                        var m = members[i];
+                        <tr>
+                            <td>@m.Usr</td>
+                            <td>@m.Name</td>
+                            <td><button class="delete-btn" @onclick="() => RemoveMember(i)">删除</button></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 底部按钮区 -->
+    <div class="bottom-bar">
+        <button class="bottom-btn primary-bottom-btn" @onclick="OpenUserSelector">新增用户</button>
+        <button class="bottom-btn" @onclick="HandleClear">清空</button>
+        <button class="bottom-btn" @onclick="HandleReset">重置</button>
+    </div>
+</div>
+
+<!-- 用户选择弹窗 -->
+@if (showUserDialog)
+{
+    <div class="user-dialog-overlay" @onclick="CloseUserDialog">
+        <div class="user-dialog" @onclick:stopPropagation>
+            <div class="user-dialog-header">
+                <span>用户(PSWD)</span>
+                <button class="dialog-close-btn" @onclick="CloseUserDialog">&times;</button>
+            </div>
+            <div class="user-dialog-body">
+                <!-- 左侧过滤 -->
+                <div class="filter-panel">
+                    <div class="filter-header">过滤</div>
+                    <div class="filter-form">
+                        <input type="text" class="filter-input" placeholder="输入关键字查询"
+                               @bind="userKeyword" @bind:event="oninput" @onkeyup="HandleUserKeyup" />
+                        <button class="filter-search-btn" @onclick="SearchUsers">查询</button>
+                    </div>
+                </div>
+                <!-- 右侧用户表格 -->
+                <div class="user-table-panel">
+                    <table class="user-select-table">
+                        <thead>
+                            <tr>
+                                <th style="width:36px;"><input type="checkbox" @onchange="ToggleSelectAll" checked="@isAllSelected" /></th>
+                                <th style="width:50px;">项次</th>
+                                <th style="width:150px;">用户代号<span class="required-mark">*</span></th>
+                                <th style="width:auto;">用户名称<span class="required-mark">*</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (userList.Count == 0)
+                            {
+                                <tr><td colspan="4" class="empty-user-cell"><div class="empty-user-data"><svg viewBox="0 0 64 64" width="48" height="48" fill="none"><rect x="8" y="8" width="48" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/><path d="M24 28h16M24 36h12" stroke="#D9D9D9" stroke-width="2" stroke-linecap="round"/></svg><p>暂无数据</p></div></td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < userList.Count; i++)
+                                {
+                                    var u = userList[i];
+                                    var idx = (userPageIndex - 1) * userPageSize + i + 1;
+                                    var isChecked = selectedUserUsrs.Contains(u.Usr);
+                                    <tr>
+                                        <td><input type="checkbox" @onchange="(ChangeEventArgs e) => ToggleUserSelect(u.Usr, (bool)e.Value!)" checked="@isChecked" /></td>
+                                        <td>@idx</td>
+                                        <td>@u.Usr</td>
+                                        <td>@u.Name</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <!-- 分页栏 -->
+                    <div class="user-pagination">
+                        <span>共 @userTotal 条记录</span>
+                        <div class="page-nav">
+                            <button class="page-btn" disabled="@(userPageIndex <= 1)" @onclick="() => ChangeUserPage(-1)">&lt;</button>
+                            <input type="text" class="page-input" value="@userPageIndex" readonly />
+                            <button class="page-btn" disabled="@((userPageIndex * userPageSize) >= userTotal)" @onclick="() => ChangeUserPage(1)">&gt;</button>
+                        </div>
+                    </div>
+                    <!-- 弹窗底部按钮 -->
+                    <div class="user-dialog-footer">
+                        <button class="dialog-action-btn clear-dialog-btn" @onclick="ClearUserSelection">清空</button>
+                        <button class="dialog-action-btn confirm-dialog-btn" @onclick="ConfirmUserSelection">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter] public string EditRoleNo { get; set; } = "";
+
+    private const string FAVORITE_KEY = "wms_favorite_category_member_setting_edit";
+    private bool isFavorited = false;
+
+    private string RoleName = "";
+    private List<RoleMemberItem> members = new();
+    private List<RoleMemberItem> originalMembers = new();
+
+    // 用户选择弹窗
+    private bool showUserDialog = false;
+    private string userKeyword = "";
+    private List<UserSelectItem> userList = new();
+    private int userTotal = 0;
+    private int userPageIndex = 1;
+    private int userPageSize = 10;
+    private HashSet<string> selectedUserUsrs = new();
+    private bool isAllSelected = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try { var r = await JS.InvokeAsync<string>("localStorage.getItem", FAVORITE_KEY); isFavorited = r == "true"; } catch { }
+
+        if (!string.IsNullOrWhiteSpace(EditRoleNo))
+        {
+            await LoadRoleInfo();
+            await LoadMembers();
+        }
+    }
+
+    // ====== 数据加载 ======
+
+    // ===== 收藏 =====
+    private async Task ToggleFavorite()
+    {
+        isFavorited = !isFavorited;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", FAVORITE_KEY, isFavorited.ToString().ToLower()); } catch {}
+        StateHasChanged();
+    }
+
+    private async Task LoadRoleInfo()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/CategoryMemberSetting/search?roleNo={Uri.EscapeDataString(EditRoleNo)}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<RoleSearchDto>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null && response.Data.Count > 0)
+            {
+                RoleName = response.Data[0].Name;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载角色信息失败");
+        }
+    }
+
+    private async Task LoadMembers()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/CategoryMemberSetting/members?roleNo={Uri.EscapeDataString(EditRoleNo)}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<MemberDto>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                members = response.Data.Select(x => new RoleMemberItem { Usr = x.Usr, Name = x.Name }).ToList();
+                originalMembers = members.ToList();
+            }
+            else
+            {
+                members = new();
+                originalMembers = new();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "加载角色成员失败");
+            members = new();
+            originalMembers = new();
+        }
+    }
+
+    // ====== 操作 ======
+
+    private void RemoveMember(int index)
+    {
+        if (index >= 0 && index < members.Count)
+        {
+            members.RemoveAt(index);
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/CategoryMemberSetting/members";
+            var body = new { RoleNo = EditRoleNo, Members = members.Select(m => m.Usr).ToList() };
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Put, url, TokenProvider.Token);
+            request.Content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(body),
+                System.Text.Encoding.UTF8);
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<bool>>(jsonOptions);
+
+            if (response != null && response.Success)
+            {
+                originalMembers = members.ToList();
+                await JS.InvokeVoidAsync("alert", "保存成功");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", $"保存失败: {response?.Message ?? "未知错误"}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "保存角色成员失败");
+            await JS.InvokeVoidAsync("alert", $"保存失败: {ex.Message}");
+        }
+    }
+
+    private async Task HandleQuery()
+    {
+        await LoadMembers();
+    }
+
+    private void HandleClear()
+    {
+        members.Clear();
+    }
+
+    private void HandleReset()
+    {
+        members = originalMembers.ToList();
+    }
+
+    // ====== 用户选择弹窗 ======
+
+    private void OpenUserSelector()
+    {
+        showUserDialog = true;
+        userKeyword = "";
+        userPageIndex = 1;
+        // 预选已有成员
+        selectedUserUsrs = new HashSet<string>(members.Select(m => m.Usr));
+        _ = SearchUsers();
+    }
+
+    private void CloseUserDialog()
+    {
+        showUserDialog = false;
+    }
+
+    private async Task SearchUsers()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/CategoryMemberSetting/users?keyword={Uri.EscapeDataString(userKeyword)}&pageIndex={userPageIndex}&pageSize={userPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<List<UserDto>>>(jsonOptions);
+            if (response != null && response.Success && response.Data != null)
+            {
+                userList = response.Data.Select(x => new UserSelectItem { Usr = x.Usr, Name = x.Name }).ToList();
+                userTotal = response.Total;
+            }
+            else
+            {
+                userList = new();
+                userTotal = 0;
+            }
+            UpdateSelectAllState();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "查询用户列表失败");
+            userList = new();
+            userTotal = 0;
+        }
+    }
+
+    private void HandleUserKeyup(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") _ = SearchUsers();
+    }
+
+    private void ToggleUserSelect(string usr, bool checkedVal)
+    {
+        if (checkedVal)
+            selectedUserUsrs.Add(usr);
+        else
+            selectedUserUsrs.Remove(usr);
+        UpdateSelectAllState();
+    }
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        if ((bool)e.Value!)
+        {
+            foreach (var u in userList)
+                selectedUserUsrs.Add(u.Usr);
+        }
+        else
+        {
+            foreach (var u in userList)
+                selectedUserUsrs.Remove(u.Usr);
+        }
+        UpdateSelectAllState();
+    }
+
+    private void UpdateSelectAllState()
+    {
+        isAllSelected = userList.Count > 0 && userList.All(u => selectedUserUsrs.Contains(u.Usr));
+    }
+
+    private async Task ChangeUserPage(int delta)
+    {
+        userPageIndex += delta;
+        await SearchUsers();
+    }
+
+    private void ClearUserSelection()
+    {
+        selectedUserUsrs.Clear();
+        isAllSelected = false;
+    }
+
+    private void ConfirmUserSelection()
+    {
+        // 将选中但不在当前成员列表中的用户添加到成员列表（去重）
+        var existingUsrs = new HashSet<string>(members.Select(m => m.Usr));
+        foreach (var usr in selectedUserUsrs)
+        {
+            if (!existingUsrs.Contains(usr))
+            {
+                var found = userList.FirstOrDefault(u => u.Usr == usr);
+                members.Add(new RoleMemberItem { Usr = usr, Name = found?.Name ?? "" });
+            }
+        }
+        showUserDialog = false;
+    }
+
+    // ====== 内部模型 ======
+
+    private class RoleMemberItem
+    {
+        public string Usr { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    private class UserSelectItem
+    {
+        public string Usr { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    // ====== API 响应 DTO ======
+
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public T? Data { get; set; }
+        public int Total { get; set; }
+    }
+
+    private class RoleSearchDto
+    {
+        public string RoleNo { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string TypeId { get; set; } = "";
+        public string CompNo { get; set; } = "";
+    }
+
+    private class MemberDto
+    {
+        public string Usr { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    private class UserDto
+    {
+        public string Usr { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+}

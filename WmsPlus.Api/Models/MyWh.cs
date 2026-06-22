@@ -12,8 +12,8 @@ public class MyWh
     public string? UP_WH { get; set; }
     public string? REM { get; set; }
     public string? USR { get; set; }
-    public DateTime? STOP_DD { get; set; }
-    public DateTime? UP_DD { get; set; }
+    public DateTime? STOP_DD { get; set; }        // 停用日期
+    public DateTime? UP_DD { get; set; }          // 上次更新时间
 
     // ===== 基本信息扩展字段 =====
     public string? CNT_MAN { get; set; }        // 联系人代号

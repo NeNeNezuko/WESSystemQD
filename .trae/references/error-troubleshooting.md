@@ -15,6 +15,7 @@
 | 页面底部弹出 "An unhandled error has occurred. Reload" | `does not have a property matching the name 'xxx'` | [#1 组件不支持透传属性导致渲染崩溃](#1-组件不支持透传属性导致渲染崩溃) |
 | API 返回 404 Not Found + JSON 解析异常 | `JsonException: ExpectedJsonTokens`, `Status=404 Body=` | [#2 URL 查询字符串缺少 ? 分隔符](#2-url-查询字符串缺少--分隔符导致-404) |
 | 选择器弹窗空白无数据 | 控制台 401/500 错误 | [#3 EF Core 实体缺少 HasKey 配置](#3-ef-core-实体缺少-haskey-配置导致查询崩溃) |
+| 查询页面显示"暂无数据"（数据库有数据） | `InvalidCastException: Unable to cast object of type 'System.Byte[]' to type 'System.DateTime'` | [#5 MySQL DATE字段映射DateTime导致Byte[]转换异常](#5-mysql-date字段映射datetime导致byte转换异常) |
 | 登录成功后页面卡死（白屏转圈） | 无报错，页面无限加载 | [#4 OnAfterRenderAsync + StateHasChanged 导致无限循环渲染](#4-onafterrenderasync--statehaschanged-导致无限循环渲染) |
 
 ---
@@ -286,6 +287,61 @@ private async Task UpdateArrowVisibility()
 - **JS Interop 返回值更新组件状态前先做 diff 比较**：避免不必要的渲染开销
 - **开发调试技巧**：如果页面白屏无报错，优先检查 `OnAfterRenderAsync` / `OnParametersSetAsync` 中是否存在无条件 `StateHasChanged()` 调用
 - 参考修复文件：[DashboardLayout.razor](../../WmsPlus/Layout/DashboardLayout.razor) 第 1139-1168 行
+
+---
+
+## 5. MySQL DATE 字段映射 DateTime 导致 Byte[] 转换异常
+
+### 症状
+
+- 查询页面显示 **"暂无数据"**，但数据库中确认有数据
+- 后端日志报错：
+  ```
+  System.InvalidCastException: Unable to cast object of type 'System.Byte[]' to type 'System.DateTime'.
+     at MySqlConnector.Core.Row.GetDateTime(Int32 ordinal)
+  ```
+- 前端 catch 异常后静默设为空列表，用户只看到"暂无数据"
+
+### 触发条件
+
+- EF Core 实体类中将数据库 `DATE` 类型字段定义为 C# `DateTime?` 属性
+- MySQL 的 DATE 列在特定连接配置下被驱动返回为 `Byte[]` 而非 `DateTime`
+- **受影响表**：`MY_WH`（STOP_DD、UP_DD、SYS_DATE），可能还有其他表的日期字段
+
+### 根因分析
+
+MySQL Connector/NET 在某些情况下将 DATE 类型的列值作为 `Byte[]` 返回，EF Core 尝试将其转换为 `DateTime?` 时抛出 `InvalidCastException`。这导致整个查询失败（不是单条记录错误），前端收到异常后显示空数据。
+
+### 修复方法
+
+1. 将实体类中对应属性从 `DateTime?` 改为 `string?`
+2. 同步修改：
+   - 实体模型类（如 `MyWh.cs`）
+   - Controller 中的 DTO 类（如 `WarehouseCodeSettingDto.StopDd`）
+   - 前端 Model 类
+   - 前端页面中的 `.ToString("yyyy-MM-dd")` 格式化改为直接使用字符串
+3. 如果需要在 Update 时写入当前时间，改用 `DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")`
+
+**示例修改**：
+```csharp
+// 修改前
+public DateTime? STOP_DD { get; set; }
+
+// 修改后
+public string? STOP_DD { get; set; }  // 数据库为DATE类型，用string接收避免Byte[]转换异常
+```
+
+### 影响范围
+
+所有使用 db_gz01 数据库且包含 DATE 类型字段的实体类。以下表已确认受影响：
+- `MY_WH`：STOP_DD、UP_DD、SYS_DATE
+- 其他含日期字段但实际存储格式非标准 DATETIME/TIMESTAMP 的表
+
+### 预防措施
+
+- 新增 DbSet 实体时，对 DATE 类型字段优先使用 `string?` 接收
+- 如果必须用 DateTime，需先通过原始 SQL 确认该列的实际数据类型
+- 参考修复文件：[MyWh.cs](../../WmsPlus.Api/Models/MyWh.cs) 第15-16行
 
 ---
 

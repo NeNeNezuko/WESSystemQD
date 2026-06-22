@@ -1,4 +1,4 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ILogger<DocumentConfirm> _logger
@@ -20,7 +20,7 @@
             </button>
             <span class="page-title">单据确认作业</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
@@ -28,7 +28,17 @@
                     <rect x="3" y="16" width="18" height="2" rx="1"/>
                 </svg>
             </button>
-        </div>
+</div>
+<div class="header-right">
+        
+                    <!-- 内层选项卡：待确认 / 已确认 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "pending" ? "active" : "")" @onclick="SwitchToPendingTab">
+                            待确认
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "confirmed" ? "active" : "")" @onclick="SwitchToConfirmedTab">
+                            已确认
+                        </div>
     </div>
 
     <!-- 收藏成功提示 -->
@@ -134,17 +144,7 @@
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
             <!-- 工具栏：根据内层选项卡显示不同按钮 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <!-- 内层选项卡：待确认 / 已确认 -->
-                    <div class="inner-tab-bar-inline">
-                        <div class="inner-tab-item @(activeInnerTab == "pending" ? "active" : "")" @onclick="SwitchToPendingTab">
-                            待确认
-                        </div>
-                        <div class="inner-tab-item @(activeInnerTab == "confirmed" ? "active" : "")" @onclick="SwitchToConfirmedTab">
-                            已确认
-                        </div>
-                    </div>
+            
                     @if (activeInnerTab == "pending")
                     {
                         <button class="toolbar-btn primary-btn" @onclick="HandleConfirm">

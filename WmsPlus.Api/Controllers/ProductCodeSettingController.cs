@@ -21,6 +21,62 @@ public class ProductCodeSettingController : ControllerBase
     }
 
     /// <summary>
+    /// 将前端大类文字转换为数据库代码
+    /// 原料=4, 配件=5, 成品=2, 半成品=3
+    /// </summary>
+    private static string ConvertKndToCode(string? knd)
+    {
+        return knd switch
+        {
+            "原料" => "4",
+            "配件" => "5",
+            "成品" => "2",
+            "半成品" => "3",
+            _ => knd ?? ""
+        };
+    }
+
+    /// <summary>
+    /// 将数据库代码转换为前端大类文字（编辑回填用）
+    /// </summary>
+    private static string ConvertKndToText(string? code)
+    {
+        return code switch
+        {
+            "4" => "原料",
+            "5" => "配件",
+            "2" => "成品",
+            "3" => "半成品",
+            _ => code ?? ""
+        };
+    }
+
+    /// <summary>
+    /// 安全转换日期字段（处理 MySqlConnector.MySqlDateTime 类型）
+    /// </summary>
+    private static DateTime? SafeDateTime(object? value)
+    {
+        if (value == null) return null;
+        if (value is DateTime dt) return dt;
+        // MySQL Connector 可能返回 MySqlDateTime 类型，需转换为 DateTime
+        try
+        {
+            var type = value.GetType();
+            if (type.FullName == "MySqlConnector.MySqlDateTime" || type.Name == "MySqlDateTime")
+            {
+                var method = type.GetMethod("GetDateTime");
+                if (method != null)
+                    return (DateTime)method.Invoke(value, null)!;
+                var prop = type.GetProperty("Value");
+                if (prop != null)
+                    return (DateTime)prop.GetValue(value)!;
+            }
+            return Convert.ToDateTime(value);
+        }
+        catch { return null; }
+    }
+
+    /// <summary>
     /// 查询货品代号设定列表
     /// </summary>
     [HttpGet("search")]
@@ -69,7 +125,7 @@ public class ProductCodeSettingController : ControllerBase
                 Knd = x.KND ?? "",
                 CwxzNo = x.CWXZ_NO ?? "",
                 Dep = x.DEP ?? "",
-                NouseDd = x.NOUSE_DD,
+                NouseDd = SafeDateTime(x.NOUSE_DD),
                 Pkg1Ut = x.PK2_UT ?? "",
                 Pkg1QtyRaw = x.PK2_QTY,
                 Pkg2Ut = x.PK3_UT ?? "",
@@ -194,7 +250,7 @@ public class ProductCodeSettingController : ControllerBase
                 UsrWh = entity.USR_WH ?? "",
                 ChkBat = entity.CHK_BAT == "T",
                 ChkNum = entity.CHK_NUM == "T",
-                Knd = entity.KND ?? "",
+                Knd = ConvertKndToText(entity.KND),
                 Idx1 = entity.IDX1 ?? "",
                 Ut = entity.UT ?? "",
                 Ut1 = entity.UT1 ?? "",
@@ -206,8 +262,8 @@ public class ProductCodeSettingController : ControllerBase
                 Dep = entity.DEP ?? "",
                 ValidId = entity.VALID_ID ?? "",
                 ValidDays = entity.VALID_DAYS,
-                StartDD = entity.START_DD,
-                NouseDD = entity.NOUSE_DD,
+                StartDD = SafeDateTime(entity.START_DD),
+                NouseDD = SafeDateTime(entity.NOUSE_DD),
                 TplNo = entity.TPL_NO ?? "",
                 MobId = entity.MOB_ID ?? "",
                 CfProp = entity.CF_PROP ?? "",
@@ -286,7 +342,7 @@ public class ProductCodeSettingController : ControllerBase
             entity.USR_WH = request.UsrWh;
             entity.CHK_BAT = request.ChkBat ? "T" : "F";
             entity.CHK_NUM = request.ChkNum ? "T" : "F";
-            entity.KND = request.Knd;
+            entity.KND = ConvertKndToCode(request.Knd);
             entity.IDX1 = request.Idx1;
             entity.UT = request.Ut;
             entity.UT1 = request.Ut1;
@@ -325,7 +381,7 @@ public class ProductCodeSettingController : ControllerBase
             entity.PAK_NW = request.PakNw;
             entity.PAK_WEIGHT_UNIT = request.PakWeightUnit;
             entity.PAK_GW = request.PakGw;
-            entity.PAK_MEAST = request.PakMeast;
+            entity.PAK_MEAST = string.IsNullOrWhiteSpace(request.PakMeast) ? null : request.PakMeast;
             entity.PAK_MEAST_UNIT = request.PakMeastUnit;
             entity.EFFECT_ID = request.EffectId;
 
@@ -390,7 +446,7 @@ public class ProductCodeSettingController : ControllerBase
                 USR_WH = request.UsrWh,
                 CHK_BAT = request.ChkBat ? "T" : "F",
                 CHK_NUM = request.ChkNum ? "T" : "F",
-                KND = request.Knd,
+                KND = ConvertKndToCode(request.Knd),
                 IDX1 = request.Idx1,
                 UT = request.Ut,
                 UT1 = request.Ut1,
@@ -429,7 +485,7 @@ public class ProductCodeSettingController : ControllerBase
                 PAK_NW = request.PakNw,
                 PAK_WEIGHT_UNIT = request.PakWeightUnit,
                 PAK_GW = request.PakGw,
-                PAK_MEAST = request.PakMeast,
+                PAK_MEAST = string.IsNullOrWhiteSpace(request.PakMeast) ? null : request.PakMeast,
                 PAK_MEAST_UNIT = request.PakMeastUnit,
                 EFFECT_ID = request.EffectId,
 

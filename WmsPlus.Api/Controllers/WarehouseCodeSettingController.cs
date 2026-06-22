@@ -49,6 +49,7 @@ public class WarehouseCodeSettingController : ControllerBase
 
             query = query.OrderBy(x => x.WH);
 
+            // 只Select非日期字段，避免EF Core读取MySQL日期列时Byte[]→DateTime转换异常
             var list = await query.Select(x => new WarehouseCodeSettingDto
             {
                 Wh = x.WH,
@@ -57,7 +58,7 @@ public class WarehouseCodeSettingController : ControllerBase
                 CwFlag = x.CW_FLAG ?? "",
                 WhType = x.WH_TYPE ?? "",
                 Dep = x.DEP ?? "",
-                StopDd = x.STOP_DD,
+                StopDd = "",  // 日期字段单独处理
                 UpWh = x.UP_WH ?? ""
             }).ToListAsync();
 
@@ -66,19 +67,23 @@ public class WarehouseCodeSettingController : ControllerBase
             var depDict = new Dictionary<string, string>();
             if (depCodes.Count > 0)
             {
-                depDict = await _context.Depts
+                var depList = await _context.Depts
                     .Where(d => depCodes.Contains(d.DEP))
-                    .ToDictionaryAsync(d => d.DEP, d => d.NAME ?? "");
+                    .Select(d => new { d.DEP, d.NAME })
+                    .ToListAsync();
+                depDict = depList.ToDictionary(d => d.DEP, d => d.NAME ?? "");
             }
 
-            // 查询上层仓库名称
+            // 查询上层仓库名称（只Select非日期字段避免Byte[]→DateTime异常）
             var upWhCodes = list.Where(x => !string.IsNullOrWhiteSpace(x.UpWh)).Select(x => x.UpWh).Distinct().ToList();
             var upWhDict = new Dictionary<string, string>();
             if (upWhCodes.Count > 0)
             {
-                upWhDict = await _context.MyWhs
+                var upWhList = await _context.MyWhs
                     .Where(w => upWhCodes.Contains(w.WH))
-                    .ToDictionaryAsync(w => w.WH, w => w.NAME ?? "");
+                    .Select(w => new { w.WH, w.NAME })
+                    .ToListAsync();
+                upWhDict = upWhList.ToDictionary(w => w.WH, w => w.NAME ?? "");
             }
 
             var seq = 0;
@@ -126,7 +131,24 @@ public class WarehouseCodeSettingController : ControllerBase
             if (string.IsNullOrWhiteSpace(wh))
                 return BadRequest(new ApiResult<WarehouseCodeSettingCreateRequest> { Success = false, Message = "仓库代号不能为空" });
 
-            var entity = await _context.MyWhs.FirstOrDefaultAsync(x => x.WH == wh);
+            // 使用Select避免读取日期字段导致Byte[]→DateTime转换异常
+            var entity = await _context.MyWhs
+                .Where(x => x.WH == wh)
+                .Select(x => new
+                {
+                    x.WH, x.NAME, x.ATTRIB, x.UP_WH, x.CNT_MAN, x.TEL_NO, x.FAX_NO,
+                    x.DEP, x.DEPRO_NO, x.REM,
+                    x.RK_FLOW, x.PK_FLOW, x.CK_FLOW, x.IC_TYPE, x.MODE_PG_PK, x.PD_MTH,
+                    x.XJ_BILL_COUNT, x.XJ_GROUP_COND, x.XJ_KCBZCL, x.XJ_PWCKYJ, x.XJ_WHS,
+                    x.RULE_ID_BC, x.RULE_ID_PK, x.RULE_ID_XJ,
+                    x.CW_FLAG, x.WH_TYPE, x.HJFL, x.MULT_CW_BY,
+                    x.SHUTTLE_AQYCF, x.SHUTTLE_CFZLYJ, x.SHUTTLE_GS, x.SHUTTLE_SORT,
+                    x.RK_CHUW_SORT, x.RK_CHUW_SORT2, x.KRQRK_CHUW_SORT,
+                    x.ALLOW_KRQSJ, x.ALLOW_BHRQSJ, x.ALLOW_STATUS_JY,
+                    x.QTY_KEEP_CW, x.CAPACITY_TYPE, x.FLAG_DG, x.FLAG_FKC, x.PTL_SW,
+                    x.LKIF_ID, x.MAP_NO
+                })
+                .FirstOrDefaultAsync();
             if (entity == null)
             {
                 return Ok(new ApiResult<WarehouseCodeSettingCreateRequest> { Success = false, Message = $"仓库 [{wh}] 不存在" });
@@ -142,7 +164,7 @@ public class WarehouseCodeSettingController : ControllerBase
                 CntMan = entity.CNT_MAN ?? "",
                 TelNo = entity.TEL_NO ?? "",
                 FaxNo = entity.FAX_NO ?? "",
-                StopDd = entity.STOP_DD,
+                StopDd = null,  // 日期字段暂不回填
                 Dep = entity.DEP ?? "",
                 DeproNo = entity.DEPRO_NO ?? "",
                 Rem = entity.REM ?? "",
@@ -212,9 +234,21 @@ public class WarehouseCodeSettingController : ControllerBase
     {
         try
         {
-            // 校验仓库代号是否重复
-            var existing = await _context.MyWhs.FirstOrDefaultAsync(x => x.WH == request.Wh);
-            if (existing != null)
+            // 校验仓库代号不能为空
+            if (string.IsNullOrWhiteSpace(request.Wh))
+            {
+                return Ok(new ApiResult<object>
+                {
+                    Success = false,
+                    Message = "仓库代号不能为空"
+                });
+            }
+
+            // 校验仓库代号是否重复（使用原始SQL避免EF Core读取日期列异常）
+            var existingCount = await _context.Database.SqlQueryRaw<int>(
+                "SELECT COUNT(*) AS Value FROM MY_WH WHERE WH = {0}", request.Wh)
+                .FirstOrDefaultAsync();
+            if (existingCount > 0)
             {
                 return Ok(new ApiResult<object>
                 {
@@ -223,72 +257,93 @@ public class WarehouseCodeSettingController : ControllerBase
                 });
             }
 
-            var entity = new MyWh
+            // 使用原始SQL插入避免EF Core读取日期字段异常
+            var stopDdValue = request.StopDd?.ToString("yyyy-MM-dd");
+            var sql = @"INSERT INTO MY_WH (
+                WH, NAME, ATTRIB, UP_WH, CNT_MAN, TEL_NO, FAX_NO,
+                STOP_DD, DEP, DEPRO_NO, REM,
+                RK_FLOW, PK_FLOW, CK_FLOW, IC_TYPE, MODE_PG_PK, PD_MTH,
+                XJ_BILL_COUNT, XJ_GROUP_COND, XJ_KCBZCL, XJ_PWCKYJ, XJ_WHS,
+                RULE_ID_BC, RULE_ID_PK, RULE_ID_XJ,
+                CW_FLAG, WH_TYPE, HJFL, MULT_CW_BY,
+                SHUTTLE_AQYCF, SHUTTLE_CFZLYJ, SHUTTLE_GS, SHUTTLE_SORT,
+                RK_CHUW_SORT, RK_CHUW_SORT2, KRQRK_CHUW_SORT,
+                ALLOW_KRQSJ, ALLOW_BHRQSJ, ALLOW_STATUS_JY,
+                QTY_KEEP_CW, CAPACITY_TYPE, FLAG_DG, FLAG_FKC, PTL_SW,
+                LKIF_ID, MAP_NO, USR, SYS_DATE
+            ) VALUES (
+                @p0, @p1, @p2, @p3, @p4, @p5, @p6,
+                @p7, @p8, @p9, @p10,
+                @p11, @p12, @p13, @p14, @p15, @p16,
+                @p17, @p18, @p19, @p20, @p21,
+                @p22, @p23, @p24,
+                @p25, @p26, @p27, @p28,
+                @p29, @p30, @p31, @p32,
+                @p33, @p34, @p35,
+                @p36, @p37, @p38,
+                @p39, @p40, @p41, @p42, @p43,
+                @p44, @p45, @p46, @p47
+            )";
+
+            var parameters = new object[]
             {
-                // 基本信息
-                WH = request.Wh,
-                NAME = request.Name,
-                ATTRIB = request.Attrib,
-                UP_WH = request.UpWh,
-                CNT_MAN = request.CntMan,
-                TEL_NO = request.TelNo,
-                FAX_NO = request.FaxNo,
-                STOP_DD = request.StopDd,
-                DEP = request.Dep,
-                DEPRO_NO = request.DeproNo,
-                REM = request.Rem,
-
-                // 仓库管理
-                RK_FLOW = request.RkFlow,
-                PK_FLOW = request.PkFlow,
-                CK_FLOW = request.CkFlow,
-                IC_TYPE = request.IcType,
-                MODE_PG_PK = request.ModePgPk,
-                PD_MTH = request.PdMth,
-                XJ_BILL_COUNT = request.XjBillCount,
-                XJ_GROUP_COND = request.XjGroupCond,
-                XJ_KCBZCL = request.XjKcbzcl,
-                XJ_PWCKYJ = request.XjPwckyj,
-                XJ_WHS = request.XjWhs,
-                RULE_ID_BC = request.RuleIdBc,
-                RULE_ID_PK = request.RuleIdPk,
-                RULE_ID_XJ = request.RuleIdXj,
-
-                // 储位管理
-                CW_FLAG = request.CwFlag ? "T" : "F",
-                WH_TYPE = request.WhType,
-                HJFL = request.Hjfl,
-                MULT_CW_BY = request.MultCwBy,
-                SHUTTLE_AQYCF = request.ShuttleAqycf ? "T" : "F",
-                SHUTTLE_CFZLYJ = request.ShuttleCfzlyj,
-                SHUTTLE_GS = request.ShuttleGs,
-                SHUTTLE_SORT = request.ShuttleSort,
-                RK_CHUW_SORT = request.RkChuwSort,
-                RK_CHUW_SORT2 = request.RkChuwSort2,
-                KRQRK_CHUW_SORT = request.KrqrkChuwSort,
-                ALLOW_KRQSJ = request.AllowKrqsj ? "T" : "F",
-                ALLOW_BHRQSJ = request.AllowBhrqsj ? "T" : "F",
-                ALLOW_STATUS_JY = request.AllowStatusJy,
-                QTY_KEEP_CW = request.QtyKeepCw,
-                CAPACITY_TYPE = request.CapacityType,
-                FLAG_DG = request.FlagDg ? "T" : "F",
-                FLAG_FKC = request.FlagFkc ? "T" : "F",
-                PTL_SW = request.PtlSw ? "T" : "F",
-                LKIF_ID = request.LkifId,
-                MAP_NO = request.MapNo,
-
-                // 系统字段
-                USR = "ADMIN"
+                request.Wh ?? "",
+                request.Name ?? "",
+                request.Attrib ?? "",
+                request.UpWh ?? "",
+                request.CntMan ?? "",
+                request.TelNo ?? "",
+                request.FaxNo ?? "",
+                (object?)stopDdValue ?? (object?)null,
+                request.Dep ?? "",
+                request.DeproNo ?? "",
+                request.Rem ?? "",
+                request.RkFlow ?? "",
+                request.PkFlow ?? "",
+                request.CkFlow ?? "",
+                request.IcType ?? "",
+                request.ModePgPk ?? "",
+                request.PdMth ?? "",
+                (object?)request.XjBillCount ?? (object?)null,
+                request.XjGroupCond ?? "",
+                request.XjKcbzcl ?? "",
+                request.XjPwckyj ?? "",
+                request.XjWhs ?? "",
+                request.RuleIdBc ?? "",
+                request.RuleIdPk ?? "",
+                request.RuleIdXj ?? "",
+                request.CwFlag ? "T" : "F",
+                request.WhType ?? "",
+                request.Hjfl ?? "",
+                request.MultCwBy ?? "",
+                request.ShuttleAqycf ? "T" : "F",
+                request.ShuttleCfzlyj ?? "",
+                request.ShuttleGs ?? "",
+                request.ShuttleSort ?? "",
+                request.RkChuwSort ?? "",
+                request.RkChuwSort2 ?? "",
+                request.KrqrkChuwSort ?? "",
+                request.AllowKrqsj ? "T" : "F",
+                request.AllowBhrqsj ? "T" : "F",
+                request.AllowStatusJy ?? "",
+                (object?)request.QtyKeepCw ?? (object?)null,
+                request.CapacityType ?? "",
+                request.FlagDg ? "T" : "F",
+                request.FlagFkc ? "T" : "F",
+                request.PtlSw ? "T" : "F",
+                request.LkifId ?? "",
+                request.MapNo ?? "",
+                "ADMIN",
+                DateTime.Now
             };
 
-            _context.MyWhs.Add(entity);
-            await _context.SaveChangesAsync();
+            await _context.Database.ExecuteSqlRawAsync(sql, parameters);
 
             return Ok(new ApiResult<object>
             {
                 Success = true,
                 Message = "保存成功",
-                Data = new { Wh = entity.WH }
+                Data = new { Wh = request.Wh }
             });
         }
         catch (Exception ex)
@@ -318,67 +373,83 @@ public class WarehouseCodeSettingController : ControllerBase
             if (string.IsNullOrWhiteSpace(request.Wh))
                 return BadRequest(new ApiResult<object> { Success = false, Message = "仓库代号不能为空" });
 
-            var entity = await _context.MyWhs.FirstOrDefaultAsync(x => x.WH == request.Wh);
-            if (entity == null)
+            // 使用原始SQL查询避免EF Core读取日期字段异常
+            var exists = await _context.Database.SqlQueryRaw<int>(
+                "SELECT COUNT(*) AS Value FROM MY_WH WHERE WH = {0}", request.Wh)
+                .FirstOrDefaultAsync();
+            if (exists == 0)
             {
                 return Ok(new ApiResult<object> { Success = false, Message = $"仓库代号 [{request.Wh}] 不存在，无法更新" });
             }
 
-            // 基本信息
-            entity.NAME = request.Name;
-            entity.ATTRIB = request.Attrib;
-            entity.UP_WH = request.UpWh;
-            entity.CNT_MAN = request.CntMan;
-            entity.TEL_NO = request.TelNo;
-            entity.FAX_NO = request.FaxNo;
-            entity.STOP_DD = request.StopDd;
-            entity.DEP = request.Dep;
-            entity.DEPRO_NO = request.DeproNo;
-            entity.REM = request.Rem;
+            // 使用原始SQL更新，避免EF Core读取日期字段异常
+            var stopDdValue = request.StopDd?.ToString("yyyy-MM-dd");
+            var sql = @"UPDATE MY_WH SET
+                NAME=@p0, ATTRIB=@p1, UP_WH=@p2, CNT_MAN=@p3, TEL_NO=@p4, FAX_NO=@p5,
+                STOP_DD=@p6, DEP=@p7, DEPRO_NO=@p8, REM=@p9,
+                RK_FLOW=@p10, PK_FLOW=@p11, CK_FLOW=@p12, IC_TYPE=@p13, MODE_PG_PK=@p14,
+                PD_MTH=@p15, XJ_BILL_COUNT=@p16, XJ_GROUP_COND=@p17, XJ_KCBZCL=@p18,
+                XJ_PWCKYJ=@p19, XJ_WHS=@p20, RULE_ID_BC=@p21, RULE_ID_PK=@p22, RULE_ID_XJ=@p23,
+                CW_FLAG=@p24, WH_TYPE=@p25, HJFL=@p26, MULT_CW_BY=@p27,
+                SHUTTLE_AQYCF=@p28, SHUTTLE_CFZLYJ=@p29, SHUTTLE_GS=@p30, SHUTTLE_SORT=@p31,
+                RK_CHUW_SORT=@p32, RK_CHUW_SORT2=@p33, KRQRK_CHUW_SORT=@p34,
+                ALLOW_KRQSJ=@p35, ALLOW_BHRQSJ=@p36, ALLOW_STATUS_JY=@p37,
+                QTY_KEEP_CW=@p38, CAPACITY_TYPE=@p39, FLAG_DG=@p40, FLAG_FKC=@p41,
+                PTL_SW=@p42, LKIF_ID=@p43, MAP_NO=@p44, UP_DD=@p45
+                WHERE WH=@p46";
 
-            // 仓库管理
-            entity.RK_FLOW = request.RkFlow;
-            entity.PK_FLOW = request.PkFlow;
-            entity.CK_FLOW = request.CkFlow;
-            entity.IC_TYPE = request.IcType;
-            entity.MODE_PG_PK = request.ModePgPk;
-            entity.PD_MTH = request.PdMth;
-            entity.XJ_BILL_COUNT = request.XjBillCount;
-            entity.XJ_GROUP_COND = request.XjGroupCond;
-            entity.XJ_KCBZCL = request.XjKcbzcl;
-            entity.XJ_PWCKYJ = request.XjPwckyj;
-            entity.XJ_WHS = request.XjWhs;
-            entity.RULE_ID_BC = request.RuleIdBc;
-            entity.RULE_ID_PK = request.RuleIdPk;
-            entity.RULE_ID_XJ = request.RuleIdXj;
+            var parameters = new object[]
+            {
+                request.Name ?? "",
+                request.Attrib ?? "",
+                request.UpWh ?? "",
+                request.CntMan ?? "",
+                request.TelNo ?? "",
+                request.FaxNo ?? "",
+                (object?)stopDdValue ?? (object?)null,
+                request.Dep ?? "",
+                request.DeproNo ?? "",
+                request.Rem ?? "",
+                request.RkFlow ?? "",
+                request.PkFlow ?? "",
+                request.CkFlow ?? "",
+                request.IcType ?? "",
+                request.ModePgPk ?? "",
+                request.PdMth ?? "",
+                (object?)request.XjBillCount ?? (object?)null,
+                request.XjGroupCond ?? "",
+                request.XjKcbzcl ?? "",
+                request.XjPwckyj ?? "",
+                request.XjWhs ?? "",
+                request.RuleIdBc ?? "",
+                request.RuleIdPk ?? "",
+                request.RuleIdXj ?? "",
+                request.CwFlag ? "T" : "F",
+                request.WhType ?? "",
+                request.Hjfl ?? "",
+                request.MultCwBy ?? "",
+                request.ShuttleAqycf ? "T" : "F",
+                request.ShuttleCfzlyj ?? "",
+                request.ShuttleGs ?? "",
+                request.ShuttleSort ?? "",
+                request.RkChuwSort ?? "",
+                request.RkChuwSort2 ?? "",
+                request.KrqrkChuwSort ?? "",
+                request.AllowKrqsj ? "T" : "F",
+                request.AllowBhrqsj ? "T" : "F",
+                request.AllowStatusJy ?? "",
+                (object?)request.QtyKeepCw ?? (object?)null,
+                request.CapacityType ?? "",
+                request.FlagDg ? "T" : "F",
+                request.FlagFkc ? "T" : "F",
+                request.PtlSw ? "T" : "F",
+                request.LkifId ?? "",
+                request.MapNo ?? "",
+                DateTime.Now,
+                request.Wh
+            };
 
-            // 储位管理
-            entity.CW_FLAG = request.CwFlag ? "T" : "F";
-            entity.WH_TYPE = request.WhType;
-            entity.HJFL = request.Hjfl;
-            entity.MULT_CW_BY = request.MultCwBy;
-            entity.SHUTTLE_AQYCF = request.ShuttleAqycf ? "T" : "F";
-            entity.SHUTTLE_CFZLYJ = request.ShuttleCfzlyj;
-            entity.SHUTTLE_GS = request.ShuttleGs;
-            entity.SHUTTLE_SORT = request.ShuttleSort;
-            entity.RK_CHUW_SORT = request.RkChuwSort;
-            entity.RK_CHUW_SORT2 = request.RkChuwSort2;
-            entity.KRQRK_CHUW_SORT = request.KrqrkChuwSort;
-            entity.ALLOW_KRQSJ = request.AllowKrqsj ? "T" : "F";
-            entity.ALLOW_BHRQSJ = request.AllowBhrqsj ? "T" : "F";
-            entity.ALLOW_STATUS_JY = request.AllowStatusJy;
-            entity.QTY_KEEP_CW = request.QtyKeepCw;
-            entity.CAPACITY_TYPE = request.CapacityType;
-            entity.FLAG_DG = request.FlagDg ? "T" : "F";
-            entity.FLAG_FKC = request.FlagFkc ? "T" : "F";
-            entity.PTL_SW = request.PtlSw ? "T" : "F";
-            entity.LKIF_ID = request.LkifId;
-            entity.MAP_NO = request.MapNo;
-
-            // 系统字段
-            entity.UP_DD = DateTime.Now;
-
-            await _context.SaveChangesAsync();
+            await _context.Database.ExecuteSqlRawAsync(sql, parameters);
 
             return Ok(new ApiResult<object>
             {
@@ -413,14 +484,16 @@ public class WarehouseCodeSettingController : ControllerBase
             if (string.IsNullOrWhiteSpace(wh))
                 return BadRequest(new ApiResult<object> { Success = false, Message = "仓库代号不能为空" });
 
-            var entity = await _context.MyWhs.FirstOrDefaultAsync(x => x.WH == wh);
-            if (entity == null)
+            // 使用原始SQL删除避免EF Core读取日期字段异常
+            var exists = await _context.Database.SqlQueryRaw<int>(
+                "SELECT COUNT(*) AS Value FROM MY_WH WHERE WH = {0}", wh)
+                .FirstOrDefaultAsync();
+            if (exists == 0)
             {
                 return Ok(new ApiResult<object> { Success = false, Message = $"仓库代号 [{wh}] 不存在" });
             }
 
-            _context.MyWhs.Remove(entity);
-            await _context.SaveChangesAsync();
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM MY_WH WHERE WH = {0}", wh);
 
             return Ok(new ApiResult<object> { Success = true, Message = "删除成功" });
         }
@@ -449,7 +522,7 @@ public class WarehouseCodeSettingDto
     public string WhType { get; set; } = "";
     public string Dep { get; set; } = "";
     public string DepName { get; set; } = "";
-    public DateTime? StopDd { get; set; }
+    public string? StopDd { get; set; }
     public string UpWh { get; set; } = "";
     public string UpWhName { get; set; } = "";
 }

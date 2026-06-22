@@ -9,27 +9,6 @@
 }
 
 /* ===== 顶部标题栏 ===== */
-.system-setting-page .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    background: #fff;
-    border-bottom: 1px solid #e8e8e8;
-    flex-shrink: 0;
-}
-
-.system-setting-page .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.system-setting-page .page-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a1a;
-}
 
 .system-setting-page .header-right .save-btn {
     padding: 6px 24px;

@@ -207,8 +207,11 @@
 </style>
 
 <!-- 货品代号输入框 -->
-<div class="form-item">
-    <label class="form-label">@Label</label>
+<div class="form-item" @attributes="AdditionalAttributes">
+    @if (!HideLabel)
+    {
+        <label class="form-label">@Label</label>
+    }
     <div class="input-with-search">
         <input type="text" class="form-input" placeholder="" @bind="Value" @bind:event="oninput" />
         <button class="search-icon-btn" title="选择货品" @onclick="OpenProductSelector">
@@ -368,6 +371,8 @@
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public string Label { get; set; } = "货品代号";
+    [Parameter] public bool HideLabel { get; set; } = false;
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     // ===== 货品选择器状态 =====
     private bool showProductDialog = false;

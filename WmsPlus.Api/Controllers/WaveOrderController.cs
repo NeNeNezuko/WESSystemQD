@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WmsPlus.Api.Data;
 using WmsPlus.Api.Models;
+using WmsPlus.Api.Utils;
 
 namespace WmsPlus.Api.Controllers;
 
@@ -157,7 +158,7 @@ public class WaveOrderController : ControllerBase
                 Success = true,
                 Data = new WaveOrderDetailDto
                 {
-                    Header = header,
+                    Header = MySqlDateHelper.SafeConvert(header),
                     Details = details
                 }
             });

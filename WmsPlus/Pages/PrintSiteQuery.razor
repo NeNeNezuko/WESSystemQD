@@ -1,4 +1,4 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject ILogger<PrintSiteQuery> _logger
@@ -20,7 +20,7 @@
             </button>
             <span class="page-title">打印网点资料查询/查询</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
@@ -28,7 +28,17 @@
                     <rect x="3" y="16" width="18" height="2" rx="1"/>
                 </svg>
             </button>
-        </div>
+</div>
+<div class="header-right">
+        
+                    <!-- 内层选项卡：明细表 | 统计表 -->
+                    <div class="inner-tab-bar-inline">
+                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
+                            明细表
+                        </div>
+                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
+                            统计表
+                        </div>
     </div>
 
     <!-- 收藏成功提示 -->
@@ -110,17 +120,7 @@
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
             <!-- 工具栏 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <!-- 内层选项卡：明细表 | 统计表 -->
-                    <div class="inner-tab-bar-inline">
-                        <div class="inner-tab-item @(activeInnerTab == "detail" ? "active" : "")" @onclick="SwitchToDetailTab">
-                            明细表
-                        </div>
-                        <div class="inner-tab-item @(activeInnerTab == "summary" ? "active" : "")" @onclick="SwitchToSummaryTab">
-                            统计表
-                        </div>
-                    </div>
+            
                     <button class="toolbar-btn export-btn" @onclick="HandleTypeConfig">
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
                             <path d="M3 3h10v2H3V3zm0 4h7v2H3V7zm0 4h10v2H3v-2z" stroke="#666666" stroke-width="1" fill="none"/>

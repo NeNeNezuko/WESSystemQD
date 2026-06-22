@@ -10,7 +10,7 @@ namespace WmsPlus.Models
         public string WhType { get; set; } = "";
         public string Dep { get; set; } = "";
         public string DepName { get; set; } = "";
-        public DateTime? StopDd { get; set; }
+        public string? StopDd { get; set; }
         public string UpWh { get; set; } = "";
         public string UpWhName { get; set; } = "";
     }

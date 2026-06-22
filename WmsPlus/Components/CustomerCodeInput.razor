@@ -125,8 +125,11 @@
 </style>
 
 <!-- 客户代号输入框 -->
-<div class="form-item">
-    <label class="form-label">客户代号</label>
+<div class="form-item" @attributes="AdditionalAttributes">
+    @if (!HideLabel)
+    {
+        <label class="form-label">客户代号</label>
+    }
     <div class="input-with-search">
         <input type="text" class="form-input" placeholder="" @bind="Value" @bind:event="oninput" />
         <button class="search-icon-btn" title="选择客户" @onclick="OpenCustomerSelector">
@@ -207,6 +210,8 @@
     // ===== 参数 =====
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public bool HideLabel { get; set; } = false;
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     // ===== 客户选择器状态 =====
     private bool showCustomerDialog = false;

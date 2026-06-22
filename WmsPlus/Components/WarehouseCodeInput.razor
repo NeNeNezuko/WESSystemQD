@@ -272,7 +272,10 @@
 
 <!-- 仓库代号输入框 -->
 <div class="form-item" @attributes="AdditionalAttributes">
-    <label class="form-label">仓库代号</label>
+    @if (!HideLabel)
+    {
+        <label class="form-label">仓库代号</label>
+    }
     <div class="input-with-search">
         <input type="text" class="form-input" placeholder="" @bind="Value" @bind:event="oninput" />
         <button class="search-icon-btn" title="选择仓库" @onclick="OpenWarehouseSelector">
@@ -431,6 +434,7 @@
     // ===== 参数 =====
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public bool HideLabel { get; set; } = false;
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     // ===== 仓库选择器状态 =====

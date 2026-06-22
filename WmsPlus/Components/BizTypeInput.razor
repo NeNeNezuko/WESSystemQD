@@ -156,7 +156,10 @@
 <!-- 业务类型输入框 -->
 <div class="form-item" style="flex-direction:column;align-items:stretch;height:auto;padding-bottom:4px;">
     <div style="display:flex;flex-direction:row;align-items:stretch;height:30px;">
-        <label class="form-label" style="border-radius:2px 0 0 2px;">业务类型</label>
+        @if (!HideLabel)
+        {
+            <label class="form-label" style="border-radius:2px 0 0 2px;">业务类型</label>
+        }
         <div class="input-with-search" style="flex:1;">
             <input type="text" class="form-input" placeholder="" value="@Value" readonly />
             <button class="search-icon-btn" title="选择业务类型" @onclick="OpenBizTypeSelector">
@@ -261,6 +264,7 @@
     // ===== 参数 =====
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public bool HideLabel { get; set; } = false;
 
     // ===== 业务类型选择器状态 =====
     private bool showBizTypeDialog = false;

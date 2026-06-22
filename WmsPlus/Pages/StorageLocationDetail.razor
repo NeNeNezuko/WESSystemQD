@@ -20,13 +20,49 @@
             </button>
             <span class="page-title">储位明细</span>
         </div>
-        <div class="header-right">
+        <div class="header-center">
             <button class="collapse-btn-fixed @(isCollapsed ? "collapsed" : "")" @onclick="ToggleCollapse" title="@(isCollapsed ? "展开查询" : "收起查询")">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#666666">
                     <rect x="3" y="6" width="18" height="2" rx="1"/>
                     <rect x="3" y="11" width="18" height="2" rx="1"/>
                     <rect x="3" y="16" width="18" height="2" rx="1"/>
                 </svg>
+            </button>
+        </div>
+        <div class="header-right">
+            <button class="header-action-btn primary" @onclick="HandleAddNew">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="white">
+                    <path d="M8 3v10M3 8h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>新增</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleType">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M3 3h10v10H3z" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6 6h4M6 8h4M6 10h2" stroke="#666666" stroke-width="1" stroke-linecap="round"/>
+                </svg>
+                <span>类型</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandlePrint">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M4 6V2h8v4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="2" y="6" width="12" height="6" rx="1" stroke="#666666" stroke-width="1.5" fill="none"/>
+                    <path d="M4 12v2h8v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>打印</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleTypeDesign">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
+                </svg>
+                <span>类型设计</span>
+            </button>
+            <button class="header-action-btn" @onclick="HandleExport">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
+                    <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span>导出</span>
             </button>
         </div>
     </div>
@@ -190,40 +226,6 @@
 
         <!-- 右侧数据表格区域 -->
         <div class="table-panel">
-            <!-- 工具栏 -->
-            <div class="table-toolbar">
-                <div class="toolbar-left">
-                    <button class="toolbar-btn export-btn" @onclick="HandleType">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M3 3h10v10H3z" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M6 6h4M6 8h4M6 10h2" stroke="#666666" stroke-width="1" stroke-linecap="round"/>
-                        </svg>
-                        <span>类型</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandlePrint">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M4 6V2h8v4" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="2" y="6" width="12" height="6" rx="1" stroke="#666666" stroke-width="1.5" fill="none"/>
-                            <path d="M4 12v2h8v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>打印</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleTypeDesign">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M2 3h4v2H2V3zm0 4h4v2H2V7zm0 4h4v2H2v-2zm6-8h6v2H8V3zm0 4h6v2H8V7zm0 4h6v2H8v-2z"/>
-                        </svg>
-                        <span>类型设计</span>
-                    </button>
-                    <button class="toolbar-btn export-btn" @onclick="HandleExport">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="#666666">
-                            <path d="M8 12V4m0 0L5 7m3-3l3 3" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#666666" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>导出</span>
-                    </button>
-                </div>
-            </div>
-
             <!-- 数据表格 -->
             <div class="data-table-container">
                 <table class="data-table">
@@ -457,6 +459,7 @@
     private void HandlePrint() { }
     private void HandleTypeDesign() { }
     private void HandleEdit(StorageLocationDetailModel item) { }
+    private void HandleAddNew() { }
 
     private async Task HandleExport()
     {

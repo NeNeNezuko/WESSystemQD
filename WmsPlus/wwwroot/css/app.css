@@ -113,3 +113,477 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* ================================================================
+ * 统一页面标题栏标准（所有选项卡页面必须遵循）
+ * ================================================================ */
+
+/* 标题栏容器：左侧收藏+标题，中间折叠按钮，右侧功能按钮 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+    min-height: 36px;
+}
+
+/* 左侧：收藏按钮 + 标题 */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* 收藏按钮（星标） */
+.favorite-btn {
+    background: none;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    padding: 2px 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.favorite-btn:hover { border-color: #FFD700; transform: scale(1.05); }
+.favorite-btn.favorited { border-color: #FFD700; animation: starPulse 0.5s ease; }
+@keyframes starPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* 页面标题文字 */
+.page-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333333;
+    white-space: nowrap;
+}
+
+/* 右侧区域：功能按钮 + 折叠按钮 */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* 中间区域：折叠按钮（查询类页面使用，与表格左边缘对齐） */
+.header-center {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+/* 折叠按钮 */
+.collapse-btn-fixed {
+    background: none;
+    border: 1px solid #d9d9d9;
+    padding: 3px 5px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+.collapse-btn-fixed:hover { border-color: #1890ff; background-color: #f0f0f0; }
+.collapse-btn-fixed:hover svg { fill: #1890ff; }
+.collapse-btn-fixed.collapsed { background-color: #e6f7ff; border-color: #1890ff; }
+
+/* 标题栏内的功能操作按钮（新增/保存/删除/导出等） */
+.header-action-btn {
+    height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+    color: #333333;
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+.header-action-btn:hover { border-color: #40a9ff; color: #40a9ff; }
+.header-action-btn.primary { background-color: #1890ff; color: #ffffff; border-color: #1890ff; }
+.header-action-btn.primary:hover { background-color: #40a9ff; border-color: #40a9ff; color: #ffffff; }
+
+/* 收藏成功提示 toast */
+.favorite-success-toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    animation: slideInTop 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
+}
+@keyframes slideInTop {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #ffffff;
+    border: 1px solid #b7eb8f;
+    border-radius: 3px;
+    padding: 6px 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    color: #333333;
+    font-size: 12px;
+}
+
+/* ================================================================
+ * A类：纵向查询表单标准样式（左侧查询面板）
+ * 适用于所有 query-panel > query-form 内的筛选项
+ * ================================================================ */
+
+/* ---- 查询表单容器 ---- */
+.query-form {
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: visible;
+}
+
+/* ---- A1/A4/A6 基础表单项（label + input 横向排列） ---- */
+.query-form .form-item {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: visible;
+    position: relative;
+}
+.query-form .form-item > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.query-form .form-label {
+    font-size: 12px; color: #333333; font-weight: 400;
+    padding: 0 8px; white-space: nowrap;
+    background-color: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+}
+.query-form .form-input {
+    width: 100%; padding: 0 8px;
+    font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+
+/* ---- A2: 选择器组件内的搜索图标按钮 ---- */
+.query-form .input-with-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+.query-form .input-with-search .form-input {
+    padding-right: 26px; /* 给右侧放大镜留空间 */
+}
+.query-form .search-icon-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 3px;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* ---- A4: 下拉选择框 ---- */
+.query-form .select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+.query-form .form-select {
+    width: 100%;
+    padding: 0 24px 0 6px;
+    font-size: 12px; color: #333333;
+    cursor: pointer;
+    border: none; outline: none;
+    background-image: linear-gradient(45deg, transparent 50%, #ffffff 50%);
+    background-size: 18px;
+    background-position: calc(100% - 2px) center;
+    background-repeat: no-repeat;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+}
+.query-form .form-select::-ms-expand { display: none; }
+.query-form .select-arrow {
+    position: absolute; right: 6px; top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* ---- A5a: 融合式起止 — 纯文本版 ---- */
+.query-form .form-item-fused {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.query-form .form-item-fused > .fused-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+}
+.query-form .form-item-fused > .fused-row:first-child {
+    border-bottom: 1px solid #e8e8e8;
+}
+.query-form .form-item-fused > .fused-row > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.query-form .form-item-fused > .fused-row > .form-label {
+    padding: 0 8px;
+    background-color: #fafafa;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+}
+.query-form .form-item-fused > .fused-row > .fused-input {
+    flex: 1;
+    padding: 0 8px;
+    font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+
+/* ---- A5b: 融合式起止 — 带放大镜版 ---- */
+.query-form .form-item-fused > .fused-row > .fused-input-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.query-form .form-item-fused > .fused-row > .fused-input-area > .fused-input {
+    width: 100%;
+    padding: 0 26px 0 8px; /* 右侧26px给放大镜留空间 */
+    font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.query-form .fused-search-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 3px;
+    cursor: pointer;
+    z-index: 1;
+}
+.query-form .fused-divider { display: none; }
+
+/* ---- A6a: 模糊 checkbox 标准版 ---- */
+.query-form .form-item-fuzzy {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: visible;
+    position: relative;
+}
+.query-form .form-item-fuzzy > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.query-form .form-item-fuzzy > .form-label {
+    padding: 0 8px;
+    background-color: #fafafa;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+    border-right: 1px solid #e8e8e8;
+}
+.query-form .form-item-fuzzy .form-input-wrapper {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+    padding-right: 6px;
+}
+.query-form .form-item-fuzzy .form-input-wrapper > .form-input {
+    flex: 1;
+    padding: 0 8px;
+    font-size: 12px; color: #333333;
+    background-color: transparent;
+    border: none !important; outline: none !important;
+}
+.query-form .fuzzy-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: #666666;
+    white-space: nowrap;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.query-form .fuzzy-checkbox input[type="checkbox"] {
+    width: 14px; height: 14px;
+    accent-color: #1890ff;
+}
+
+/* ---- A7: 查询按钮 ---- */
+.query-form .query-btn-wrapper { margin-top: 4px; }
+.query-form .query-submit-btn {
+    width: 100%; height: 26px;
+    background-color: #1890ff; color: #ffffff;
+    border: none; border-radius: 2px;
+    font-size: 12px; font-weight: 400;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px;
+    transition: all 0.3s;
+}
+.query-form .query-submit-btn:hover { background-color: #40a9ff; }
+
+/* ---- A9: 选择器 + 外挂复选框组合行 ---- */
+.query-form .form-item-with-check {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: visible;
+    position: relative;
+}
+.query-form .form-item-with-check > * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    border: none; outline: none;
+}
+.query-form .form-item-with-check > .form-label {
+    padding: 0 8px;
+    background-color: #fafafa;
+    font-size: 12px; color: #333333; font-weight: 400;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; flex-shrink: 0;
+    border-right: 1px solid #e8e8e8;
+}
+.query-form .input-check-row {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+    padding-right: 6px;
+}
+/* 组件嵌入时隐藏内部边框和内部label */
+.query-form .form-item-with-check .form-item {
+    flex: 1;
+    border: none !important;
+    height: auto;
+}
+.query-form .form-item-with-check .form-item > .form-label {
+    display: none !important;
+}
+.query-form .inline-check-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: #666666;
+    white-space: nowrap;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.query-form .inline-check-label input[type="checkbox"] {
+    width: 14px; height: 14px;
+    accent-color: #1890ff;
+}
+
+/* ================================================================
+ * B类：横向编辑表单标准样式（新增/编辑页面）
+ * 适用于 form-area / form-grid-3col 内的表单项
+ * ================================================================ */
+
+.edit-form .form-item-add {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background-color: #ffffff;
+    overflow: visible;
+}
+.edit-form .form-label-add {
+    font-size: 12px; color: #333333; font-weight: 400;
+    padding: 2px 8px;
+    white-space: nowrap;
+    display: flex; align-items: center;
+    background-color: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+    min-height: 24px;
+}
+.edit-form .form-label-add .required-mark {
+    color: #ff4d4f;
+    margin-right: 2px;
+}
+.edit-form .form-input-add {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #333333;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+}
+.edit-form .form-input-add:focus {
+    background-color: #fff;
+}
+.edit-form .form-input-add:disabled {
+    background-color: #f5f5f5;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+/* B2: 编辑页面带放大镜的输入框 */
+.edit-form .input-search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 100%;
+    cursor: pointer;
+    border-left: 1px solid #e8e8e8;
+    color: #999999;
+    flex-shrink: 0;
+}
+.edit-form .input-search-icon:hover { color: #1890ff; }

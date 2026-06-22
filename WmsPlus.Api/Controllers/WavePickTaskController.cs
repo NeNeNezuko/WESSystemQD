@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WmsPlus.Api.Data;
 using WmsPlus.Api.Models;
+using WmsPlus.Api.Utils;
 
 namespace WmsPlus.Api.Controllers;
 
@@ -204,7 +205,7 @@ public class WavePickTaskController : ControllerBase
                     ContainCode = t.CONTAIN_CODE ?? "",
                     CarNo = t.CAR_NO ?? "",
                     XjFlag = t.XJ_FLAG ?? "",
-                    EstDhDd = t.EST_DH_DD,
+                    EstDhDd = MySqlDateHelper.SafeToDateTime(t.EST_DH_DD),
                     OrgBilId = t.ORG_BIL_ID ?? "",
                     OrgBilNo = t.ORG_BIL_NO ?? "",
                     OrgBilItm = t.ORG_BIL_ITM ?? 0,
@@ -220,7 +221,7 @@ public class WavePickTaskController : ControllerBase
                 Success = true,
                 Data = new WavePickTaskDetailDto
                 {
-                    Header = header,
+                    Header = MySqlDateHelper.SafeConvert(header),
                     Details = details
                 }
             });

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WmsPlus.Api.Data;
 using WmsPlus.Api.Models;
+using WmsPlus.Api.Utils;
 
 namespace WmsPlus.Api.Controllers;
 
@@ -153,7 +154,7 @@ public class PickingOrderController : ControllerBase
                 Success = true,
                 Data = new PickingOrderDetailDto
                 {
-                    Header = header,
+                    Header = MySqlDateHelper.SafeConvert(header),
                     Details = details
                 }
             });
