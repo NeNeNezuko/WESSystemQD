@@ -78,21 +78,34 @@
 .usradd-page .form-grid-3col {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px 16px;
+    gap: 8px 24px;
 }
 
-/* 表单项 */
+/* 表单项 — 横向行布局（label + input 同行，带边框） */
 .usradd-page .form-item-add {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    height: 30px;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
     position: relative;
 }
 
 .usradd-page .form-label-add {
+    display: flex;
+    align-items: center;
+    min-width: 100px;
+    max-width: 120px;
+    height: 100%;
+    padding: 0 8px;
     font-size: 12px;
     color: #666666;
+    background: #fafafa;
+    border-right: 1px solid #e8e8e8;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
 }
 
 .usradd-page .form-label-add .required-mark {
@@ -101,21 +114,21 @@
 }
 
 .usradd-page .form-input-add {
-    height: 28px;
-    padding: 0 8px;
+    flex: 1;
+    width: 0;
+    height: 100%;
+    padding: 0 6px;
     font-size: 12px;
     color: #333333;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    background-color: #ffffff;
-    outline: none;
-    transition: border-color 0.2s;
+    border: none !important;
+    outline: none !important;
+    background-color: transparent;
     box-sizing: border-box;
 }
 
 .usradd-page .form-input-add:focus {
-    border-color: #40a9ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .usradd-page .form-input-add:disabled {
@@ -150,7 +163,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding-top: 20px;
+    padding-top: 0;
     font-size: 12px;
     color: #333333;
 }
@@ -169,49 +182,57 @@
 
 /* 下拉选择框 */
 .usradd-page .form-select-add {
-    height: 28px;
-    padding: 0 8px;
+    flex: 1;
+    width: 0;
+    height: 100%;
+    padding: 0 6px;
     font-size: 12px;
     color: #333333;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    background-color: #ffffff;
-    outline: none;
+    border: none !important;
+    outline: none !important;
+    background-color: transparent;
     cursor: pointer;
 }
 
 .usradd-page .form-select-add:focus {
-    border-color: #40a9ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+    border-color: transparent;
+    box-shadow: none;
 }
 
-/* 文本域 */
+/* 文本域 — 全宽带边框 */
+.usradd-page .form-textarea-wrapper-full {
+    grid-column: 1 / -1;
+    display: flex;
+    border: 1px solid #d9d9d9;
+    background: #ffffff;
+}
+
+.usradd-page .form-textarea-wrapper-full > .form-label-add {
+    display: flex;
+    align-items: flex-start;
+    min-width: 100px;
+    max-width: 120px;
+    padding: 6px 8px;
+    background: #fafafa;
+    border-right: 1px solid #e8e8e8;
+    font-size: 12px;
+    color: #666666;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 .usradd-page .form-textarea-add {
-    width: 100%;
+    flex: 1;
+    width: 0;
     min-height: 60px;
     padding: 6px 8px;
     font-size: 12px;
     color: #333333;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    background-color: #ffffff;
-    outline: none;
+    border: none !important;
+    outline: none !important;
     resize: vertical;
     box-sizing: border-box;
     font-family: inherit;
-}
-
-.usradd-page .form-textarea-add:focus {
-    border-color: #40a9ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-}
-
-/* 全宽表单项 */
-.usradd-page .form-textarea-wrapper-full {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
 /* 响应式：小屏幕下两列 */
@@ -228,11 +249,12 @@
     }
 }
 
-/* ===== 放大镜图标（内嵌绝对定位） ===== */
+/* ===== 放大镜图标（输入框右侧内嵌） ===== */
 .usradd-page .input-search-icon {
     position: absolute;
     right: 4px;
-    bottom: 4px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -246,7 +268,8 @@
 }
 .usradd-page .input-search-icon:hover { color: #1890ff; }
 /* 给放大镜留空间的输入框 */
-.usradd-page .form-item-add:has(.input-search-icon) > .form-input-add {
+.usradd-page .form-item-add:has(.input-search-icon) > .form-input-add,
+.usradd-page .form-item-add:has(.input-search-icon) > .form-select-add {
     padding-right: 28px;
 }
 
