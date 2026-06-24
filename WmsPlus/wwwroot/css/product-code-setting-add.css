@@ -1,4 +1,4 @@
-﻿/* ===== 货品代号设定*新增 页面样式 ===== */
+/* ===== 货品代号设定*新增 页面样式 ===== */
 
 .prdadd-page {
     width: 100%;
@@ -185,23 +185,7 @@
     box-sizing: border-box;
 }
 
-/* 放大镜搜索图标 */
-.input-search-icon {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 100%;
-    flex-shrink: 0;
-    cursor: pointer;
-}
-
-.input-search-icon:hover svg {
-    fill: #1890ff;
-}
-
-/* ===== 复选框行内样式 ===== */
+/* 备注文本域 */
 .checkbox-wrapper-inline {
     display: flex;
     align-items: center;

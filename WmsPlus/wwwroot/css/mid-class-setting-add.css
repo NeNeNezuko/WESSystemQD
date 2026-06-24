@@ -1,4 +1,4 @@
-﻿/* ===== 中类代号设定*新增/编辑 页面样式 ===== */
+/* ===== 中类代号设定*新增/编辑 页面样式 ===== */
 
 .mcsadd-page {
     width: 100%;
@@ -135,18 +135,6 @@
 
 .mcsadd-page .form-input-add:focus {
     background: transparent;
-}
-
-/* 放大镜搜索图标 */
-.mcsadd-page .input-search-icon {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 100%;
-    flex-shrink: 0;
-    cursor: pointer;
 }
 
 /* 备注文本域 - 全宽 */

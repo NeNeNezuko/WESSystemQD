@@ -538,6 +538,13 @@
                     <WarehouseArrivalConfirm />
                 </div>
             }
+            @* ===== 基础资料 - 客户/厂商资料 ===== *@
+            @if (tabs.Any(t => t.Id == "customer-vendor-setting"))
+            {
+                <div style="display:@(activeTabId == "customer-vendor-setting" ? "flex" : "none"); min-height:0; height:100%;">
+                    <CustomerVendorSetting />
+                </div>
+            }
             @* ===== 基础资料 - 系统策略 ===== *@
             @if (tabs.Any(t => t.Id == "wave-strategy"))
             {
@@ -1773,6 +1780,14 @@
             return;
         }
 
+        // ===== 基础资料 - 客户/厂商资料 =====
+        if (itemTitle == "客户/厂商资料设定")
+        {
+            OpenTab("customer-vendor-setting", "客户/厂商资料");
+            await CloseMegaMenu();
+            return;
+        }
+
         // ===== 基础资料 - 系统策略 =====
         if (itemTitle == "波次策略")
         {
@@ -2453,6 +2468,8 @@
                         new() { Title = "依储类设定货品储位" },
                         new() { Title = "依储存性设定货品储位" },
                         new() { Title = "依仓库启用到货确认" },
+                        new() { Title = "客户/厂商资料", IsCategoryHeader = true },
+                        new() { Title = "客户/厂商资料设定" },
                         new() { Title = "系统策略", IsCategoryHeader = true },
                         new() { Title = "波次策略" },
                         new() { Title = "拣货策略" },
@@ -3090,6 +3107,12 @@
         else if (result.ThirdLevelTitle == "依仓库启用到货确认")
         {
             OpenTab("warehouse-arrival-confirm", "依仓库启用到货确认");
+            handled = true;
+        }
+        // ===== 基础资料 - 客户/厂商资料 =====
+        else if (result.ThirdLevelTitle == "客户/厂商资料设定")
+        {
+            OpenTab("customer-vendor-setting", "客户/厂商资料");
             handled = true;
         }
         // ===== 基础资料 - 系统策略 =====

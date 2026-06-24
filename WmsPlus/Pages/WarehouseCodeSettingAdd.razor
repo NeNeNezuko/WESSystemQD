@@ -98,7 +98,7 @@
                         <label class="form-label-add"><span class="required-mark">*</span>仓库名称</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.Name" />
                         <div class="input-search-icon" title="拼音搜索">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -107,18 +107,18 @@
                         <label class="form-label-add">属性</label>
                         <select class="form-select-add" @bind="model.Attrib">
                             <option value=""></option>
-                            <option value="成品仓">成品仓</option>
-                            <option value="原料仓">原料仓</option>
-                            <option value="半成品仓">半成品仓</option>
-                            <option value="物料仓">物料仓</option>
-                            <option value="制成品仓">制成品仓</option>
+                            <option value="1">成品仓</option>
+                            <option value="2">原料仓</option>
+                            <option value="3">半成品仓</option>
+                            <option value="4">物料仓</option>
+                            <option value="5">制成品仓</option>
                         </select>
                     </div>
                     <div class="form-item-add">
                         <label class="form-label-add">上层仓库*</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.UpWh" />
                         <div class="input-search-icon" title="选择上层仓库">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -142,8 +142,8 @@
                     <div class="form-item-add">
                         <label class="form-label-add">所属部门</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.Dep" />
-                        <div class="input-search-icon" title="选择部门">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                        <div class="input-search-icon" title="选择部门" @onclick="OpenDeptSelector">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -152,7 +152,7 @@
                         <label class="form-label-add">部门群组</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.DeproNo" />
                         <div class="input-search-icon" title="选择部门群组">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -172,7 +172,7 @@
                         <label class="form-label-add">出库流程</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.RkFlow" readonly />
                         <div class="input-search-icon" title="选择出库流程">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -189,7 +189,7 @@
                         <label class="form-label-add">波次策略</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.RuleIdBc" />
                         <div class="input-search-icon" title="选择波次策略">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -214,7 +214,7 @@
                         <label class="form-label-add">下架策略</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.RuleIdXj" />
                         <div class="input-search-icon" title="选择下架策略">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -231,7 +231,7 @@
                         <label class="form-label-add">依来源单配货-指定仓库</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.XjWhs" />
                         <div class="input-search-icon" title="选择仓库">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -272,7 +272,7 @@
                         <label class="form-label-add">入库储位配位排序</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.RkChuwSort" />
                         <div class="input-search-icon" title="选择储位配位排序">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -294,7 +294,7 @@
                         <label class="form-label-add">自动化接口</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.LkifId" />
                         <div class="input-search-icon" title="选择立库接口">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -303,7 +303,7 @@
                         <label class="form-label-add">允许上架的检验状态</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.AllowStatusJy" />
                         <div class="input-search-icon" title="选择检验状态">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -312,7 +312,7 @@
                         <label class="form-label-add">地图编号</label>
                         <input type="text" class="form-input-add" placeholder="" @bind="model.MapNo" />
                         <div class="input-search-icon" title="选择地图编号">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                                 <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                             </svg>
                         </div>
@@ -389,12 +389,84 @@
     </div>
 </div>
 
+<!-- 部门选择器对话框 -->
+@if (showDeptDialog)
+{
+    <div class="dept-selector-overlay" @onclick="CloseDeptSelector">
+        <div class="dept-selector-dialog" @onclick:stopPropagation>
+            <div class="dept-selector-header">
+                <span>部门资料(DEPT)</span>
+                <button class="dept-close-btn" @onclick="CloseDeptSelector">&times;</button>
+            </div>
+            <div class="dept-selector-body">
+                <div class="dept-left-panel">
+                    <div class="dept-filter-title">过滤</div>
+                    <input type="text" class="dept-search-input" placeholder="输入关键字查询" @bind="deptSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchDept(); })" />
+                    <button class="dept-query-btn" @onclick="@(() => _ = SearchDept())">查询</button>
+                </div>
+                <div class="dept-right-panel">
+                    <table class="dept-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:60px">操作</th>
+                                <th style="width:80px">部门代号</th>
+                                <th>部门名称</th>
+                                <th>上层部门</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (deptData.Count == 0)
+                            {
+                                <tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < deptData.Count; i++)
+                                {
+                                    var item = deptData[i];
+                                    <tr>
+                                        <td><button class="dept-select-btn" @onclick="() => SelectDept(item)">选择</button></td>
+                                        <td>@item.DEP</td>
+                                        <td>@item.NAME</td>
+                                        <td>@item.UP</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="dept-pagination">
+                        <span class="dept-total-info">共 @deptTotalCount 笔记录</span>
+                        <div class="dept-page-controls">
+                            <button class="dept-page-btn" disabled="@(deptPageIndex <= 1)" @onclick="async () => await GoToDeptPage(deptPageIndex - 1)">&lt;</button>
+                            <input type="number" class="dept-page-input" value="@deptPageIndex" min="1" max="@DeptTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToDeptPage(p); }" />
+                            <span>/ @DeptTotalPages</span>
+                            <button class="dept-page-btn" disabled="@(deptPageIndex >= DeptTotalPages)" @onclick="async () => await GoToDeptPage(deptPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-selector-footer">
+                <button class="dept-footer-cancel" @onclick="CloseDeptSelector">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
 
 @code {
     private WarehouseCodeSettingAddModel model = new();
     private string activeSubTab = "general";
     private bool isSaving = false;
     private bool isLoading = false;
+
+    // ===== 部门选择器状态 =====
+    private bool showDeptDialog = false;
+    private string deptSearchKeyword = "";
+    private List<DeptItem> deptData = new();
+    private int deptPageIndex = 1;
+    private int deptPageSize = 10;
+    private int deptTotalCount = 0;
 
     [Parameter] public string? EditWh { get; set; }
 
@@ -508,6 +580,9 @@
         isSaving = true;
         try
         {
+            // 属性字段中文→数字映射（防止编辑模式加载的旧数据为中文）
+            model.Attrib = ConvertAttribToCode(model.Attrib);
+
             var url = IsEditMode
                 ? $"{ApiConfig.BaseUrl}/api/WarehouseCodeSetting/update"
                 : $"{ApiConfig.BaseUrl}/api/WarehouseCodeSetting/create";
@@ -586,6 +661,94 @@
     private void HandleColumnSettings() { /* TODO: 栏位设置功能 */ }
     private void HandleQuery() { /* TODO: 查询功能 */ }
     private void HandleAddZone() { /* TODO: 新增区域 */ }
+
+    // ===== 部门选择器方法 =====
+    private async Task OpenDeptSelector()
+    {
+        deptSearchKeyword = "";
+        deptPageIndex = 1;
+        await SearchDept();
+        showDeptDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseDeptSelector()
+    {
+        showDeptDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchDept()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/deptsearch?keyword={Uri.EscapeDataString(deptSearchKeyword ?? "")}&pageIndex={deptPageIndex}&pageSize={deptPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<DeptSearchResult>(json, jsonOptions);
+                if (result != null)
+                {
+                    deptData = result.Items ?? new List<DeptItem>();
+                    deptTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "部门选择器查询失败");
+        }
+        StateHasChanged();
+    }
+
+    private void SelectDept(DeptItem item)
+    {
+        model.Dep = item.DEP;
+        showDeptDialog = false;
+        StateHasChanged();
+    }
+
+    private int DeptTotalPages => deptPageSize > 0 ? (int)Math.Ceiling((double)deptTotalCount / deptPageSize) : 1;
+
+    private async Task GoToDeptPage(int page)
+    {
+        if (page >= 1 && page <= DeptTotalPages)
+        {
+            deptPageIndex = page;
+            await SearchDept();
+        }
+    }
+
+    // ===== 属性字段中文→数字映射 =====
+    private static string ConvertAttribToCode(string attrib)
+    {
+        return attrib switch
+        {
+            "成品仓" => "1",
+            "原料仓" => "2",
+            "半成品仓" => "3",
+            "物料仓" => "4",
+            "制成品仓" => "5",
+            _ => attrib
+        };
+    }
+
+    // ===== 部门数据模型 =====
+    public class DeptItem
+    {
+        public string DEP { get; set; } = "";
+        public string NAME { get; set; } = "";
+        public string UP { get; set; } = "";
+    }
+
+    private class DeptSearchResult
+    {
+        public List<DeptItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
 
     // ===== 区域数据模型 =====
     public class ZoneItem

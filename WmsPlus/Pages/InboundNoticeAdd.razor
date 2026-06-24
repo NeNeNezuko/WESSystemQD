@@ -88,8 +88,8 @@
             <div class="form-item-add">
                 <label class="form-label-add"><span class="required-mark">*</span>厂商代号</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.VendorCode" />
-                <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                <div class="input-search-icon" title="选择厂商" @onclick="OpenVendorSelector">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -100,7 +100,7 @@
                 <label class="form-label-add"><span class="required-mark">*</span>仓库代号</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.WarehouseCode" />
                 <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -136,7 +136,7 @@
                 <label class="form-label-add">单据类别</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.DocCategoryCode" />
                 <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -147,7 +147,7 @@
                 <label class="form-label-add">经办人</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.OperatorCode" />
                 <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -158,7 +158,7 @@
                 <label class="form-label-add">申请单号</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.ApplyOrderNumber" />
                 <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -182,7 +182,7 @@
                 <label class="form-label-add"><span class="required-mark">*</span>业务类型</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.BusinessType" />
                 <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -193,7 +193,7 @@
                 <label class="form-label-add">厂商代号</label>
                 <input type="text" class="form-input-add" placeholder="" @bind="header.VendorCodeRight" />
                 <div class="input-search-icon" title="搜索">
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="#999999">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
                         <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
                     </svg>
                 </div>
@@ -438,6 +438,68 @@
     </div>
 </div>
 
+<!-- 厂商选择器对话框 -->
+@if (showVendorDialog)
+{
+    <div class="vendor-selector-overlay" @onclick="CloseVendorSelector">
+        <div class="vendor-selector-dialog" @onclick:stopPropagation>
+            <div class="vendor-selector-header">
+                <span>厂商资料(MF_CKTB)</span>
+                <button class="vendor-close-btn" @onclick="CloseVendorSelector">&times;</button>
+            </div>
+            <div class="vendor-selector-body">
+                <div class="vendor-left-panel">
+                    <div class="vendor-filter-title">过滤</div>
+                    <input type="text" class="vendor-search-input" placeholder="输入关键字查询" @bind="vendorSearchKeyword" @bind:event="oninput" @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchVendor(); })" />
+                    <button class="vendor-query-btn" @onclick="@(() => _ = SearchVendor())">查询</button>
+                </div>
+                <div class="vendor-right-panel">
+                    <table class="vendor-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:60px">操作</th>
+                                <th style="width:100px">厂商代号</th>
+                                <th>厂商名称</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (vendorData.Count == 0)
+                            {
+                                <tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < vendorData.Count; i++)
+                                {
+                                    var item = vendorData[i];
+                                    <tr>
+                                        <td><button class="vendor-select-btn" @onclick="() => SelectVendor(item)">选择</button></td>
+                                        <td>@item.CUS_NO</td>
+                                        <td>@item.CUS_NAME</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="vendor-pagination">
+                        <span class="vendor-total-info">共 @vendorTotalCount 笔记录</span>
+                        <div class="vendor-page-controls">
+                            <button class="vendor-page-btn" disabled="@(vendorPageIndex <= 1)" @onclick="async () => await GoToVendorPage(vendorPageIndex - 1)">&lt;</button>
+                            <input type="number" class="vendor-page-input" value="@vendorPageIndex" min="1" max="@VendorTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToVendorPage(p); }" />
+                            <span>/ @VendorTotalPages</span>
+                            <button class="vendor-page-btn" disabled="@(vendorPageIndex >= VendorTotalPages)" @onclick="async () => await GoToVendorPage(vendorPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="vendor-selector-footer">
+                <button class="vendor-footer-cancel" @onclick="CloseVendorSelector">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
 
 @code {
     private InboundNoticeAddHeader header = new();
@@ -446,6 +508,14 @@
     private string activeDetailTab = "product";
     private int productItemSeq = 0;
     private int barcodeItemSeq = 0;
+
+    // ===== 厂商选择器状态 =====
+    private bool showVendorDialog = false;
+    private string vendorSearchKeyword = "";
+    private List<VendorItem> vendorData = new();
+    private int vendorPageIndex = 1;
+    private int vendorPageSize = 10;
+    private int vendorTotalCount = 0;
 
     [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTab { get; set; }
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? NotifyFavoriteChanged { get; set; }
@@ -476,13 +546,84 @@
         StateHasChanged();
     }
 
-    // ===== 工具栏按钮事件（仅样式占位，功能后续补齐）=====
+    // ===== 工具栏按钮事件 =====
     private void HandleSave() { /* TODO: 保存功能 */ }
-    private void HandleAddNew() { /* TODO: 新增功能 */ }
+    private void HandleAddNew()
+    {
+        // 重置表单，相当于重新打开新增界面
+        header = new InboundNoticeAddHeader();
+        header.DocumentNumber = $"UO{DateTime.Now:yyyyMMdd}000001";
+        productItems = new();
+        barcodeItems = new();
+        activeDetailTab = "product";
+        productItemSeq = 0;
+        barcodeItemSeq = 0;
+        StateHasChanged();
+    }
     private void HandleDelete() { /* TODO: 删除功能 */ }
     private void HandlePrint() { /* TODO: 打印功能 */ }
     private void HandleColumnSettings() { /* TODO: 栏位设置功能 */ }
     private void HandleQuery() { /* TODO: 查询功能 */ }
+
+    // ===== 厂商选择器方法 =====
+    private async Task OpenVendorSelector()
+    {
+        vendorSearchKeyword = "";
+        vendorPageIndex = 1;
+        await SearchVendor();
+        showVendorDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseVendorSelector()
+    {
+        showVendorDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchVendor()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/customersearch?keyword={Uri.EscapeDataString(vendorSearchKeyword ?? "")}&pageIndex={vendorPageIndex}&pageSize={vendorPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<VendorSearchResult>(json, jsonOptions);
+                if (result != null)
+                {
+                    vendorData = result.Items ?? new List<VendorItem>();
+                    vendorTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "厂商选择器查询失败");
+        }
+        StateHasChanged();
+    }
+
+    private void SelectVendor(VendorItem item)
+    {
+        header.VendorCode = item.CUS_NO;
+        showVendorDialog = false;
+        StateHasChanged();
+    }
+
+    private int VendorTotalPages => vendorPageSize > 0 ? (int)Math.Ceiling((double)vendorTotalCount / vendorPageSize) : 1;
+
+    private async Task GoToVendorPage(int page)
+    {
+        if (page >= 1 && page <= VendorTotalPages)
+        {
+            vendorPageIndex = page;
+            await SearchVendor();
+        }
+    }
 
     // ===== 底部操作栏按钮事件 =====
     private void HandleDocInfo() { /* TODO: 单据资讯功能 */ }
@@ -523,5 +664,18 @@
     {
         barcodeItems.RemoveAll(x => x.ItemNo == itemNo);
         StateHasChanged();
+    }
+
+    // ===== 厂商数据模型 =====
+    public class VendorItem
+    {
+        public string CUS_NO { get; set; } = "";
+        public string CUS_NAME { get; set; } = "";
+    }
+
+    private class VendorSearchResult
+    {
+        public List<VendorItem>? Items { get; set; }
+        public int TotalCount { get; set; }
     }
 }

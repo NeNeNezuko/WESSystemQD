@@ -179,6 +179,7 @@ code {
     display: flex;
     align-items: center;
     flex: 1;
+    padding-left: 186px; /* 使折叠按钮与表格区域(table-panel)左边缘对齐 */
 }
 
 /* 折叠按钮 */
@@ -574,16 +575,28 @@ code {
     cursor: not-allowed;
 }
 
-/* B2: 编辑页面带放大镜的输入框 */
+/* B类表单项需要 relative 定位，供内部绝对定位的图标参考 */
+.edit-form .form-item-add {
+    position: relative;
+}
+
+/* B2: 编辑页面带放大镜的输入框 — 统一为内嵌绝对定位风格（与A类一致） */
 .edit-form .input-search-icon {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 100%;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
-    border-left: 1px solid #e8e8e8;
+    border: none;
     color: #999999;
-    flex-shrink: 0;
+    z-index: 1;
 }
 .edit-form .input-search-icon:hover { color: #1890ff; }
+/* 给放大镜留空间的输入框 */
+.edit-form .form-item-add:has(.input-search-icon) > .form-input-add {
+    padding-right: 28px;
+}

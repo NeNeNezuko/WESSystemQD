@@ -1,11 +1,11 @@
 @inject IJSRuntime JS
 @inject HttpClient Http
-@inject ILogger<MidClassSettingAdd> _logger
+@inject ILogger<CustomerVendorSettingAdd> _logger
 @inject TokenProvider TokenProvider
 
-<link rel="stylesheet" href="css/mid-class-setting-add.css" />
+<link rel="stylesheet" href="css/customer-vendor-setting-add.css" />
 
-<div class="mcsadd-page">
+<div class="cvsadd-page">
     <!-- 页面标题栏 -->
     <div class="page-header">
         <div class="header-left">
@@ -17,7 +17,7 @@
                           stroke-width="2"/>
                 </svg>
             </button>
-            <span class="page-title">@(IsEditMode ? "中类代号设定/编辑" : "中类代号设定-新增")</span>
+            <span class="page-title">@(IsEditMode ? "客户/厂商资料设定/编辑" : "客户/厂商资料*新增")</span>
         </div>
         <div class="header-right">
             <button class="header-action-btn primary" @onclick="HandleSave">
@@ -76,25 +76,20 @@
 
             <div class="form-grid-4col">
                 <div class="form-item-add">
-                    <label class="form-label-add"><span class="required-mark">*</span>中类代号</label>
-                    <input type="text" class="form-input-add" placeholder="" @bind="model.IdxNo" @bind:event="oninput" disabled="@IsEditMode" />
+                    <label class="form-label-add"><span class="required-mark">*</span>厂商代号</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.CusNo" @bind:event="oninput" disabled="@IsEditMode" />
                 </div>
                 <div class="form-item-add">
-                    <label class="form-label-add"><span class="required-mark">*</span>中类名称</label>
-                    <input type="text" class="form-input-add" placeholder="" @bind="model.Name" />
-                </div>
-                <div class="form-item-add">
-                    <label class="form-label-add">上层中类</label>
-                    <input type="text" class="form-input-add" placeholder="" @bind="model.IdxUp" />
-                    <div class="input-search-icon" title="搜索">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
-                            <circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke="#999999" stroke-width="1.5"/>
-                        </svg>
-                    </div>
+                    <label class="form-label-add"><span class="required-mark">*</span>厂商名称</label>
+                    <input type="text" class="form-input-add" placeholder="" @bind="model.CusName" />
                 </div>
                 <div class="form-item-add">
                     <label class="form-label-add">停用日期</label>
                     <input type="date" class="form-input-add" @bind="model.StopDd" @bind:format="yyyy-MM-dd" />
+                </div>
+                <div class="form-item-add">
+                    <label class="form-label-add"></label>
+                    <div style="flex:1;"></div>
                 </div>
 
                 <div class="form-textarea-wrapper-full">
@@ -108,12 +103,12 @@
 
 
 @code {
-    private MidClassSettingAddModel model = new();
+    private CustomerVendorSettingAddModel model = new();
     private bool isSaving = false;
 
-    [Parameter] public string? EditIdxNo { get; set; }
+    [Parameter] public string? EditCusNo { get; set; }
 
-    private bool IsEditMode => !string.IsNullOrWhiteSpace(EditIdxNo);
+    private bool IsEditMode => !string.IsNullOrWhiteSpace(EditCusNo);
 
     [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTab { get; set; }
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? NotifyFavoriteChanged { get; set; }
@@ -121,7 +116,7 @@
     // ===== 收藏功能 =====
     private bool isFavorited = false;
     private bool showFavoriteSuccess = false;
-    private const string FAVORITE_KEY = "wms_favorite_mid_class_setting_add";
+    private const string FAVORITE_KEY = "wms_favorite_customer_vendor_setting_add";
 
     protected override async Task OnInitializedAsync()
     {
@@ -150,11 +145,11 @@
     {
         try
         {
-            var url = $"{ApiConfig.BaseUrl}/api/MidClassSetting/getByIdxNo?idxNo={Uri.EscapeDataString(EditIdxNo!)}";
+            var url = $"{ApiConfig.BaseUrl}/api/CustomerVendorSetting/getByCusNo?cusNo={Uri.EscapeDataString(EditCusNo!)}";
             var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
             var responseMsg = await Http.SendAsync(request);
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
-            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<MidClassSettingAddModel>>(jsonOptions);
+            var response = await responseMsg.Content.ReadFromJsonAsync<ApiResponse<CustomerVendorSettingAddModel>>(jsonOptions);
 
             if (response != null && response.Success && response.Data != null)
             {
@@ -168,7 +163,7 @@
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "加载中类详情时发生错误");
+            _logger?.LogError(ex, "加载客户/厂商详情时发生错误");
             await JS.InvokeVoidAsync("alert", $"加载失败: {ex.Message}");
         }
     }
@@ -179,14 +174,14 @@
         if (isSaving) return;
 
         // 必填校验
-        if (string.IsNullOrWhiteSpace(model.IdxNo))
+        if (string.IsNullOrWhiteSpace(model.CusNo))
         {
-            await JS.InvokeVoidAsync("alert", "请输入中类代号");
+            await JS.InvokeVoidAsync("alert", "请输入厂商代号");
             return;
         }
-        if (string.IsNullOrWhiteSpace(model.Name))
+        if (string.IsNullOrWhiteSpace(model.CusName))
         {
-            await JS.InvokeVoidAsync("alert", "请输入中类名称");
+            await JS.InvokeVoidAsync("alert", "请输入厂商名称");
             return;
         }
 
@@ -194,8 +189,8 @@
         try
         {
             var url = IsEditMode
-                ? $"{ApiConfig.BaseUrl}/api/MidClassSetting/update"
-                : $"{ApiConfig.BaseUrl}/api/MidClassSetting/create";
+                ? $"{ApiConfig.BaseUrl}/api/CustomerVendorSetting/update"
+                : $"{ApiConfig.BaseUrl}/api/CustomerVendorSetting/create";
             var httpMethod = IsEditMode ? HttpMethod.Put : HttpMethod.Post;
             var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
             var jsonContent = System.Text.Json.JsonSerializer.Serialize(model, jsonOptions);
@@ -217,7 +212,7 @@
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, $"{(IsEditMode ? "修改" : "保存")}中类代号设定时发生错误");
+            _logger?.LogError(ex, $"{(IsEditMode ? "修改" : "保存")}客户/厂商资料设定时发生错误");
             await JS.InvokeVoidAsync("alert", $"{(IsEditMode ? "修改" : "保存")}失败: {ex.Message}");
         }
         finally
@@ -230,13 +225,13 @@
     {
         await HandleSave();
         // 重置表单
-        model = new MidClassSettingAddModel();
+        model = new CustomerVendorSettingAddModel();
         StateHasChanged();
     }
 
     private void HandleDelete() { /* TODO: 删除功能 */ }
     private void HandleColumnSettings() { /* TODO: 栏位设置功能 */ }
-    private void HandleQuery() { /* TODO: 查询功能 */ }
+    private void HandleQuery() { OpenTab?.Invoke("customer-vendor-setting", "客户/厂商资料设定/查询"); }
 
     // ===== API响应模型 =====
     private class ApiResponse<T>
