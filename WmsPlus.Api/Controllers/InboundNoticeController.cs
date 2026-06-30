@@ -179,6 +179,150 @@ public class InboundNoticeController : ControllerBase
             });
         }
     }
+
+    /// <summary>
+    /// 生成下一个入库通知单单据号码（UO + yyyyMMdd + 6位序号）
+    /// </summary>
+    [HttpGet("next-no")]
+    public async Task<ActionResult<ApiResult<string>>> GetNextDocumentNo()
+    {
+        try
+        {
+            var prefix = $"UO{DateTime.Now:yyyyMMdd}";
+            var likePattern = $"{prefix}%";
+            var todayMax = await _context.MfRktzs
+                .Where(m => m.TZ_NO.StartsWith(prefix))
+                .Select(m => m.TZ_NO)
+                .ToListAsync();
+
+            var maxSeq = 0;
+            foreach (var no in todayMax)
+            {
+                if (no.Length >= 14 && int.TryParse(no.Substring(8), out var seq))
+                {
+                    if (seq > maxSeq) maxSeq = seq;
+                }
+            }
+            var nextNo = $"{prefix}{(maxSeq + 1):D6}";
+            return Ok(new ApiResult<string> { Success = true, Data = nextNo });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "生成入库通知单单号时发生错误");
+            return StatusCode(500, new ApiResult<string> { Success = false, Message = $"服务器内部错误: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// 保存入库通知单（表头+表身事务保存）
+    /// </summary>
+    [HttpPost("save")]
+    public async Task<ActionResult<ApiResult<string>>> Save([FromBody] InboundNoticeSaveRequest request)
+    {
+        if (request?.Header == null)
+            return BadRequest(new ApiResult<string> { Success = false, Message = "请求数据无效" });
+
+        try
+        {
+            // 单号重复校验
+            var existing = await _context.MfRktzs.FindAsync(request.Header.TZ_NO);
+            if (existing != null)
+                return Conflict(new ApiResult<string> { Success = false, Message = $"单据号码 {request.Header.TZ_NO} 已存在，请勿重复保存" });
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 保存表头
+                var header = new MfRktz
+                {
+                    TZ_NO = request.Header.TZ_NO,
+                    TZ_DD = request.Header.TZ_DD,
+                    DEP = request.Header.DEP,
+                    BIL_TYPE = request.Header.BIL_TYPE,
+                    CUS_NO = request.Header.CUS_NO,
+                    CUS_NAME = request.Header.CUS_NAME,
+                    WH = request.Header.WH,
+                    EST_DD = request.Header.EST_DD,
+                    CLS_ID = "N",
+                    REM = request.Header.REM,
+                    USR = request.Header.USR,
+                    SYS_DATE = DateTime.Now
+                };
+                _context.MfRktzs.Add(header);
+
+                // 保存表身
+                if (request.Details != null && request.Details.Count > 0)
+                {
+                    foreach (var d in request.Details)
+                    {
+                        _context.TfRktzs.Add(new TfRktz
+                        {
+                            TZ_NO = request.Header.TZ_NO,
+                            ITM = d.ITM,
+                            TZ_DD = request.Header.TZ_DD,
+                            PRD_NO = d.PRD_NO,
+                            PRD_NAME = d.PRD_NAME,
+                            BAT_NO = d.BAT_NO,
+                            WH = d.WH,
+                            UNIT = d.UNIT,
+                            QTY = d.QTY,
+                            REM = d.REM
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResult<string> { Success = true, Data = request.Header.TZ_NO, Message = "保存成功" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "保存入库通知单事务失败");
+                return StatusCode(500, new ApiResult<string> { Success = false, Message = $"保存失败: {ex.Message}" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "保存入库通知单时发生错误");
+            return StatusCode(500, new ApiResult<string> { Success = false, Message = $"服务器内部错误: {ex.Message}" });
+        }
+    }
+}
+
+// ====== 保存请求 DTO ======
+
+public class InboundNoticeSaveRequest
+{
+    public InboundNoticeSaveHeader Header { get; set; } = new();
+    public List<InboundNoticeSaveDetail>? Details { get; set; }
+}
+
+public class InboundNoticeSaveHeader
+{
+    public string TZ_NO { get; set; } = "";
+    public DateTime? TZ_DD { get; set; }
+    public string? DEP { get; set; }
+    public string? BIL_TYPE { get; set; }
+    public string? CUS_NO { get; set; }
+    public string? CUS_NAME { get; set; }
+    public string? WH { get; set; }
+    public DateTime? EST_DD { get; set; }
+    public string? REM { get; set; }
+    public string? USR { get; set; }
+}
+
+public class InboundNoticeSaveDetail
+{
+    public int ITM { get; set; }
+    public string? PRD_NO { get; set; }
+    public string? PRD_NAME { get; set; }
+    public string? BAT_NO { get; set; }
+    public string? WH { get; set; }
+    public string? UNIT { get; set; }
+    public decimal QTY { get; set; }
+    public string? REM { get; set; }
 }
 
 // ====== DTO 定义 ======

@@ -803,6 +803,7 @@ namespace WmsPlus.Api.Data
                 entity.ToTable("PRDT_PDA_RN");
                 entity.HasKey(e => e.PRD_NO);
                 entity.Property(e => e.PRD_NO).HasColumnName("PRD_NO").HasMaxLength(50);
+                entity.Property(e => e.CON_NO).HasColumnName("CON_NO").HasMaxLength(50);
                 entity.Property(e => e.QTY_COLLECT).HasColumnName("QTY_COLLECT").HasMaxLength(20);
                 entity.Property(e => e.BARCODE_TYPE).HasColumnName("BARCODE_TYPE").HasMaxLength(20);
                 entity.Property(e => e.NEED_SCALE).HasColumnName("NEED_SCALE").HasMaxLength(10);

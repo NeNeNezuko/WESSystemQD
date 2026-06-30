@@ -199,6 +199,12 @@
                     <OutboundNotice />
                 </div>
             }
+            @if (tabs.Any(t => t.Id == "outbound-notice-add"))
+            {
+                <div style="display:@(activeTabId == "outbound-notice-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <OutboundNoticeAdd />
+                </div>
+            }
             @if (tabs.Any(t => t.Id == "outbound-return-notice"))
             {
                 <div style="display:@(activeTabId == "outbound-return-notice" ? "flex" : "none"); min-height:0; height:100%;">
@@ -543,6 +549,12 @@
             {
                 <div style="display:@(activeTabId == "customer-vendor-setting" ? "flex" : "none"); min-height:0; height:100%;">
                     <CustomerVendorSetting />
+                </div>
+            }
+            @if (tabs.Any(t => t.Id == "customer-vendor-setting-add"))
+            {
+                <div style="display:@(activeTabId == "customer-vendor-setting-add" ? "flex" : "none"); min-height:0; height:100%;">
+                    <CustomerVendorSettingAdd />
                 </div>
             }
             @* ===== 基础资料 - 系统策略 ===== *@

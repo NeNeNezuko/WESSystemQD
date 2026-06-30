@@ -1,0 +1,349 @@
+---
+description: 通用组件使用标准-开发查询表单/使用WarehouseCodeInput/BizTypeInput/DeptCodeInput/CustomerCodeInput/DateRangeInput等组件时加载
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-30T08:42:00Z
+---
+
+# 通用组件使用标准
+
+## 🚀 何时读取本规则
+
+开发查询表单页面、使用 WarehouseCodeInput/BizTypeInput/DeptCodeInput/CustomerCodeInput/DateRangeInput 等通用组件时。
+
+---
+
+## 仓库代号输入组件 (WarehouseCodeInput)
+
+**适用场景**：任何查询表单页面中需要"仓库代号"输入/筛选条件的场景（如入库通知单、出库通知单、库存查询等）
+
+**组件路径**：`WmsPlus/Components/WarehouseCodeInput.razor`
+
+**使用方式**：
+
+1. 在查询表单的 `@code` 块中，确保查询模型包含 `WarehouseCode` 字段（string 类型）
+2. 在表单 HTML 中添加一行组件调用
+3. 查询时将 `query.WarehouseCode` 作为 `warehouseCode` 参数传给后端 API
+
+**代码示例**：
+
+```razor
+<!-- 表单中嵌入 -->
+<WarehouseCodeInput @bind-Value="query.WarehouseCode" />
+```
+
+```csharp
+// 查询模型
+public class XxxQuery { public string WarehouseCode { get; set; } = ""; }
+
+// 查询传参
+if (!string.IsNullOrWhiteSpace(query.WarehouseCode))
+    url += $"&warehouseCode={Uri.EscapeDataString(query.WarehouseCode)}";
+```
+
+**功能说明**：组件自包含，内部封装了手动输入、弹窗选择器（含搜索/分页/栏位设计）、所有 CSS 样式。调用方无需额外处理样式或逻辑。
+
+**后端 API 依赖**：`GET /api/warehouse/search?keyword=&pageIndex=&pageSize=`，返回 MY_WH 表数据
+
+---
+
+## 业务类型输入组件 (BizTypeInput)
+
+**适用场景**：任何查询表单页面中需要"业务类型"多选筛选条件的场景（如入库通知单、出库通知单等）
+
+**组件路径**：`WmsPlus/Components/BizTypeInput.razor`
+
+**使用方式**：
+
+1. 在查询表单的 `@code` 块中，确保查询模型包含 `BusinessType` 字段（string 类型，存储逗号分隔的代码）
+2. 在表单 HTML 中添加一行组件调用
+3. 查询时将 `query.BusinessType` 作为 `businessType` 参数传给后端 API
+
+**代码示例**：
+
+```razor
+<!-- 表单中嵌入 -->
+<BizTypeInput @bind-Value="query.BusinessType" />
+```
+
+```csharp
+// 查询模型
+public class XxxQuery { public string BusinessType { get; set; } = ""; }
+
+// 查询传参
+if (!string.IsNullOrWhiteSpace(query.BusinessType))
+    url += $"&businessType={Uri.EscapeDataString(query.BusinessType)}";
+```
+
+**功能说明**：组件自包含，内部封装了只读输入框、弹窗多选选择器（含搜索/分页/全选/清空/标签展示）、所有 CSS 样式。支持多选，回传值为逗号分隔的业务类型代码字符串。调用方无需额外处理样式或逻辑。
+
+**后端 API 依赖**：`GET /api/warehouse/rktypesearch?keyword=&pageIndex=&pageSize=`，返回 RK_TYPE_SET 表数据
+
+---
+
+## 部门代号输入组件 (DeptCodeInput)
+
+**适用场景**：任何查询表单页面中需要"部门代号"输入/筛选条件的场景（如入库单、出库单、库存查询等）
+
+**组件路径**：`WmsPlus/Components/DeptCodeInput.razor`
+
+**使用方式**：
+
+1. 在查询表单的 `@code` 块中，确保查询模型包含 `DeptCode` 字段（string 类型）
+2. 在表单 HTML 中添加一行组件调用
+3. 查询时将 `query.DeptCode` 作为 `deptCode` 参数传给后端 API
+
+**代码示例**：
+
+```razor
+<!-- 表单中嵌入 -->
+<DeptCodeInput @bind-Value="query.DeptCode" />
+```
+
+```csharp
+// 查询模型
+public class XxxQuery { public string DeptCode { get; set; } = ""; }
+
+// 查询传参
+if (!string.IsNullOrWhiteSpace(query.DeptCode))
+    url += $"&deptCode={Uri.EscapeDataString(query.DeptCode)}";
+```
+
+**功能说明**：组件自包含，内部封装了手动输入、弹窗选择器（含搜索/分页）、所有 CSS 样式。调用方无需额外处理样式或逻辑。
+
+**后端 API 依赖**：`GET /api/warehouse/deptsearch?keyword=&pageIndex=&pageSize=`，返回 DEPT 表数据
+
+---
+
+## 客户代号输入组件 (CustomerCodeInput)
+
+**适用场景**：任何查询表单页面中需要"客户代号"输入/筛选条件的场景（如出库退回通知单、出库通知单等）
+
+**组件路径**：`WmsPlus/Components/CustomerCodeInput.razor`
+
+**使用方式**：
+
+1. 在查询表单的 `@code` 块中，确保查询模型包含 `CustomerCode` 字段（string 类型）
+2. 在表单 HTML 中添加一行组件调用
+3. 查询时将 `query.CustomerCode` 作为 `customerCode` 参数传给后端 API
+
+**代码示例**：
+
+```razor
+<!-- 表单中嵌入 -->
+<CustomerCodeInput @bind-Value="query.CustomerCode" />
+```
+
+```csharp
+// 查询模型
+public class XxxQuery { public string CustomerCode { get; set; } = ""; }
+
+// 查询传参
+if (!string.IsNullOrWhiteSpace(query.CustomerCode))
+    url += $"&customerCode={Uri.EscapeDataString(query.CustomerCode)}";
+```
+
+**功能说明**：组件自包含，内部封装了手动输入、弹窗选择器（含搜索/分页）、所有 CSS 样式。调用方无需额外处理样式或逻辑。
+
+**后端 API 依赖**：`GET /api/warehouse/customersearch?keyword=&pageIndex=&pageSize=`，返回 MF_CKTB 表去重后的客户数据
+
+---
+
+## 日期范围输入组件 (DateRangeInput)
+
+**适用场景**：任何查询表单页面中需要"日期范围"输入/筛选条件的场景（如入库通知单、入库单、出库通知单、出库单、盘点、报表等）
+
+**组件路径**：`WmsPlus/Components/DateRangeInput.razor`
+
+**使用方式**：
+
+1. 在查询表单的 `@code` 块中，确保查询模型包含 `DateRange` 字段（string 类型）
+2. 在表单 HTML 中添加一行组件调用，通过 `Label` 参数指定日期字段的中文名称
+3. 查询时从 `query.DateRange` 解析出 dateFrom 和 dateTo 传给后端 API
+
+**代码示例**：
+
+```razor
+<!-- 默认标签"单据日期" -->
+<DateRangeInput @bind-Value="query.DateRange" />
+
+<!-- 自定义标签名称 -->
+<DateRangeInput @bind-Value="query.DateRange" Label="制表日期" />
+<DateRangeInput @bind-Value="query.DateRange" Label="收货日期" />
+<DateRangeInput @bind-Value="query.EstDateRange" Label="预计出货日期" />
+```
+
+```csharp
+// 查询模型
+public class XxxQuery { public string DateRange { get; set; } = ""; }
+
+// 查询传参（从 DateRange 解析，分隔符为 "→"）
+var dateFromStr = "";
+var dateToStr = "";
+if (!string.IsNullOrWhiteSpace(query.DateRange) && query.DateRange.Contains("→"))
+{
+    var parts = query.DateRange.Split("→", StringSplitOptions.TrimEntries);
+    if (parts.Length >= 2)
+    {
+        dateFromStr = parts[0];
+        dateToStr = parts[1];
+    }
+}
+url += $"&dateFrom={dateFromStr}&dateTo={dateToStr}";
+```
+
+**功能说明**：
+- 组件自包含，内部封装了双月历范围选择器（含日期网格、快捷按钮、× 关闭按钮、点击外部自动关闭）、所有 CSS 样式
+- **Label 参数**：支持自定义日期标签名称，默认值为 `"单据日期"`。不同页面根据实际业务语义传入对应名称，如 `"制表日期"`、`"收货日期"`、`"检验时间"`、`"有效日期"`、`"变动时间"` 等
+- 回传值为 `"yyyy-MM-dd → yyyy-MM-dd"` 格式的字符串，默认初始值为当天
+- 调方无需额外处理样式或逻辑，组件自身渲染完整的 `.form-item` 行（含 label + 日期文本 + 日历图标）
+
+---
+
+## 起/止范围查询字段规范
+
+**适用场景**：查询表单中需要按范围筛选的字段（如单据号码、货品代号、储位代号等），将原来的"融合式双栏位"（一行内 label + 起 ~ 止）改为**独立的两个 form-item 行**
+
+**布局规则**：
+
+- 范围字段的「起」和「止」必须拆分为**两个独立的 `.form-item` 行**
+- 每行格式：`<label>字段名 起/止</label>` + `<input>` （可带搜索图标按钮）
+- 标签命名规则：`{字段名} 起` / `{字段名} 止`（如 "单据号码 起"、"货品代号 止"）
+
+**代码示例**：
+
+```razor
+<!-- 单据号码 起 -->
+<div class="form-item">
+    <label class="form-label">单据号码 起</label>
+    <div class="input-with-search">
+        <input type="text" class="form-input" placeholder="" @bind="query.BilNoFrom" />
+        <button class="search-icon-btn" title="搜索">
+            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                <circle cx="6" cy="6" r="4"/>
+                <line x1="9" y1="9" x2="13" y2="13"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- 单据号码 止 -->
+<div class="form-item">
+    <label class="form-label">单据号码 止</label>
+    <div class="input-with-search">
+        <input type="text" class="form-input" placeholder="" @bind="query.BilNoTo" />
+        <button class="search-icon-btn" title="搜索">
+            <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#999999" stroke-width="1.5">
+                <circle cx="6" cy="6" r="4"/>
+                <line x1="9" y1="9" x2="13" y2="13"/>
+            </svg>
+        </button>
+    </div>
+</div>
+```
+
+```csharp
+// 查询模型
+public class XxxQuery
+{
+    public string BilNoFrom { get; set; } = "";  // 单据号码 起
+    public string BilNoTo { get; set; } = "";    // 单据号码 止
+}
+```
+
+**注意事项**：
+- 不再使用已废弃的 `form-item-fused` 融合式布局（保留 CSS 样式定义以避免报错）
+- 带搜索图标的字段使用 `.input-with-search` 容器 + `.search-icon-btn` 按钮
+- 货品代号等需要弹窗选择的字段，在 input 旁放置放大镜图标按钮（功能后续实现）
+
+---
+
+## 模糊复选框规范
+
+**适用场景**：查询表单中的文本输入字段需要支持模糊/精确匹配切换
+
+**布局规则**：
+- 模糊复选框紧跟在输入框右侧，使用 `.input-with-fuzzy` 容器包裹
+- 复选框样式类为 `.fuzzy-checkbox`，显示文字为"模糊"
+
+**代码示例**：
+
+```razor
+<div class="form-item">
+    <label class="form-label">ERP申请单号</label>
+    <div class="input-with-fuzzy">
+        <input type="text" class="form-input" placeholder="" @bind="query.ErpApNo" />
+        <label class="fuzzy-checkbox">
+            <input type="checkbox" @bind="query.ErpApNoFuzzy" />
+            <span>模糊</span>
+        </label>
+    </div>
+</div>
+```
+
+---
+
+## 单据确认作业 (DocumentConfirm)
+
+**适用场景**：仓储管理 > 库存管理 > 盘点管理 > 单据确认作业，用于对盘点单、盘盈单、盘亏单进行确认/反确认操作
+
+**页面文件**：
+- 主页面：`WmsPlus/Pages/DocumentConfirm.razor`
+- 样式文件：`WmsPlus/wwwroot/css/document-confirm.css`
+- 数据模型：`WmsPlus/Models/DocumentConfirmModel.cs`
+- API控制器：`WmsPlus.Api/Controllers/DocumentConfirmController.cs`
+
+**UI结构特点**：
+- 页面内嵌套横向选项卡：`待确认` | `已确认`
+- 待确认Tab右上角显示「确认」按钮（蓝色），已确认Tab显示「反确认」按钮
+- 切换选项卡时自动重新加载数据（confirmStatus参数变化）
+- 查询表单含起止货品字段：`货品代号 起` / `货品代号 止`（独立 form-item 行，带搜索图标按钮，搜索弹窗待开发）
+
+**查询表单字段**：
+
+| 字段 | 控件类型 | 绑定字段 | 说明 |
+|------|---------|---------|------|
+| 单据别 | `<select>` 下拉框 | `query.DocType` | PD(盘点单)/YN(盘盈单)/KU(盘亏单) |
+| 单据日期 | `DateRangeInput` 组件 | `query.DateRange` | 日期范围选择器 |
+| 仓库代号 | `WarehouseCodeInput` 组件 | `query.WarehouseCode` | 通用仓库选择组件 |
+| 货品代号 起 | `<input>` + 搜索按钮 | `query.PrdNoFrom` | 货品代号范围起始（独立行） |
+| 货品代号 止 | `<input>` + 搜索按钮 | `query.PrdNoTo` | 货品代号范围结束（独立行） |
+
+**数据库连接**：db_gz01
+
+**关联表信息**：
+
+| 表名 | 说明 | 主键 | 确认字段 | 对应实体类 |
+|------|------|------|---------|-----------|
+| MF_PD | 盘点单据-表头 | PD_NO | CFM_SW/CFM_USR/CFM_DATE | MfPd.cs |
+| TF_PD | 盘点单据-表身 | (PD_NO, ITM) | - | TfPd.cs |
+| MF_YN | 盘盈(验收入库)单-表头 | YN_NO | CFM_SW/CFM_USR/CFM_DATE | MfYn.cs |
+| TF_YN | 盘盈(验收入库)单-表身 | (YN_NO, ITM) | - | TfYn.cs |
+| MF_KU | 盘亏(库存调整)单-表头 | KU_NO | CFM_SW/CFM_USR/CFM_DATE | MfKu.cs |
+| TF_KU | 盘亏(库存调整)单-表身 | (KU_NO, ITM) | - | TfKu.cs |
+
+**核心业务逻辑**：
+- 3张表头均通过 `CFM_SW` 字段区分确认状态：`CFM_SW='T'` 表示已确认，否则为待确认
+- 待确认查询条件：`CFM_SW IS NULL OR CFM_SW != 'T'`
+- 已确认查询条件：`CFM_SW = 'T'`
+- 起止货品范围过滤需关联对应表身（TF_PD/TF_YN/TF_KU）按 PRD_NO 字段做字符串比较
+
+**后端API**：`GET /api/DocumentConfirm/search?docType=&dateFrom=&dateTo=&warehouseCode=&prdNoFrom=&prdNoTo=&confirmStatus=`
+
+**表格默认栏位**：单据日期、单据号码、仓库代号、仓库名称、制单人代号、制单人名称、制单时间、确认状态、确认人、确认时间
+
+**字段说明查询SQL**（在wmssystem数据库执行）：
+```sql
+-- 盘点单表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_PD.DB';
+-- 盘点单表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_PD.DB';
+-- 盘盈单表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_YN.DB';
+-- 盘盈单表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_YN.DB';
+-- 盘亏单表头
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='MF_KU.DB';
+-- 盘亏单表身
+SELECT A.TAB_NAME,A.TAB_TITLE,B.FLD_NAME,B.Note FROM DICT_TAB A LEFT JOIN DICT_FLD B ON A.TAB_NAME=B.TAB_NAME WHERE A.TAB_NAME='TF_KU.DB';
+```

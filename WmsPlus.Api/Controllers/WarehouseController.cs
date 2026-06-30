@@ -95,6 +95,61 @@ public class WarehouseController : ControllerBase
     }
 
     /// <summary>
+    /// 货品代号下拉联想查询（支持货品代号、货主编码、货品名称模糊查询，LEFT JOIN PRDT_PDA_RN 获取货主编码）
+    /// </summary>
+    [HttpGet("prdautosearch")]
+    public async Task<IActionResult> AutoSearchProduct(
+        [FromQuery] string? keyword = null,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var prdtQuery = _warehouseCtx.Prdts.AsQueryable();
+            var pdaQuery = _warehouseCtx.PrdtPdaRns.AsQueryable();
+
+            var joinedQuery = from p in prdtQuery
+                              join r in pdaQuery on p.PRD_NO equals r.PRD_NO into grp
+                              from r in grp.DefaultIfEmpty()
+                              select new
+                              {
+                                  PRD_NO = p.PRD_NO,
+                                  CON_NO = r.CON_NO ?? "",
+                                  NAME = p.NAME ?? "",
+                                  SPC = p.SPC ?? "",
+                                  UT = p.UT ?? "",
+                                  UT1 = p.UT1 ?? "",
+                                  SNM = p.SNM ?? "",
+                                  MRK = p.MRK ?? "",
+                                  IDX1 = p.IDX1 ?? "",
+                                  KND = p.KND ?? ""
+                              };
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                joinedQuery = joinedQuery.Where(x =>
+                    x.PRD_NO.Contains(keyword) ||
+                    x.CON_NO.Contains(keyword) ||
+                    x.NAME.Contains(keyword));
+            }
+
+            var totalCount = await joinedQuery.CountAsync();
+            var items = await joinedQuery
+                .OrderBy(x => x.PRD_NO)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new { items, totalCount });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "AutoSearchProduct API 500错误: {Message}", ex.Message);
+            return StatusCode(500, "服务器内部错误，请稍后重试");
+        }
+    }
+
+    /// <summary>
     /// 获取表的字段元数据（从 DICT_TAB + DICT_FLD 查询）
     /// </summary>
     [HttpGet("columns")]

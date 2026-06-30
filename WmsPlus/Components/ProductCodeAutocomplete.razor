@@ -1,0 +1,538 @@
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject TokenProvider TokenProvider
+
+<style>
+/* ========== 下拉联想列表 ========== */
+.prd-autocomplete-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+.prd-autocomplete-input {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    padding: 0 6px;
+    font-size: 12px;
+    color: #333333;
+    background-color: transparent;
+    border: none !important;
+    outline: none !important;
+}
+.prd-autocomplete-search-btn {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+}
+.prd-autocomplete-search-btn:hover svg { stroke: #1890ff; }
+.prd-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: auto;
+    min-width: 560px;
+    max-height: 320px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 9999;
+    box-sizing: border-box;
+}
+.prd-autocomplete-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+.prd-autocomplete-table thead th {
+    background-color: #fafafa;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666666;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+}
+.prd-autocomplete-table tbody tr {
+    cursor: pointer;
+    border-bottom: 1px solid #f5f5f5;
+}
+.prd-autocomplete-table tbody tr:hover {
+    background-color: #e6f7ff;
+}
+.prd-autocomplete-table tbody td {
+    padding: 5px 8px;
+    font-size: 12px;
+    color: #333333;
+    white-space: nowrap;
+}
+.prd-autocomplete-empty {
+    padding: 16px;
+    text-align: center;
+    color: #999999;
+    font-size: 12px;
+}
+.prd-autocomplete-loading {
+    padding: 12px;
+    text-align: center;
+    color: #1890ff;
+    font-size: 12px;
+}
+
+/* ========== 弹窗选择器 ========== */
+.prd-auto-selector-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+}
+.prd-auto-selector-dialog {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    width: 900px;
+    max-width: 92vw;
+    max-height: 80vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.prd-auto-selector-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; font-weight: 500; color: #333333;
+}
+.prd-auto-close-btn {
+    background: none; border: none;
+    font-size: 18px; color: #999999;
+    cursor: pointer; padding: 0 2px; line-height: 1;
+}
+.prd-auto-close-btn:hover { color: #333333; }
+.prd-auto-selector-body {
+    display: flex; flex: 1; overflow: hidden;
+    min-height: 380px;
+}
+.prd-auto-left-panel {
+    width: 180px; min-width: 180px;
+    border-right: 1px solid #f0f0f0;
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    background-color: #fafafa;
+}
+.prd-auto-filter-title {
+    font-size: 13px; font-weight: 500; color: #333333;
+    margin-bottom: 4px;
+}
+.prd-auto-search-input {
+    height: 32px; padding: 0 8px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.prd-auto-search-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+.prd-auto-query-btn {
+    height: 32px; background-color: #1890ff; color: #ffffff;
+    border: none; border-radius: 4px; font-size: 13px; cursor: pointer;
+    transition: background-color 0.2s;
+}
+.prd-auto-query-btn:hover { background-color: #40a9ff; }
+.prd-auto-right-panel {
+    flex: 1; overflow-y: auto;
+    padding: 8px 12px;
+    display: flex; flex-direction: column;
+}
+.prd-auto-data-table {
+    width: 100%; border-collapse: collapse; table-layout: auto;
+}
+.prd-auto-data-table th {
+    background-color: #fafafa;
+    padding: 8px 6px;
+    text-align: left;
+    font-size: 12px; font-weight: 500; color: #666666;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+}
+.prd-auto-data-table td {
+    padding: 7px 6px;
+    font-size: 12px; color: #333333;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.prd-auto-select-btn {
+    background: none; border: 1px solid #d9d9d9; border-radius: 3px;
+    padding: 2px 10px; font-size: 12px; color: #1890ff; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+}
+.prd-auto-select-btn:hover { border-color: #1890ff; color: #1890ff; background-color: #e6f7ff; }
+.prd-auto-pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 4px 4px; margin-top: auto;
+}
+.prd-auto-total-info { font-size: 12px; color: #888888; }
+.prd-auto-page-controls { display: flex; align-items: center; gap: 4px; }
+.prd-auto-page-btn {
+    width: 28px; height: 26px;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    background: #fff; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.prd-auto-page-btn:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.prd-auto-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.prd-auto-page-input {
+    width: 44px; height: 26px; text-align: center;
+    border: 1px solid #d9d9d9; border-radius: 3px;
+    font-size: 13px; outline: none;
+}
+.prd-auto-page-input:focus { border-color: #1890ff; }
+.prd-auto-page-controls span { font-size: 12px; color: #666666; }
+.prd-auto-selector-footer {
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 10px 18px; border-top: 1px solid #f0f0f0;
+}
+.prd-auto-footer-cancel {
+    height: 30px; padding: 0 20px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #ffffff; font-size: 13px; color: #333333; cursor: pointer;
+}
+.prd-auto-footer-cancel:hover { border-color: #1890ff; color: #1890ff; }
+</style>
+
+<div class="prd-autocomplete-wrapper" @attributes="AdditionalAttributes">
+    <input type="text" class="prd-autocomplete-input"
+           value="@Value"
+           @oninput="OnInputAsync"
+           @onfocus="OnFocusAsync"
+           @onblur="OnBlurAsync"
+           placeholder="@Placeholder" />
+    <button class="prd-autocomplete-search-btn" title="选择货品" @onclick="OpenDialog">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#999999" stroke-width="1.5">
+            <circle cx="7" cy="7" r="5"/>
+            <line x1="11" y1="11" x2="15" y2="15"/>
+        </svg>
+    </button>
+
+    @if (showDropdown && dropdownItems.Count > 0)
+    {
+        <div class="prd-autocomplete-dropdown" @onmousedown:preventDefault>
+            <table class="prd-autocomplete-table">
+                <thead>
+                    <tr>
+                        <th>货品代号</th>
+                        <th>货品名称</th>
+                        <th>规格</th>
+                        <th>单位</th>
+                        <th>品牌</th>
+                        <th>货主编码</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in dropdownItems)
+                    {
+                        <tr @onclick="() => SelectFromDropdown(item)">
+                            <td>@item.PRD_NO</td>
+                            <td>@item.NAME</td>
+                            <td>@item.SPC</td>
+                            <td>@item.UT</td>
+                            <td>@item.MRK</td>
+                            <td>@item.CON_NO</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (showDropdown && isLoading && !string.IsNullOrWhiteSpace(currentKeyword))
+    {
+        <div class="prd-autocomplete-dropdown" @onmousedown:preventDefault>
+            <div class="prd-autocomplete-loading">查询中...</div>
+        </div>
+    }
+    else if (showDropdown && !string.IsNullOrWhiteSpace(currentKeyword) && !isLoading && dropdownItems.Count == 0)
+    {
+        <div class="prd-autocomplete-dropdown" @onmousedown:preventDefault>
+            <div class="prd-autocomplete-empty">无匹配数据</div>
+        </div>
+    }
+</div>
+
+@if (showDialog)
+{
+    <div class="prd-auto-selector-overlay" @onclick="CloseDialog">
+        <div class="prd-auto-selector-dialog" @onclick:stopPropagation>
+            <div class="prd-auto-selector-header">
+                <span>货品资料(PRDT)</span>
+                <button class="prd-auto-close-btn" @onclick="CloseDialog">&times;</button>
+            </div>
+            <div class="prd-auto-selector-body">
+                <div class="prd-auto-left-panel">
+                    <div class="prd-auto-filter-title">过滤</div>
+                    <input type="text" class="prd-auto-search-input" placeholder="输入关键字查询"
+                           @bind="dialogKeyword" @bind:event="oninput"
+                           @onkeyup="@((KeyboardEventArgs e) => { if(e.Key == "Enter") _ = SearchDialog(); })" />
+                    <button class="prd-auto-query-btn" @onclick="@(() => _ = SearchDialog())">查询</button>
+                </div>
+                <div class="prd-auto-right-panel">
+                    <table class="prd-auto-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:70px;text-align:center;">操作</th>
+                                <th style="width:50px">项次</th>
+                                <th>货品代号</th>
+                                <th>货品名称</th>
+                                <th>规格</th>
+                                <th>单位</th>
+                                <th>品牌</th>
+                                <th>货主编码</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (dialogData.Count == 0)
+                            {
+                                <tr><td colspan="8" style="text-align:center;padding:30px;color:#999;">暂无数据</td></tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < dialogData.Count; i++)
+                                {
+                                    var item = dialogData[i];
+                                    var rowIdx = (dialogPageIndex - 1) * dialogPageSize + i + 1;
+                                    <tr>
+                                        <td style="text-align:center;"><button class="prd-auto-select-btn" @onclick="() => SelectFromDialog(item)">选择</button></td>
+                                        <td style="text-align:center">@rowIdx</td>
+                                        <td>@item.PRD_NO</td>
+                                        <td>@item.NAME</td>
+                                        <td>@item.SPC</td>
+                                        <td>@item.UT</td>
+                                        <td>@item.MRK</td>
+                                        <td>@item.CON_NO</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="prd-auto-pagination">
+                        <span class="prd-auto-total-info">共 @dialogTotalCount 笔记录</span>
+                        <div class="prd-auto-page-controls">
+                            <button class="prd-auto-page-btn" disabled="@(dialogPageIndex <= 1)" @onclick="async () => await GoToDialogPage(dialogPageIndex - 1)">&lt;</button>
+                            <input type="number" class="prd-auto-page-input" value="@dialogPageIndex" min="1" max="@DialogTotalPages"
+                                   @onchange="async (ChangeEventArgs e) => { if(int.TryParse(e.Value?.ToString(), out var p)) await GoToDialogPage(p); }" />
+                            <span>/ @DialogTotalPages</span>
+                            <button class="prd-auto-page-btn" disabled="@(dialogPageIndex >= DialogTotalPages)" @onclick="async () => await GoToDialogPage(dialogPageIndex + 1)">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="prd-auto-selector-footer">
+                <button class="prd-auto-footer-cancel" @onclick="CloseDialog">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ===== 参数 =====
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public EventCallback<AutoProductItem> ProductSelected { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // ===== 下拉联想状态 =====
+    private bool showDropdown = false;
+    private bool isLoading = false;
+    private string currentKeyword = "";
+    private List<AutoProductItem> dropdownItems = new();
+    private System.Threading.CancellationTokenSource? debounceCts;
+
+    // ===== 弹窗选择器状态 =====
+    private bool showDialog = false;
+    private string dialogKeyword = "";
+    private List<AutoProductItem> dialogData = new();
+    private int dialogPageIndex = 1;
+    private int dialogPageSize = 20;
+    private int dialogTotalCount = 0;
+
+    // ===== 数据模型 =====
+    public class AutoProductItem
+    {
+        public string PRD_NO { get; set; } = "";
+        public string CON_NO { get; set; } = "";
+        public string NAME { get; set; } = "";
+        public string SPC { get; set; } = "";
+        public string UT { get; set; } = "";
+        public string UT1 { get; set; } = "";
+        public string SNM { get; set; } = "";
+        public string MRK { get; set; } = "";
+        public string IDX1 { get; set; } = "";
+        public string KND { get; set; } = "";
+    }
+
+    private class AutoSearchResult
+    {
+        public List<AutoProductItem>? Items { get; set; }
+        public int TotalCount { get; set; }
+    }
+
+    private int DialogTotalPages => dialogPageSize > 0 ? (int)Math.Ceiling((double)dialogTotalCount / dialogPageSize) : 1;
+
+    // ===== 输入框事件 =====
+    private async Task OnInputAsync(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(Value);
+        currentKeyword = Value;
+
+        debounceCts?.Cancel();
+        debounceCts = new System.Threading.CancellationTokenSource();
+        var token = debounceCts.Token;
+
+        await Task.Delay(300);
+        if (token.IsCancellationRequested) return;
+
+        if (string.IsNullOrWhiteSpace(currentKeyword))
+        {
+            dropdownItems.Clear();
+            showDropdown = false;
+            StateHasChanged();
+            return;
+        }
+
+        await SearchDropdownAsync(currentKeyword, token);
+    }
+
+    private async Task OnFocusAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Value))
+        {
+            currentKeyword = Value;
+            await SearchDropdownAsync(Value, System.Threading.CancellationToken.None);
+        }
+    }
+
+    private async Task OnBlurAsync()
+    {
+        await Task.Delay(200);
+        showDropdown = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchDropdownAsync(string keyword, System.Threading.CancellationToken token)
+    {
+        isLoading = true;
+        showDropdown = true;
+        StateHasChanged();
+
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/prdautosearch?keyword={Uri.EscapeDataString(keyword)}&pageIndex=1&pageSize=20";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<AutoSearchResult>(json, jsonOptions);
+                if (result != null)
+                {
+                    dropdownItems = result.Items ?? new List<AutoProductItem>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProductCodeAutocomplete] 下拉查询失败: {ex.Message}");
+        }
+
+        if (token.IsCancellationRequested) return;
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SelectFromDropdown(AutoProductItem item)
+    {
+        Value = item.PRD_NO;
+        await ValueChanged.InvokeAsync(Value);
+        await ProductSelected.InvokeAsync(item);
+        showDropdown = false;
+        StateHasChanged();
+    }
+
+    // ===== 弹窗选择器方法 =====
+    private async Task OpenDialog()
+    {
+        dialogKeyword = "";
+        dialogPageIndex = 1;
+        await SearchDialog();
+        showDialog = true;
+        StateHasChanged();
+    }
+
+    private void CloseDialog()
+    {
+        showDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchDialog()
+    {
+        try
+        {
+            var url = $"{ApiConfig.BaseUrl}/api/warehouse/prdautosearch?keyword={Uri.EscapeDataString(dialogKeyword ?? "")}&pageIndex={dialogPageIndex}&pageSize={dialogPageSize}";
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+            var responseMsg = await Http.SendAsync(request);
+
+            if (responseMsg.IsSuccessStatusCode)
+            {
+                var json = await responseMsg.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<AutoSearchResult>(json, jsonOptions);
+                if (result != null)
+                {
+                    dialogData = result.Items ?? new List<AutoProductItem>();
+                    dialogTotalCount = result.TotalCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ProductCodeAutocomplete] 弹窗查询失败: {ex.Message}");
+        }
+        StateHasChanged();
+    }
+
+    private async Task SelectFromDialog(AutoProductItem item)
+    {
+        Value = item.PRD_NO;
+        await ValueChanged.InvokeAsync(Value);
+        await ProductSelected.InvokeAsync(item);
+        showDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task GoToDialogPage(int page)
+    {
+        if (page >= 1 && page <= DialogTotalPages)
+        {
+            dialogPageIndex = page;
+            await SearchDialog();
+        }
+    }
+}

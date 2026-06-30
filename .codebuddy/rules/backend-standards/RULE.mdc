@@ -1,0 +1,113 @@
+---
+description: 后端EF Core与API强制规范-新增DbSet实体/修改WarehouseDbContext/新增Controller/涉及EF Core配置时加载
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-30T08:42:00Z
+---
+
+# 后端开发强制规范（EF Core & API）
+
+## 🚀 何时读取本规则
+
+新增 DbSet 实体、修改 WarehouseDbContext、新增 Controller、涉及 EF Core 配置时。
+
+> **血泪教训**：2026-06-12 因新增实体缺 HasKey 配置导致 WarehouseDbContext 全部 API 500 崩溃，仓库/货品/部门等选择器全部空白。**以下规则必须严格遵守，违者必崩。**
+
+---
+
+## 一、新增 DbSet 实体的 mandatory 检查清单
+
+每次在 `WarehouseDbContext.cs` 中添加 `public DbSet<XXX>` 后，**必须同时完成以下全部操作**，缺一不可：
+
+| 步骤 | 操作 | 验证方式 |
+|------|------|---------|
+| 1 | 创建实体模型类 `WmsPlus.Api/Models/Xxx.cs` | 文件存在且有属性定义 |
+| 2 | 在 `WarehouseDbContext` 中注册 `DbSet<Xxx>` | DbSet 行存在 |
+| 3 | **在 `OnModelCreating` 中添加 Fluent API 配置块** | `modelBuilder.Entity<Xxx>(entity => { ... })` 存在 |
+| 4 | **配置块内必须包含 `HasKey()` 调用** | `entity.HasKey(e => ...)` 存在 |
+| 5 | 编译通过 | `dotnet build` 0 错误 |
+| 6 | **启动后端服务，调用一个已有的 API 确认无 500 错误** | 如 `GET /api/warehouse/search` |
+
+---
+
+## 二、HasKey 配置规则
+
+EF Core 要求每个实体必须有主键。根据表结构类型，按以下规则配置：
+
+### 单主键表（大多数情况）
+```csharp
+modelBuilder.Entity<MyEntity>(entity =>
+{
+    entity.ToTable("TABLE_NAME");
+    entity.HasKey(e => e.ID);           // ← 必须有！单字段主键
+    entity.Property(e => e.ID).HasColumnName("ID");
+    // ... 其他属性配置
+});
+```
+
+### 复合主键表（表身类 Tf_ 开头、多对多中间表等）
+```csharp
+modelBuilder.Entity<TfXxx>(entity =>
+{
+    entity.ToTable("TF_XXX");
+    entity.HasKey(e => new { e.MAIN_NO, e.ITM });  // ← 复合主键：单号 + 项次
+    // ...
+});
+```
+
+### 无主键视图/只读表（极少数）
+```csharp
+modelBuilder.Entity<ReadOnlyView>(entity =>
+{
+    entity.ToTable("VIEW_NAME");
+    entity.HasNoKey();   // ← 显式声明无主键
+    entity.ToView("VIEW_NAME");
+});
+```
+
+---
+
+## 三、前端组件 API 请求认证规范
+
+所有前端组件（特别是 `WmsPlus/Components/` 下的选择器组件）发起 API 请求时：
+
+**必须使用**：
+```csharp
+@inject TokenProvider TokenProvider    // ← 注入 TokenProvider
+
+// 请求方式：
+var request = AuthHttpClient.CreateRequest(HttpMethod.Get, url, TokenProvider.Token);
+var responseMsg = await Http.SendAsync(request);
+```
+
+**禁止使用**：
+```csharp
+// ❌ 错误！不带 Token，后端会返回 401 或被全局认证拦截
+var response = await Http.GetAsync(url);
+```
+
+---
+
+## 四、已有选择器组件清单（均需使用 AuthHttpClient）
+
+| 组件文件 | 注入依赖 | API 端点 |
+|---------|---------|---------|
+| `WarehouseCodeInput.razor` | HttpClient, IJSRuntime, **TokenProvider** | `/api/warehouse/search` |
+| `ProductCodeInput.razor` | HttpClient, IJSRuntime, **TokenProvider** | `/api/warehouse/prdsearch` |
+| `CustomerCodeInput.razor` | HttpClient, ILogger, **TokenProvider** | `/api/warehouse/customersearch` |
+| `BizTypeInput.razor` | HttpClient, **TokenProvider** | `/api/warehouse/rktypesearch` |
+| `CkTypeInput.razor` | HttpClient, **TokenProvider** | `/api/warehouse/cktypesearch` |
+| `DeptCodeInput.razor` | HttpClient, ILogger, **TokenProvider** | `/api/warehouse/deptsearch` |
+
+---
+
+## 五、冒烟测试检查点
+
+每次后端代码修改（尤其是涉及 DbContext、实体类、Controller）后，必须验证以下 API 正常返回：
+
+```
+GET http://localhost:5102/api/warehouse/search?pageIndex=1&pageSize=3     → 应返回 JSON 数据
+GET http://localhost:5102/api/warehouse/columns?tableName=MY_WH.DB        → 应返回字段列表
+```
+
+如果任一接口返回 500，说明 **WarehouseDbContext 模型有问题**，必须立即排查修复。

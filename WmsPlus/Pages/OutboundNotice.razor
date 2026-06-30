@@ -445,6 +445,7 @@
     private List<OutboundNoticeModel> dataSource = new();
 
     [CascadingParameter(Name = "OnFavoriteChanged")] public Action? OnFavoriteChanged { get; set; }
+    [CascadingParameter(Name = "OpenTabCallback")] public Action<string, string>? OpenTabCallback { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -493,7 +494,10 @@
     }
 
     private async Task HandleSearch() { await LoadData(); }
-    private void HandleAddNew() { }
+    private void HandleAddNew()
+    {
+        OpenTabCallback?.Invoke("outbound-notice-add", "出库通知单*新增");
+    }
 
     private async Task HandleExport()
     {

@@ -11,6 +11,10 @@ namespace WmsPlus.Api.Models
         [StringLength(50)]
         public string PRD_NO { get; set; } = "";
 
+        [Column("CON_NO")]
+        [StringLength(50)]
+        public string? CON_NO { get; set; }
+
         [Column("QTY_COLLECT")]
         [StringLength(20)]
         public string? QTY_COLLECT { get; set; }

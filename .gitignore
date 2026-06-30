@@ -55,3 +55,7 @@ test-*.json
 TestProductCodeSetting/
 commit_msg.txt
 page_inbound_notice.png
+
+# Other AI tool local configs (personal, not for team repo)
+.lingma/
+.qoder/
